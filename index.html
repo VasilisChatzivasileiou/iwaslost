@@ -9,453 +9,491 @@
             font-family: 'CustomFont';
             src: url('IDTFIdentifier-0.1-Bold.otf') format('opentype');
         }
-        body {
+
+        html, body {
             width: 100vw;
-            margin: 0;
-            padding: 0px;
             height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Disable scrolling */
+        }
+
+        body {
             display: flex;
             flex-direction: column;
             align-items: center;
             background-color: #222222;
             font-family: 'CustomFont', Arial, sans-serif;
-            overflow: hidden;
         }
 
-/* Force the logo and instructions to stick to the top */
+        .confirm-button {
+            width: auto;
+            height: 50px;
+            background-color: #298a52; /* Different color for distinction */
+            color: #B2BAB1;
+            font-size: 25px;
+            font-weight: bold;
+            border: none;
+            border-radius: 0px;
+            cursor: pointer;
+            font-family: 'CustomFont';
+            border-bottom: 5px solid #1e633b;
+            border-radius: 10px;
+        }
 
-.confirm-button {
-    width: auto;
-    height: 50px;
-    background-color: #298a52; /* Different color for distinction */
-    color: #B2BAB1;
-    font-size: 25px;
-    font-weight: bold;
-    border: none;
-    border-radius: 0px;
-    cursor: pointer;
-    font-family: 'CustomFont';
-    border-bottom: 5px solid #1e633b;
-    border-radius: 10px;
-}
+        .confirm-button:hover {
+            background-color: #B2BAB1;
+            color: #4C9068;
+        }
 
-.confirm-button:hover {
-    background-color: #B2BAB1;
-    color: #4C9068;
-}
+        .logo-container {
+            position: absolute;
+            top: 20px; /* Stick to the top of the screen */
+            left: 0;
+            width: 100%; /* Full width */
+            text-align: center;
+            padding: 20px 0; /* Optional spacing between logo and instructions */
+            background-color: transparent; /* Transparent background */
+            box-sizing: border-box;
+        }
 
-.logo-container {
-    position: absolute;
-    top: 20px; /* Stick to the top of the screen */
-    left: 0;
-    width: 100%; /* Full width */
-    text-align: center;
-    padding: 20px 0; /* Optional spacing between logo and instructions */
-    background-color: transparent; /* Transparent background */
-    box-sizing: border-box;
-}
+        .menu-button {
+            position: absolute;
+            top: 13px;
+            right: 10px;
+            background-color: #333;
+            color: #B2BAB1;
+            font-size: 18px;
+            font-family: 'CustomFont';
+            
+            border-radius: 0px;
+            padding: 10px 5px;
+            cursor: pointer;
+        }
 
-.logo-container img {
-    align-items: center;
-    align-self: center;
-    padding-top: 5%;
-    max-width: 130px;
-    height: auto;
-}
+        .menu-button:hover {
+            background-color: #B2BAB1;
+            color: #d1406e;
+        }
 
-.instructions {
-    margin-top: 5px; /* Small margin between logo and instructions */
-    color: white;
-    font-size: 20px;
-    text-align: center;
-    font-family: 'CustomFont', Arial, sans-serif;
-    line-height: 1;
-}
+        .logo-container img {
+            align-items: center;
+            align-self: center;
+            padding-top: 5%;
+            max-width: 130px;
+            height: auto;
+        }
 
-.main-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    height: 100vh; /* Ensure it takes the full height of the viewport */
-    margin: 0;
-    flex-grow: 1; /* Ensures it fills available space for vertical centering */
-    margin-top: 100px; /* Push content down to allow space for the top section */
-    margin-left: 0px;
-}
+        .instructions {
+            margin-top: 5px; /* Small margin between logo and instructions */
+            color: white;
+            font-size: 20px;
+            text-align: center;
+            font-family: 'CustomFont', Arial, sans-serif;
+            line-height: 1;
+        }
 
-.content-container {
-    display: flex;
-    gap: 20px; /* Space between maze and tracker */
-    align-items: flex-start;
-    justify-content: center; /* Center items horizontally */
-}
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            height: 100vh; /* Ensure it takes the full height of the viewport */
+            margin: 0;
+            flex-grow: 1; /* Ensures it fills available space for vertical centering */
+            margin-top: 100px; /* Push content down to allow space for the top section */
+        }
 
-.maze-container {
-    background-color: #B2BAB1;
-    padding: 10px;
-    display: inline-block;
-}
+        .level-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
 
-canvas {
-    border: 1px solid #222222;
-    image-rendering: pixelated;
-}
+        .level-button {
+            padding: 10px 20px;
+            font-size: 20px;
+            background-color: #4C9068;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'CustomFont';
+        }
 
-.tracker-container {
-    color: #B2BAB1;
-    background-color: #333;
-    padding: 10px;
-    border-radius: 0px;
-    width: auto;
-    height: 407px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
+        .level-button:hover {
+            background-color: #B2BAB1;
+            color: #4C9068;
+        }
 
-.tracker-container h3 {
-    margin: 0;
-    margin-bottom: 10px;
-    font-size: 25px;
-    text-align: center;
-}
+        .content-container {
+            display: flex;
+            gap: 20px; /* Space between maze and tracker */
+            align-items: flex-start;
+            justify-content: center; /* Center items horizontally */
+        }
 
-.tracker-container ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    width: 100%;
-}
+        .maze-container {
+            background-color: #B2BAB1;
+            padding: 10px;
+            display: inline-block;
+        }
 
-.tracker-container li {
-    font-size: 16px;
-    margin-bottom: 5px;
-    text-align: left;
-}
+        canvas {
+            border: 1px solid #222222;
+            image-rendering: pixelated;
+        }
 
-.controls-wrapper {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    align-items: center;
-    gap: 0px; /* Add space between the buttons */
-    margin-top: 5px;
-}
+        .tracker-container {
+            color: #B2BAB1;
+            background-color: #333;
+            padding: 10px;
+            border-radius: 0px;
+            width: auto;
+            height: 407px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-.controls {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 5px;
-}
+        .tracker-container h3 {
+            margin: 0;
+            margin-bottom: 10px;
+            font-size: 25px;
+            text-align: center;
+        }
 
-.controls button {
-    width: 80px;
-    height: 80px;
-    background-color: #222222;
-    color: #B2BAB1;
-    font-size: 25px;
-    font-weight: bold;
-    border: none;
-    border-radius: 0px;
-    cursor: pointer;
-}
+        .tracker-container ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+        }
 
-.controls button:hover {
-    background-color: #d1406e;
-    color: #B2BAB1;
-    
-}
+        .tracker-container li {
+            font-size: 16px;
+            margin-bottom: 5px;
+            text-align: left;
+        }
 
-.reset-button {
-    width: 100px;
-    height: 50px;
-    background-color: #d1406e;
-    color: #B2BAB1;
-    font-size: 25px;
-    font-weight: bold;
-    border: none;
-    border-radius: 0px;
-    cursor: pointer;
-    font-family: 'CustomFont';
-    border-bottom: 5px solid #942f4f;
-    border-radius: 10px;
-}
+        .controls-wrapper {
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            gap: 0px; /* Add space between the buttons */
+            margin-top: 5px;
+        }
 
-.reset-button:hover {
-    background-color: #B2BAB1;
-    color: #d1406e;
-}
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
 
-#winPopup {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: #B2BAB1;
-    background-color: #222222;
-    padding: 20px;
-    box-shadow: 0px 0px 0px rgba(0, 0, 0, 0);
-    text-align: center;
-    border-radius: 0px;
-    z-index: 1000;
-}
+        .controls button {
+            width: 80px;
+            height: 80px;
+            background-color: #222222;
+            color: #B2BAB1;
+            font-size: 25px;
+            font-weight: bold;
+            border: none;
+            border-radius: 0px;
+            cursor: pointer;
+        }
 
-#winPopup button:hover {
-    background-color: #222222;
-    color: #d1406e;
-}
+        .controls button:hover {
+            background-color: #d1406e;
+            color: #B2BAB1;
+        }
 
-#winPopup button {
-    margin-top: 20px;
-    padding: 10px 20px;
-    background-color: #d1406e;
-    color: #B2BAB1;
-    border: none;
-    cursor: pointer;
-    border-radius: 0px;
-    font-family: 'CustomFont';
-    font-size: 25px;
-}
+        .reset-button {
+            width: 100px;
+            height: 50px;
+            background-color: #d1406e;
+            color: #B2BAB1;
+            font-size: 25px;
+            font-weight: bold;
+            border: none;
+            border-radius: 0px;
+            cursor: pointer;
+            font-family: 'CustomFont';
+            border-bottom: 5px solid #942f4f;
+            border-radius: 10px;
+        }
 
-.buttons-container {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-}
+        .reset-button:hover {
+            background-color: #B2BAB1;
+            color: #d1406e;
+        }
 
-@media (min-width: 1024px) {
-    
-    .logo-container {
-        padding: 0px 0;
-        position: absolute;
-        top: 5px;
-        left: 50%; 
-        transform: translateX(-50%);
-        max-width: 450px; /* Smaller logo size */
-    }
+        #winPopup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #B2BAB1;
+            background-color: #222222;
+            padding: 20px;
+            box-shadow: 0px 0px 0px rgba(0, 0, 0, 0);
+            text-align: center;
+            border-radius: 0px;
+            z-index: 1000;
+        }
 
-    .instructions {
-        font-size: 20px; /* Smaller font size for instructions */
-        max-width: 100%; /* Prevent instructions from spreading */
-        margin: 0 auto; /* Center align */
-        line-height: 1;
-        position: relative;
-        top: 0px; /* Raise the instructions */
-    }
-}
+        #winPopup button:hover {
+            background-color: #222222;
+            color: #d1406e;
+        }
 
-/* Media query for medium screens */
-@media (max-width: 1023px) {
+        #winPopup button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #d1406e;
+            color: #B2BAB1;
+            border: none;
+            cursor: pointer;
+            border-radius: 0px;
+            font-family: 'CustomFont';
+            font-size: 25px;
+        }
 
-    .maze-container {
-        width: fit-content;
-        transform: scale(0.8); /* Scale down the maze */
-        transform-origin: top left; /* Anchor scaling */
-    }
-    
-    .logo-container {
-        padding: 0px 0;
-        top: 5px; /* Adjust logo position */
-    }
+        .buttons-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
 
-    .instructions {
-        font-size: 13px; /* Further reduce font size */
-        top: 0px; /* Adjust spacing */
-        text-align: center;
-        margin-top: 0px;
-    }
-}
+        @media (min-width: 1024px) {
+            .logo-container {
+                padding: 0px 0;
+                position: absolute;
+                top: 5px;
+                left: 50%; 
+                transform: translateX(-50%);
+                max-width: 450px; /* Smaller logo size */
+            }
 
-/* Additional responsive styles */
-@media (max-width: 768px) {
+            .instructions {
+                font-size: 20px; /* Smaller font size for instructions */
+                max-width: 100%; /* Prevent instructions from spreading */
+                margin: 0 auto; /* Center align */
+                line-height: 1;
+                position: relative;
+                top: 0px; /* Raise the instructions */
+            }
+        }
 
-    .content-container {
-        flex-direction: column; /* Stack items vertically */
-        align-items: center;
-        gap: 0px;
-    }
+        /* Media query for medium screens */
+        @media (max-width: 1023px) {
+            .maze-container {
+                width: fit-content;
+                transform: scale(0.8); /* Scale down the maze */
+                transform-origin: top left; /* Anchor scaling */
+            }
 
-    /* Adjust logo and instructions */
-    .logo-container {
-        
-        top: 0px; /* Move logo higher */
-        padding: 10px 0;
-    }
+            .logo-container {
+                padding: 0px 0;
+                top: 5px; /* Adjust logo position */
+            }
 
-    .logo-container img {
-        max-width: 120px; /* Make the logo smaller */
-    }
+            .instructions {
+                font-size: 13px; /* Further reduce font size */
+                top: 0px; /* Adjust spacing */
+                text-align: center;
+                margin-top: 0px;
+            }
+        }
 
-    .instructions {
-        font-size: 16px; /* Reduce font size of instructions */
-        top: -20px; /* Move closer to the logo */
-        line-height: 1.2;
-    }
+        /* Additional responsive styles */
+        @media (max-width: 768px) {
+            .content-container {
+                flex-direction: column; /* Stack items vertically */
+                align-items: center;
+                gap: 0px;
+            }
 
-    /* Resize the maze and center it */
-    .maze-container {
-        width: fit-content;
-        transform: scale(1); /* Scale down the maze */
-        transform-origin: top left; /* Anchor scaling */
-    }
+            /* Adjust logo and instructions */
+            .logo-container {
+                top: 0px; /* Move logo higher */
+                padding: 10px 0;
+            }
 
-    /* Adjust tracker size */
-    .tracker-container {
-        order: -1; /* Move the tracker to the top */
-        width: 422px; /* Reduce tracker width */
-        height: 50px; /* Reduce tracker height */
-        align-self: stretch; /* Make it full width */
-        font-size: 14px; /* Reduce text size */
-        padding: 0px;
-    }
+            .logo-container img {
+                max-width: 120px; /* Make the logo smaller */
+            }
 
-    .tracker-container ul {
-        display: flex; /* Make the list horizontal */
-        flex-wrap: wrap; /* Wrap if moves exceed the width */
-        justify-content: center; /* Center items */
-    }
+            .instructions {
+                font-size: 16px; /* Reduce font size of instructions */
+                top: -20px; /* Move closer to the logo */
+                line-height: 1.2;
+            }
 
-    .tracker-container li {
-        margin: 0 5px; /* Add some spacing between items */
-        margin-bottom: 0px;
-    }
+            /* Resize the maze and center it */
+            .maze-container {
+                width: fit-content;
+                transform: scale(1); /* Scale down the maze */
+                transform-origin: top left; /* Anchor scaling */
+            }
 
-    .tracker-container h3 {
-        font-size: 20px; /* Adjust tracker title size */
-        margin-bottom: 0px;
-    }
+            /* Adjust tracker size */
+            .tracker-container {
+                order: -1; /* Move the tracker to the top */
+                width: 422px; /* Reduce tracker width */
+                height: 50px; /* Reduce tracker height */
+                align-self: stretch; /* Make it full width */
+                font-size: 14px; /* Reduce text size */
+                padding: 0px;
+            }
 
-    /* Resize controls */
-    .controls button {
-        width: 60px;
-        height: 60px;
-        font-size: 20px;
-    }
+            .tracker-container ul {
+                display: flex; /* Make the list horizontal */
+                flex-wrap: wrap; /* Wrap if moves exceed the width */
+                justify-content: center; /* Center items */
+            }
 
-    .reset-button {
-        width: 80px;
-        height: 40px;
-        font-size: 20px;
-    }
+            .tracker-container li {
+                margin: 0 5px; /* Add some spacing between items */
+                margin-bottom: 0px;
+            }
 
-    /* Adjust the win popup */
-    #winPopup {
-        font-size: 18px; /* Reduce text size in popup */
-    }
+            .tracker-container h3 {
+                font-size: 20px; /* Adjust tracker title size */
+                margin-bottom: 0px;
+            }
 
-    #winPopup button {
-        font-size: 20px; /* Adjust button text size */
-        padding: 8px 16px;
-    }
-}
+            /* Resize controls */
+            .controls button {
+                width: 60px;
+                height: 60px;
+                font-size: 20px;
+            }
 
-@media (max-width: 480px) {
-    
-    .logo-container {
-        padding: 0px 0; /* Optional spacing between logo and instructions */
-        top: 0px; /* Stick to the top of the screen */
-    }
-    #winPopup {
-        width: 320px; /* Adjust the width as needed */
-        font-size: 25px; /* Adjust the font size if needed */
-        padding: 20px; /* Ensure the padding matches the new size */
-    }
+            .reset-button {
+                width: 80px;
+                height: 40px;
+                font-size: 20px;
+            }
 
-    #winPopup button {
-        font-size: 25px; /* Keep the button text readable */
-        padding: 8px 16px; /* Adjust padding for button */
-    }
+            /* Adjust the win popup */
+            #winPopup {
+                font-size: 18px; /* Reduce text size in popup */
+            }
 
-    .content-container {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        gap: 0px;
-        padding: 0px;
-        position: relative; /* Allow absolute positioning of maze */
-        width: 100%;
-        height: calc(100% - 100px); /* Adjust height dynamically */
-        overflow: hidden;
-    }
+            #winPopup button {
+                font-size: 20px; /* Adjust button text size */
+                padding: 8px 16px;
+            }
+        }
 
-    .logo-container img {
-        align-self: center;
-        max-width: 100px;
-        padding-top: 2%;
-        height: 50px;
-        width: auto;
-    }
+        @media (max-width: 480px) {
+            .logo-container {
+                padding: 0px 0; /* Optional spacing between logo and instructions */
+                top: 0px; /* Stick to the top of the screen */
+            }
+            #winPopup {
+                width: 320px; /* Adjust the width as needed */
+                font-size: 25px; /* Adjust the font size if needed */
+                padding: 20px; /* Ensure the padding matches the new size */
+            }
 
-    .instructions {
-        font-size: 14px;
-    }
+            #winPopup button {
+                font-size: 25px; /* Keep the button text readable */
+                padding: 8px 16px; /* Adjust padding for button */
+            }
 
-    .maze-container {
-        overflow: hidden;
-        width: 400px; /* Fixed width for the maze */
-        height: auto;
-        display: flex;
-        top: 0; /* Fix it to the top */
-        justify-content: center; /* Center horizontally */
-        align-items: center; /* Center vertically */
-        margin: 0 auto; /* Remove any extra margin */
-        padding: 10px; /* Remove any extra padding */
-        transform: scale(.9);
-        transform-origin:top center; /* Anchor scaling */
-        margin: auto; /* Center within parent container */
-    }
+            .content-container {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 0px;
+                padding: 0px;
+                position: relative; /* Allow absolute positioning of maze */
+                width: 100%;
+                height: calc(100% - 100px); /* Adjust height dynamically */
+                overflow: hidden;
+            }
 
-    .tracker-container {
-        margin: 0px auto;
-        width: 379.8px;
-        height: auto;
-        max-height: 66px;
-        overflow-y: auto; /* Add a scrollbar when content exceeds the max height */
-        font-size: 12px;
-        display: flex;
-        align-self: center;
-        flex-grow: 1; /* Allow tracker container to grow vertically */
-    }
+            .logo-container img {
+                align-self: center;
+                max-width: 100px;
+                padding-top: 2%;
+                height: 50px;
+                width: auto;
+            }
 
-    .tracker-container h3 {
-        font-size: 18px;
-    }
+            .instructions {
+                font-size: 14px;
+            }
 
-    .controls button {
-        width: 90px;
-        height: 100px;
-        font-size: 28px;
-    }
+            .maze-container {
+                overflow: hidden;
+                width: 400px; /* Fixed width for the maze */
+                height: auto;
+                display: flex;
+                top: 0; /* Fix it to the top */
+                justify-content: center; /* Center horizontally */
+                align-items: center; /* Center vertically */
+                margin: 0 auto; /* Remove any extra margin */
+                padding: 10px; /* Remove any extra padding */
+                transform: scale(.9);
+                transform-origin:top center; /* Anchor scaling */
+                margin: auto; /* Center within parent container */
+            }
 
-    .reset-button {
-        width: 128px;
-        height: 75px;
-        font-size: 28px;
-    }
+            .tracker-container {
+                margin: 0px auto;
+                width: 379.8px;
+                height: auto;
+                max-height: 42px;
+                overflow-y: auto; /* Add a scrollbar when content exceeds the max height */
+                font-size: 12px;
+                display: flex;
+                align-self: center;
+                flex-grow: 1; /* Allow tracker container to grow vertically */
+            }
 
-    .confirm-button {
-        width: 128px;
-        height: 75px;
-        font-size: 28px;
-    }
+            .tracker-container h3 {
+                font-size: 18px;
+            }
 
-    .main-container {
-        width: 100%;
-        margin-top: 14px; /* Push content down to allow space for the top section */
+            .controls button {
+                width: 90px;
+                height: 100px;
+                font-size: 28px;
+            }
 
-    }
-}
+            .reset-button {
+                width: 128px;
+                height: 75px;
+                font-size: 28px;
+            }
 
+            .confirm-button {
+                width: 128px;
+                height: 75px;
+                font-size: 28px;
+            }
 
+            .main-container {
+                width: 100%;
+                margin-top: 14px; /* Push content down to allow space for the top section */
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="logo-container">
+        <img src="iwaslost01.png" alt="Logo">
+        <button id="menuButton" class="menu-button" onclick="showLevelSelector()">Menu</button>
+    </div>
+
     <div id="levelSelection" style="display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #222222;">
         <button id="level1Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #B2BAB1; color: #222222;">level 01</button>
         <button id="level2Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #B2BAB1; color: #222222; margin: 10px;">Level 02</button>
@@ -466,13 +504,10 @@ canvas {
             <h2>cool</h2>
             <p id="moveCountMessage"></p>
             <button onclick="restartGame()">restart</button>
+            <button id="nextLevelButton" onclick="goToNextLevel()">next level</button>
         </div>
         <div class="main-container">
-            <!-- Logo above the content -->
-            <div class="logo-container">
-                <img src="iwaslost01.png" alt="Logo">
 
-            </div>
             <!-- Maze and tracker in a flex container -->
             <div class="content-container">
                 <div>
@@ -506,6 +541,57 @@ canvas {
         const level1Button = document.getElementById('level1Button');
         const level2Button = document.getElementById('level2Button');
         const gameContainer = document.getElementById('gameContainer');
+        const menuButton = document.getElementById('menuButton');
+        
+        let currentLevel = 1; // Start with level 1
+
+        document.addEventListener('DOMContentLoaded', () => {
+            menuButton.style.display = 'none';
+        });
+        
+        function startGame(mazeImageSrc, exitPosition) {
+            currentLevel = mazeImageSrc === 'maze013.png' ? 1 : 2; // Update current level
+            // Hide the level selection screen
+            levelSelection.style.display = 'none';
+            // Show the game container
+            gameContainer.style.display = 'block';
+            // Show the Menu button since we're in a level
+            menuButton.style.display = 'block';
+            // Set the maze image and initialize the level
+            mazeImage.src = mazeImageSrc;
+            // Update the exit position
+            exit.x = exitPosition.x;
+            exit.y = exitPosition.y;
+            // Reset the game for the selected level
+            restartGame();
+        }
+
+        function goToNextLevel() {
+            if (currentLevel === 1) {
+                // Start Level 2
+                startGame('level2(1).png', { x: 180, y: 40 }); // Set maze image and exit position for Level 2
+            } else {
+                console.log("No more levels available!");
+                // Optionally, display a message or take other actions
+            }
+        }
+
+        function checkWin() {
+            if (
+                player.x < exit.x + exit.size &&
+                player.x + player.size > exit.x &&
+                player.y < exit.y + exit.size &&
+                player.y + player.size > exit.y
+        ) {
+                clearInterval(movingInterval);
+                winPopup.style.display = 'block';
+                moveCountMessage.innerHTML = `you won and it took you ${moveCount} moves<br>..loser`; // Taunting message
+                // Show the Next Level button only if the current level is 1
+                const nextLevelButton = document.getElementById('nextLevelButton');
+                nextLevelButton.style.display = currentLevel === 1 ? 'block' : 'none';
+            }
+        }
+
 
         // Add event listener to "Level 1" button
         level1Button.addEventListener('click', () => {
@@ -531,6 +617,9 @@ canvas {
             // Show the game container
             gameContainer.style.display = 'block';
 
+            // Show the Menu button since we're in a level
+            menuButton.style.display = 'block';
+
             // Set the maze image and initialize the level
             mazeImage.src = mazeImageSrc;
 
@@ -540,6 +629,21 @@ canvas {
 
             // Reset the game for the selected level
             restartGame();
+        }
+
+        function showLevelSelector() {
+            
+            document.getElementById('levelSelection').style.display = 'flex';
+            document.getElementById('gameContainer').style.display = 'none';
+            menuButton.style.display = 'none'; // Hide the Menu button
+        }
+
+        function startLevel(level) {
+            console.log('Starting Level', level);
+            document.getElementById('levelSelection').style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'flex';
+            menuButton.style.display = 'block'; // Show the Menu button
+            // Initialize game logic for the selected level here
         }
 
         function initLevel1() {
