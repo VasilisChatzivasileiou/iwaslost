@@ -509,7 +509,7 @@ canvas {
 
         // Add event listener to "Level 1" button
         level1Button.addEventListener('click', () => {
-            startGame('maze013.png')
+            startGame('maze013.png', { x: 180, y: 0 }); // Set maze image and exit position for Level 1
             // Hide the level selection screen
             levelSelection.style.display = 'none';
 
@@ -521,10 +521,10 @@ canvas {
         });
 
         level2Button.addEventListener('click', () => {
-            startGame('level2.png');
+            startGame('level2.png', { x: 180, y: 40 }); // Set maze image and exit position for Level 2
         });
 
-        function startGame(mazeImageSrc) {
+        function startGame(mazeImageSrc, exitPosition) {
             // Hide the level selection screen
             levelSelection.style.display = 'none';
 
@@ -533,6 +533,10 @@ canvas {
 
             // Set the maze image and initialize the level
             mazeImage.src = mazeImageSrc;
+
+            // Update the exit position
+            exit.x = exitPosition.x;
+            exit.y = exitPosition.y;
 
             // Reset the game for the selected level
             restartGame();
