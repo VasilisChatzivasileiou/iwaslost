@@ -27,18 +27,20 @@
 .confirm-button {
     width: auto;
     height: 50px;
-    background-color: #4C9068; /* Different color for distinction */
-    color: white;
+    background-color: #298a52; /* Different color for distinction */
+    color: #B2BAB1;
     font-size: 25px;
     font-weight: bold;
     border: none;
     border-radius: 0px;
     cursor: pointer;
     font-family: 'CustomFont';
+    border-bottom: 5px solid #1e633b;
+    border-radius: 10px;
 }
 
 .confirm-button:hover {
-    background-color: #CCCCCC;
+    background-color: #B2BAB1;
     color: #4C9068;
 }
 
@@ -154,7 +156,7 @@ canvas {
     width: 80px;
     height: 80px;
     background-color: #222222;
-    color: white;
+    color: #B2BAB1;
     font-size: 25px;
     font-weight: bold;
     border: none;
@@ -163,26 +165,29 @@ canvas {
 }
 
 .controls button:hover {
-    background-color: #E1384D;
-    color: white;
+    background-color: #d1406e;
+    color: #B2BAB1;
+    
 }
 
 .reset-button {
     width: 100px;
     height: 50px;
-    background-color: #E1384D;
-    color: white;
+    background-color: #d1406e;
+    color: #B2BAB1;
     font-size: 25px;
     font-weight: bold;
     border: none;
     border-radius: 0px;
     cursor: pointer;
     font-family: 'CustomFont';
+    border-bottom: 5px solid #942f4f;
+    border-radius: 10px;
 }
 
 .reset-button:hover {
     background-color: #CCCCCC;
-    color: #E1384D;
+    color: #d1406e;
 }
 
 #winPopup {
@@ -202,13 +207,13 @@ canvas {
 
 #winPopup button:hover {
     background-color: #222222;
-    color: #E1384D;
+    color: #d1406e;
 }
 
 #winPopup button {
     margin-top: 20px;
     padding: 10px 20px;
-    background-color: #E1384D;
+    background-color: #d1406e;
     color: white;
     border: none;
     cursor: pointer;
@@ -351,6 +356,10 @@ canvas {
 
 @media (max-width: 480px) {
     
+    .logo-container {
+        padding: 0px 0; /* Optional spacing between logo and instructions */
+        top: 0px; /* Stick to the top of the screen */
+    }
     #winPopup {
         width: 320px; /* Adjust the width as needed */
         font-size: 25px; /* Adjust the font size if needed */
@@ -378,6 +387,9 @@ canvas {
     .logo-container img {
         align-self: center;
         max-width: 100px;
+        padding-top: 2%;
+        height: 50px;
+        width: auto;
     }
 
     .instructions {
@@ -435,6 +447,7 @@ canvas {
 
     .main-container {
         width: 100%;
+        margin-top: 14px; /* Push content down to allow space for the top section */
 
     }
 }
@@ -469,7 +482,7 @@ canvas {
                     </div>
                     <div class="buttons-container">
                         <button id="resetButton" class="reset-button">reset</button>
-                        <button id="confirmButton" class="confirm-button">Confirm</button>
+                        <button id="confirmButton" class="confirm-button">confirm</button>
                     </div>
                 </div>
             </div>
@@ -512,7 +525,7 @@ canvas {
             size: 20,
             startX: 180,
             startY: 380,
-            color: '#CF6889', // Add a color property
+            color: '#d1406e', // Add a color property
         };
 
         const exit = {
@@ -595,7 +608,7 @@ canvas {
         }
 
         function drawExit() {
-            ctx.fillStyle = '#4C9068'; // Use the new color for the exit block
+            ctx.fillStyle = '#298a52'; // Use the new color for the exit block
             ctx.fillRect(exit.x, exit.y, exit.size, exit.size);
         }
 
