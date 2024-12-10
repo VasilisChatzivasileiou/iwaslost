@@ -458,6 +458,7 @@ canvas {
 <body>
     <div id="levelSelection" style="display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #222222;">
         <button id="level1Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #B2BAB1; color: #222222;">level 01</button>
+        <button id="level2Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #B2BAB1; color: #222222; margin: 10px;">Level 02</button>
     </div>
 
     <div id="gameContainer" style="display: none;">
@@ -503,10 +504,12 @@ canvas {
         // References to DOM elements
         const levelSelection = document.getElementById('levelSelection');
         const level1Button = document.getElementById('level1Button');
+        const level2Button = document.getElementById('level2Button');
         const gameContainer = document.getElementById('gameContainer');
 
         // Add event listener to "Level 1" button
         level1Button.addEventListener('click', () => {
+            startGame('maze013.png')
             // Hide the level selection screen
             levelSelection.style.display = 'none';
 
@@ -516,6 +519,24 @@ canvas {
             // Optionally initialize the game for level 1
             initLevel1();
         });
+
+        level2Button.addEventListener('click', () => {
+            startGame('level2.png');
+        });
+
+        function startGame(mazeImageSrc) {
+            // Hide the level selection screen
+            levelSelection.style.display = 'none';
+
+            // Show the game container
+            gameContainer.style.display = 'block';
+
+            // Set the maze image and initialize the level
+            mazeImage.src = mazeImageSrc;
+
+            // Reset the game for the selected level
+            restartGame();
+        }
 
         function initLevel1() {
             console.log("Level 1 initialized!");
