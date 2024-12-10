@@ -386,7 +386,7 @@ canvas {
         align-items: center; /* Center vertically */
         margin: 0 auto; /* Remove any extra margin */
         padding: 10px; /* Remove any extra padding */
-        transform: scale(1);
+        transform: scale(.9);
         transform-origin: center; /* Anchor scaling */
         margin: auto; /* Center within parent container */
     }
@@ -448,10 +448,10 @@ canvas {
                 </div>
                 <div class="controls-wrapper">
                     <div class="controls">
-                        <button data-direction="ArrowLeft">🡸</button>
-                        <button data-direction="ArrowUp">🡹</button>
-                        <button data-direction="ArrowDown">🡻</button>
-                        <button data-direction="ArrowRight">🡺</button>
+                        <button data-direction="ArrowLeft"><</button>
+                        <button data-direction="ArrowUp">^</button>
+                        <button data-direction="ArrowDown">\/</button>
+                        <button data-direction="ArrowRight">></button>
                     </div>
                     <div class="buttons-container">
                         <button id="resetButton" class="reset-button">reset</button>
@@ -630,10 +630,10 @@ canvas {
 
         function addDirectionToTracker(direction) {
     const directionMap = {
-        'ArrowUp': '🡹',
-        'ArrowDown': '🡻',
-        'ArrowLeft': '🡸',
-        'ArrowRight': '🡺',
+        'ArrowUp': 'up',
+        'ArrowDown': 'down',
+        'ArrowLeft': 'left',
+        'ArrowRight': 'right',
     };
 
     moveCount++;
