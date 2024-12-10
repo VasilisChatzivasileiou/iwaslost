@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iwaslost</title>
+    <style>
+        @font-face {
+            font-family: 'CustomFont';
+            src: url('IDTFIdentifier-0.1-Bold.otf') format('opentype');
+        }
+        body {
+        margin: 0;
+        padding: 0px;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: #222222;
+        font-family: 'CustomFont', Arial, sans-serif;
+}
+
+/* Force the logo and instructions to stick to the top */
+
+.confirm-button {
+    width: auto;
+    height: 50px;
+    background-color: #4C9068; /* Different color for distinction */
+    color: white;
+    font-size: 25px;
+    font-weight: bold;
+    border: none;
+    border-radius: 0px;
+    cursor: pointer;
+    font-family: 'CustomFont';
+}
+
+.confirm-button:hover {
+    background-color: #CCCCCC;
+    color: #4C9068;
+}
+
+.logo-container {
+    position: absolute;
+    top: 20px; /* Stick to the top of the screen */
+    left: 0;
+    width: 100%; /* Full width */
+    text-align: center;
+    padding: 20px 0; /* Optional spacing between logo and instructions */
+    background-color: transparent; /* Transparent background */
+    box-sizing: border-box;
+}
+
+.logo-container img {
+    align-items: center;
+    align-self: center;
+    padding-top: 5%;
+    max-width: 130px;
+    height: auto;
+}
+
+.instructions {
+    margin-top: 5px; /* Small margin between logo and instructions */
+    color: white;
+    font-size: 20px;
+    text-align: center;
+    font-family: 'CustomFont', Arial, sans-serif;
+    line-height: 1;
+}
+
+.main-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    height: 100vh; /* Ensure it takes the full height of the viewport */
+    margin: 0;
+    flex-grow: 1; /* Ensures it fills available space for vertical centering */
+    margin-top: 100px; /* Push content down to allow space for the top section */
+    margin-left: 0px;
+}
+
+.content-container {
+    display: flex;
+    gap: 20px; /* Space between maze and tracker */
+    align-items: flex-start;
+    justify-content: center; /* Center items horizontally */
+}
+
+.maze-container {
+    background-color: #B2BAB1;
+    padding: 10px;
+    display: inline-block;
+}
+
+canvas {
+    border: 1px solid #222222;
+    image-rendering: pixelated;
+}
+
+.tracker-container {
+    color: #B2BAB1;
+    background-color: #333;
+    padding: 10px;
+    border-radius: 0px;
+    width: auto;
+    height: 407px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.tracker-container h3 {
+    margin: 0;
+    margin-bottom: 10px;
+    font-size: 25px;
+    text-align: center;
+}
+
+.tracker-container ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+}
+
+.tracker-container li {
+    font-size: 16px;
+    margin-bottom: 5px;
+    text-align: left;
+}
+
+.controls-wrapper {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    gap: 0px; /* Add space between the buttons */
+    margin-top: 5px;
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
+.controls button {
+    width: 80px;
+    height: 80px;
+    background-color: #222222;
+    color: white;
+    font-size: 25px;
+    font-weight: bold;
+    border: none;
+    border-radius: 0px;
+    cursor: pointer;
+}
+
+.controls button:hover {
+    background-color: #E1384D;
+    color: white;
+}
+
+.reset-button {
+    width: 100px;
+    height: 50px;
+    background-color: #E1384D;
+    color: white;
+    font-size: 25px;
+    font-weight: bold;
+    border: none;
+    border-radius: 0px;
+    cursor: pointer;
+    font-family: 'CustomFont';
+}
+
+.reset-button:hover {
+    background-color: #CCCCCC;
+    color: #E1384D;
+}
+
+#winPopup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    background-color: #222222;
+    padding: 20px;
+    box-shadow: 0px 0px 0px rgba(0, 0, 0, 0);
+    text-align: center;
+    border-radius: 0px;
+    z-index: 1000;
+}
+
+#winPopup button:hover {
+    background-color: #222222;
+    color: #E1384D;
+}
+
+#winPopup button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #E1384D;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 0px;
+    font-family: 'CustomFont';
+    font-size: 25px;
+}
+
+.buttons-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+@media (min-width: 1024px) {
+    
+    .logo-container {
+        padding: 0px 0;
+        position: absolute;
+        top: 5px;
+        left: 50%; 
+        transform: translateX(-50%);
+        max-width: 450px; /* Smaller logo size */
+    }
+
+    .instructions {
+        font-size: 20px; /* Smaller font size for instructions */
+        max-width: 100%; /* Prevent instructions from spreading */
+        margin: 0 auto; /* Center align */
+        line-height: 1;
+        position: relative;
+        top: 0px; /* Raise the instructions */
+    }
+}
+
+/* Media query for medium screens */
+@media (max-width: 1023px) {
+
+    .maze-container {
+        width: fit-content;
+        transform: scale(0.8); /* Scale down the maze */
+        transform-origin: top left; /* Anchor scaling */
+    }
+    
+    .logo-container {
+        padding: 0px 0;
+        top: 5px; /* Adjust logo position */
+    }
+
+    .instructions {
+        font-size: 13px; /* Further reduce font size */
+        top: 0px; /* Adjust spacing */
+        text-align: center;
+        margin-top: 0px;
+    }
+}
+
+/* Additional responsive styles */
+@media (max-width: 768px) {
+
+    .content-container {
+        flex-direction: column; /* Stack items vertically */
+        align-items: center;
+        gap: 0px;
+    }
+
+    /* Adjust logo and instructions */
+    .logo-container {
+        
+        top: 0px; /* Move logo higher */
+        padding: 10px 0;
+    }
+
+    .logo-container img {
+        max-width: 120px; /* Make the logo smaller */
+    }
+
+    .instructions {
+        font-size: 16px; /* Reduce font size of instructions */
+        top: -20px; /* Move closer to the logo */
+        line-height: 1.2;
+    }
+
+    /* Resize the maze and center it */
+    .maze-container {
+        width: fit-content;
+        transform: scale(1); /* Scale down the maze */
+        transform-origin: top left; /* Anchor scaling */
+    }
+
+    /* Adjust tracker size */
+    .tracker-container {
+        order: -1; /* Move the tracker to the top */
+        width: 422px; /* Reduce tracker width */
+        height: 50px; /* Reduce tracker height */
+        align-self: stretch; /* Make it full width */
+        font-size: 14px; /* Reduce text size */
+        padding: 0px;
+    }
+
+    .tracker-container ul {
+        display: flex; /* Make the list horizontal */
+        flex-wrap: wrap; /* Wrap if moves exceed the width */
+        justify-content: center; /* Center items */
+    }
+
+    .tracker-container li {
+        margin: 0 5px; /* Add some spacing between items */
+        margin-bottom: 0px;
+    }
+
+    .tracker-container h3 {
+        font-size: 20px; /* Adjust tracker title size */
+        margin-bottom: 0px;
+    }
+
+    /* Resize controls */
+    .controls button {
+        width: 60px;
+        height: 60px;
+        font-size: 20px;
+    }
+
+    .reset-button {
+        width: 80px;
+        height: 40px;
+        font-size: 20px;
+    }
+
+    /* Adjust the win popup */
+    #winPopup {
+        font-size: 18px; /* Reduce text size in popup */
+    }
+
+    #winPopup button {
+        font-size: 20px; /* Adjust button text size */
+        padding: 8px 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    
+    #winPopup {
+        width: 320px; /* Adjust the width as needed */
+        font-size: 25px; /* Adjust the font size if needed */
+        padding: 20px; /* Ensure the padding matches the new size */
+    }
+
+    #winPopup button {
+        font-size: 25px; /* Keep the button text readable */
+        padding: 8px 16px; /* Adjust padding for button */
+    }
+
+    .content-container {
+        
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 0px;
+        padding: 0px;
+    }
+
+    .logo-container img {
+        align-self: center;
+        max-width: 100px;
+    }
+
+    .instructions {
+        font-size: 14px;
+    }
+
+    .maze-container {
+        width: fit-content;
+        height: fit-content;
+        display: flex;
+        justify-content: center; /* Center horizontally */
+        align-items: center; /* Center vertically */
+        margin: 0 auto; /* Remove any extra margin */
+        padding: 10px; /* Remove any extra padding */
+        transform: scale(1);
+        transform-origin: center; /* Anchor scaling */
+        margin: auto; /* Center within parent container */
+    }
+
+    .tracker-container {
+        margin: 0px auto;
+        width: 402px;
+        height: auto;
+        max-height: 66px;
+        overflow-y: auto; /* Add a scrollbar when content exceeds the max height */
+        font-size: 12px;
+        align-self: center;
+    }
+
+    .tracker-container h3 {
+        font-size: 18px;
+    }
+
+    .controls button {
+        width: 100px;
+        height: 100px;
+        font-size: 28px;
+    }
+
+    .reset-button {
+        width: 128px;
+        height: 75px;
+        font-size: 28px;
+    }
+
+    .confirm-button {
+        width: 128px;
+        height: 75px;
+        font-size: 28px;
+    }
+
+}
+
+
+    </style>
+</head>
+<body>
+    <div id="winPopup">
+        <h2>cool</h2>
+        <p id="moveCountMessage"></p>
+        <button onclick="restartGame()">restart</button>
+    </div>
+    <div class="main-container">
+        <!-- Logo above the content -->
+        <div class="logo-container">
+            <img src="iwaslost01.png" alt="Logo">
+
+        </div>
+        <!-- Maze and tracker in a flex container -->
+        <div class="content-container">
+            <div>
+                <div class="maze-container">
+                    <canvas id="mazeCanvas" width="400" height="400"></canvas>
+                </div>
+                <div class="controls-wrapper">
+                    <div class="controls">
+                        <button data-direction="ArrowLeft">🡸</button>
+                        <button data-direction="ArrowUp">🡹</button>
+                        <button data-direction="ArrowDown">🡻</button>
+                        <button data-direction="ArrowRight">🡺</button>
+                    </div>
+                    <div class="buttons-container">
+                        <button id="resetButton" class="reset-button">reset</button>
+                        <button id="confirmButton" class="confirm-button">Confirm</button>
+                    </div>
+                </div>
+            </div>
+            <div class="tracker-container">
+                <h3>steps</h3>
+                <ul id="trackerList"></ul>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        let lastDirection = null; // Store the last completed move direction
+        let isExecutingMoves = false; // Flag to indicate automated execution
+        let isMoving = false; // Lock to prevent overlapping movements
+
+        // Add event listener for the Confirm button
+        const confirmButton = document.getElementById('confirmButton');
+        confirmButton.addEventListener('click', executeMoves);
+
+
+        const moveQueue = []; // Queue to store moves
+
+        const canvas = document.getElementById('mazeCanvas');
+        const ctx = canvas.getContext('2d');
+        const resetButton = document.getElementById('resetButton');
+        const trackerList = document.getElementById('trackerList');
+        const winPopup = document.getElementById('winPopup');
+        const moveCountMessage = document.getElementById('moveCountMessage');
+
+        const mazeImage = new Image();
+        mazeImage.src = 'maze013.png';
+
+        resetButton.addEventListener('click', restartGame);
+
+        const scale = 2;
+        const player = {
+            x: 180,
+            y: 380,
+            size: 20,
+            startX: 180,
+            startY: 380,
+            color: '#CF6889', // Add a color property
+        };
+
+        const exit = {
+            x: 180,
+            y: 0,
+            size: 20,
+        };
+
+        let mazeData;
+        let movingInterval = null;
+        let currentDirection = null;
+        let nextDirection = null;
+        let moveCount = 0;
+        
+        
+
+        mazeImage.onload = () => {
+            ctx.imageSmoothingEnabled = false;
+            recolorMaze();
+            extractMazeData();
+            drawPlayer();
+            drawExit();
+        };
+
+        function processNextMove() {
+    if (isMoving || moveQueue.length === 0) return; // Prevent overlapping moves
+
+    const direction = moveQueue.shift(); // Get the next move in the queue
+    currentDirection = direction; // Set the current direction
+
+    startMoving(); // Start moving the player
+}
+
+        function recolorMaze() {
+            const offscreenCanvas = document.createElement('canvas');
+            offscreenCanvas.width = mazeImage.width;
+            offscreenCanvas.height = mazeImage.height;
+            const offscreenCtx = offscreenCanvas.getContext('2d');
+            offscreenCtx.drawImage(mazeImage, 0, 0);
+
+            const imageData = offscreenCtx.getImageData(0, 0, mazeImage.width, mazeImage.height);
+            const data = imageData.data;
+
+            for (let i = 0; i < data.length; i += 4) {
+                if (data[i] === 0 && data[i + 1] === 0 && data[i + 2] === 0 && data[i + 3] !== 0) {
+                    data[i] = 34;
+                    data[i + 1] = 34;
+                    data[i + 2] = 34;
+                }
+            }
+
+            offscreenCtx.putImageData(imageData, 0, 0);
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.scale(scale, scale);
+            ctx.drawImage(offscreenCanvas, 0, 0);
+            ctx.restore();
+        }
+
+        function extractMazeData() {
+            const scaledWidth = canvas.width / scale;
+            const scaledHeight = canvas.height / scale;
+
+            const offscreenCanvas = document.createElement('canvas');
+            offscreenCanvas.width = scaledWidth;
+            offscreenCanvas.height = scaledHeight;
+            const offscreenCtx = offscreenCanvas.getContext('2d');
+            offscreenCtx.drawImage(mazeImage, 0, 0, scaledWidth, scaledHeight);
+
+            const imageData = offscreenCtx.getImageData(0, 0, scaledWidth, scaledHeight);
+            mazeData = imageData.data;
+        }
+
+        function drawPlayer() {
+            recolorMaze();
+            drawExit();
+            ctx.fillStyle = player.color; // Use the player's color
+            ctx.fillRect(player.x, player.y, player.size, player.size);
+        }
+
+        function drawExit() {
+            ctx.fillStyle = '#4C9068'; // Use the new color for the exit block
+            ctx.fillRect(exit.x, exit.y, exit.size, exit.size);
+        }
+
+        function isCollision(newX, newY) {
+            const mazeX = Math.floor(newX / scale);
+            const mazeY = Math.floor(newY / scale);
+
+            const corners = [
+                { x: mazeX, y: mazeY },
+                { x: mazeX + player.size / scale - 1, y: mazeY },
+                { x: mazeX, y: mazeY + player.size / scale - 1 },
+                { x: mazeX + player.size / scale - 1, y: mazeY + player.size / scale - 1 },
+            ];
+
+            const scaledWidth = canvas.width / scale;
+
+            for (const corner of corners) {
+                const index = (corner.y * scaledWidth + corner.x) * 4 + 3;
+                console.log(`Checking collision at (${corner.x}, ${corner.y}):`, mazeData[index]); // Debugging
+                if (mazeData[index] !== 0) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function checkWin() {
+            if (
+                player.x < exit.x + exit.size &&
+                player.x + player.size > exit.x &&
+                player.y < exit.y + exit.size &&
+                player.y + player.size > exit.y
+            ) {
+                clearInterval(movingInterval);
+                winPopup.style.display = 'block';
+                moveCountMessage.innerHTML = `you won n it took you ${moveCount} moves<br>..loser`; // Taunting message
+            }
+        }
+
+        function movePlayer(direction) {
+            if (isMoving) return; // Prevent overlapping movements
+            currentDirection = direction; // Set the current direction
+            console.log('Moving in direction:', direction); // Debugging
+            startMoving(); // Start movement logic
+        }
+
+        function addDirectionToTracker(direction) {
+    const directionMap = {
+        'ArrowUp': '🡹',
+        'ArrowDown': '🡻',
+        'ArrowLeft': '🡸',
+        'ArrowRight': '🡺',
+    };
+
+    moveCount++;
+
+    const listItem = document.createElement('li');
+    listItem.textContent = `${moveCount}. ${directionMap[direction]}`;
+    trackerList.prepend(listItem);
+}
+
+        function startMoving() {
+    if (isMoving) return; // Prevent overlapping movements
+
+    isMoving = true; // Lock movement
+    const speed = 2;
+    let dx = 0,
+        dy = 0;
+
+    switch (currentDirection) {
+        case 'ArrowUp':
+            dx = 0;
+            dy = -speed;
+            break;
+        case 'ArrowDown':
+            dx = 0;
+            dy = speed;
+            break;
+        case 'ArrowLeft':
+            dx = -speed;
+            dy = 0;
+            break;
+        case 'ArrowRight':
+            dx = speed;
+            dy = 0;
+            break;
+    }
+
+    movingInterval = setInterval(() => {
+        const newX = player.x + dx;
+        const newY = player.y + dy;
+
+        if (
+            newX < 0 || newX + player.size > canvas.width ||
+            newY < 0 || newY + player.size > canvas.height ||
+            isCollision(newX, newY)
+        ) {
+            clearInterval(movingInterval); // Stop movement on collision
+            movingInterval = null; // Reset interval reference
+            player.x = Math.round(player.x / speed) * speed; // Align position to grid
+            player.y = Math.round(player.y / speed) * speed;
+            isMoving = false; // Unlock movement
+
+            // Update lastDirection only after completing a move
+            lastDirection = currentDirection;
+
+            drawPlayer();
+            checkWin();
+            processNextMove(); // Process the next move in the queue
+        } else {
+            // Update player position
+            player.x = newX;
+            player.y = newY;
+            drawPlayer();
+            checkWin();
+        }
+    }, 10);
+}
+
+document.querySelectorAll('.controls button').forEach(button => {
+    button.addEventListener('click', () => {
+        const direction = button.dataset.direction;
+
+        // Add direction to moveQueue
+        moveQueue.push(direction);
+
+        // Update the tracker visually
+        addDirectionToTracker(direction);
+
+        console.log(`Move ${direction} added to the queue. Waiting for confirmation.`);
+    });
+        });
+
+        function restartGame() {
+    // Stop any ongoing movement
+    clearInterval(movingInterval);
+    movingInterval = null; // Reset interval reference
+
+    // Reset game states
+    isMoving = false;
+    isExecutingMoves = false;
+    currentDirection = null;
+    nextDirection = null;
+    lastDirection = null;
+    moveQueue.length = 0; // Clear the move queue
+    moveCount = 0;
+
+    // Reset player position
+    player.x = player.startX;
+    player.y = player.startY;
+
+    // Clear tracker list
+    trackerList.innerHTML = '';
+
+    // Hide win popup
+    winPopup.style.display = 'none';
+
+    // Redraw the maze and player
+    drawPlayer();
+}
+
+        function executeMoves() {
+    if (isExecutingMoves || moveQueue.length === 0) return; // Prevent overlap
+    isExecutingMoves = true;
+
+    const interval = setInterval(() => {
+        if (moveQueue.length === 0 || isMoving) {
+            clearInterval(interval); // Stop when all moves are processed or already moving
+            isExecutingMoves = false; // Reset flag
+            return;
+        }
+
+        const direction = moveQueue.shift(); // Get next move
+        currentDirection = direction; // Set current direction
+        startMoving(); // Start moving
+    }, 300); // Delay between moves
+}
+
+document.addEventListener('keydown', (event) => {
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+        // Add direction to moveQueue
+        moveQueue.push(event.key);
+
+        // Update the tracker visually
+        addDirectionToTracker(event.key);
+
+        console.log(`Move ${event.key} added to the queue. Waiting for confirmation.`);
+    }
+});
+
+    </script>
+</body>
+</html>
