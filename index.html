@@ -186,7 +186,7 @@ canvas {
 }
 
 .reset-button:hover {
-    background-color: #CCCCCC;
+    background-color: #B2BAB1;
     color: #d1406e;
 }
 
@@ -196,7 +196,7 @@ canvas {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: white;
+    color: #B2BAB1;
     background-color: #222222;
     padding: 20px;
     box-shadow: 0px 0px 0px rgba(0, 0, 0, 0);
@@ -214,7 +214,7 @@ canvas {
     margin-top: 20px;
     padding: 10px 20px;
     background-color: #d1406e;
-    color: white;
+    color: #B2BAB1;
     border: none;
     cursor: pointer;
     border-radius: 0px;
@@ -456,45 +456,72 @@ canvas {
     </style>
 </head>
 <body>
-    <div id="winPopup">
-        <h2>cool</h2>
-        <p id="moveCountMessage"></p>
-        <button onclick="restartGame()">restart</button>
-    </div>
-    <div class="main-container">
-        <!-- Logo above the content -->
-        <div class="logo-container">
-            <img src="iwaslost01.png" alt="Logo">
-
-        </div>
-        <!-- Maze and tracker in a flex container -->
-        <div class="content-container">
-            <div>
-                <div class="maze-container">
-                    <canvas id="mazeCanvas" width="400" height="400"></canvas>
-                </div>
-                <div class="controls-wrapper">
-                    <div class="controls">
-                        <button data-direction="ArrowLeft"><</button>
-                        <button data-direction="ArrowUp">^</button>
-                        <button data-direction="ArrowDown">\/</button>
-                        <button data-direction="ArrowRight">></button>
-                    </div>
-                    <div class="buttons-container">
-                        <button id="resetButton" class="reset-button">reset</button>
-                        <button id="confirmButton" class="confirm-button">confirm</button>
-                    </div>
-                </div>
-            </div>
-            <div class="tracker-container">
-                <h3>steps</h3>
-                <ul id="trackerList"></ul>
-            </div>
-        </div>
+    <div id="levelSelection" style="display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #222222;">
+        <button id="level1Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #B2BAB1; color: #222222;">level 01</button>
     </div>
 
+    <div id="gameContainer" style="display: none;">
+        <div id="winPopup">
+            <h2>cool</h2>
+            <p id="moveCountMessage"></p>
+            <button onclick="restartGame()">restart</button>
+        </div>
+        <div class="main-container">
+            <!-- Logo above the content -->
+            <div class="logo-container">
+                <img src="iwaslost01.png" alt="Logo">
+
+            </div>
+            <!-- Maze and tracker in a flex container -->
+            <div class="content-container">
+                <div>
+                    <div class="maze-container">
+                        <canvas id="mazeCanvas" width="400" height="400"></canvas>
+                    </div>
+                    <div class="controls-wrapper">
+                        <div class="controls">
+                            <button data-direction="ArrowLeft"><</button>
+                            <button data-direction="ArrowUp">^</button>
+                            <button data-direction="ArrowDown">\/</button>
+                            <button data-direction="ArrowRight">></button>
+                        </div>
+                        <div class="buttons-container">
+                            <button id="resetButton" class="reset-button">reset</button>
+                            <button id="confirmButton" class="confirm-button">confirm</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="tracker-container">
+                    <h3>steps</h3>
+                    <ul id="trackerList"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
+        // References to DOM elements
+        const levelSelection = document.getElementById('levelSelection');
+        const level1Button = document.getElementById('level1Button');
+        const gameContainer = document.getElementById('gameContainer');
+
+        // Add event listener to "Level 1" button
+        level1Button.addEventListener('click', () => {
+            // Hide the level selection screen
+            levelSelection.style.display = 'none';
+
+            // Show the game container
+            gameContainer.style.display = 'block';
+
+            // Optionally initialize the game for level 1
+            initLevel1();
+        });
+
+        function initLevel1() {
+            console.log("Level 1 initialized!");
+            // Any additional setup for Level 1 can be added here
+        }
+
         let lastDirection = null; // Store the last completed move direction
         let isExecutingMoves = false; // Flag to indicate automated execution
         let isMoving = false; // Lock to prevent overlapping movements
