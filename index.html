@@ -526,7 +526,9 @@
 
     <div id="levelSelection" style="display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #222222;">
         <button id="level1Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #B2BAB1; color: #222222;">level 01</button>
-        <button id="level2Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #B2BAB1; color: #222222; margin: 10px;">Level 02</button>
+        <button id="level2Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #B2BAB1; color: #222222; margin: 0px;">Level 02</button>
+        <button id="level3Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #B2BAB1; color: #222222; margin: 0px;">Level 03</button>
+
     </div>
 
     <div id="gameContainer" style="display: none;">
@@ -570,6 +572,8 @@
         const levelSelection = document.getElementById('levelSelection');
         const level1Button = document.getElementById('level1Button');
         const level2Button = document.getElementById('level2Button');
+        const level3Button = document.getElementById('level3Button');
+
         const gameContainer = document.getElementById('gameContainer');
         const menuButton = document.getElementById('menuButton');
         const levelAnnouncement = document.getElementById('levelAnnouncement');
@@ -577,6 +581,8 @@
 
         
         let currentLevel = 1; // Start with level 1
+
+        let levelAnnouncementTimeout = null; // Store timeout ID for the level announcement
 
         document.addEventListener('DOMContentLoaded', () => {
             menuButton.style.display = 'none';
@@ -587,13 +593,20 @@
             levelText.textContent = `LEVEL ${level}`;
             levelAnnouncement.style.display = 'flex';
 
-            setTimeout(() => {
+            // Clear any existing timeout to prevent overlapping
+            if (levelAnnouncementTimeout) {
+                clearTimeout(levelAnnouncementTimeout);
+            }
+
+            // Set a new timeout
+            levelAnnouncementTimeout = setTimeout(() => {
                 levelAnnouncement.style.display = 'none';
+                levelAnnouncementTimeout = null; // Reset timeout ID
             }, 2000);
         }
         
-        function startGame(mazeImageSrc, exitPosition) {
-            currentLevel = mazeImageSrc === 'maze013.png' ? 1 : 2; // Update current level
+        function startGame(mazeImageSrc, exitPosition, playerPosition) {
+            
 
             levelSelection.style.display = 'none';
                 // Show the level announcement
@@ -612,17 +625,48 @@
             exit.x = exitPosition.x;
             exit.y = exitPosition.y;
 
+            player.startX = playerPosition.x;
+            player.startY = playerPosition.y;
+
             // Reset the game for the selected level
             restartGame();
 
-            // Show the level announcement
-            showLevelAnnouncement(currentLevel);
+            // Update the canvas border to match the current level
+            updateCanvasBorder();
+
+            // Update the maze container color
+            updateMazeContainerColor();
+        }
+
+        function updateMazeContainerColor() {
+            const mazeContainer = document.querySelector('.maze-container');
+            const containerColor = currentLevel === 2 ? '#C8BED2'
+                : currentLevel === 3 ? '#B2BAB1'
+                : '#B2BAB1'; // Add Level 3 color
+            mazeContainer.style.backgroundColor = containerColor;
+        }
+
+        function updateCanvasBorder() {
+            const mazeColor = currentLevel === 2 ? '#684756'
+                : currentLevel === 3 ? '#684756'
+                : '#222222'; // Add Level 3 color
+            document.querySelector('canvas').style.border = `1px solid ${mazeColor}`;
         }
 
         function goToNextLevel() {
+            
+            recolorMaze();
+            updateCanvasBorder(); // Update the canvas border color
+            updateMazeContainerColor(); // Update the maze container color
+            
             if (currentLevel === 1) {
                 // Start Level 2
-                startGame('level2(1).png', { x: 180, y: 40 }); // Set maze image and exit position for Level 2
+                startGame('level2(1).png', { x: 180, y: 40 },{ x: 180, y: 380}); // Set maze image and exit position for Level 2
+                showLevelAnnouncement(2);
+                
+            } if (currentLevel === 2) {
+                startGame('level3(1).png', { x: 180, y: 0 }, { x: 180, y: 340});
+                showLevelAnnouncement(3);
             } else {
                 console.log("No more levels available!");
                 // Optionally, display a message or take other actions
@@ -645,12 +689,12 @@
             }
         }
 
-
         // Add event listener to "Level 1" button
         level1Button.addEventListener('click', () => {
             currentLevel = 1; // Set current level
+            showLevelAnnouncement(1);
 
-            startGame('maze013.png', { x: 180, y: 0 }); // Set maze image and exit position for Level 1
+            startGame('maze013.png', { x: 180, y: 0 },{ x: 180, y: 380} ); // Set maze image and exit position for Level 1
             // Hide the level selection screen
             levelSelection.style.display = 'none';
 
@@ -663,11 +707,25 @@
 
         level2Button.addEventListener('click', () => {
             currentLevel = 2; // Set current level
+            showLevelAnnouncement(2);
 
-            startGame('level2(1).png', { x: 180, y: 40 }); // Set maze image and exit position for Level 2
+            startGame('level2(1).png', { x: 180, y: 40 },{ x: 180, y: 380} ); // Set maze image and exit position for Level 2
+        });
+
+        level3Button.addEventListener('click', () => {
+            currentLevel = 3; // Set current level
+            showLevelAnnouncement(3);
+
+            startGame('level3(1).png', { x: 180, y: 0 }, { x: 180, y: 340}); // Replace with actual Level 3 settings
         });
 
         function showLevelSelector() {
+            // Hide the level announcement immediately
+            levelAnnouncement.style.display = 'none';
+            if (levelAnnouncementTimeout) {
+                clearTimeout(levelAnnouncementTimeout);
+                levelAnnouncementTimeout = null;
+            }
             
             document.getElementById('levelSelection').style.display = 'flex';
             document.getElementById('gameContainer').style.display = 'none';
@@ -761,11 +819,16 @@
             const imageData = offscreenCtx.getImageData(0, 0, mazeImage.width, mazeImage.height);
             const data = imageData.data;
 
+            // Choose color based on the current level
+            const newColor = currentLevel === 2 ? { r: 104, g: 71, b: 86 }
+                : currentLevel === 3 ? { r: 104, g: 71, b: 86 }
+                : { r: 34, g: 34, b: 34 }; // Add Level 3 color
+
             for (let i = 0; i < data.length; i += 4) {
                 if (data[i] === 0 && data[i + 1] === 0 && data[i + 2] === 0 && data[i + 3] !== 0) {
-                    data[i] = 34;
-                    data[i + 1] = 34;
-                    data[i + 2] = 34;
+                    data[i] = newColor.r;
+                    data[i + 1] = newColor.g;
+                    data[i + 2] = newColor.b;
                 }
             }
 
