@@ -246,6 +246,13 @@
             z-index: 1000;
         }
 
+        #winPopup .button-container {
+            display: flex; /* Ensures buttons are flex items */
+            justify-content: center; /* Centers buttons horizontally */
+            gap: 20px; /* Adds spacing between buttons */
+            margin-top: 20px; /* Space between text and buttons */
+        }
+
         #winPopup button:hover {
             background-color: #222222;
             color: #d1406e;
@@ -261,6 +268,7 @@
             border-radius: 0px;
             font-family: 'CustomFont';
             font-size: 25px;
+            min-width: 150px; /* Ensures buttons have consistent width */
         }
 
         .buttons-container {
@@ -535,8 +543,10 @@
         <div id="winPopup">
             <h2>cool</h2>
             <p id="moveCountMessage"></p>
-            <button onclick="restartGame()">restart</button>
-            <button id="nextLevelButton" onclick="goToNextLevel()">next level</button>
+            <div class="button-container">
+                <button onclick="restartGame()">restart</button>
+                <button id="nextLevelButton" onclick="goToNextLevel()">next level</button>
+            </div>
         </div>
         <div class="main-container">
 
@@ -636,6 +646,10 @@
 
             // Update the maze container color
             updateMazeContainerColor();
+
+            // Ensure correct visibility of the "Next Level" button
+            const nextLevelButton = document.getElementById('nextLevelButton');
+            nextLevelButton.style.display = currentLevel < 3 ? 'block' : 'none';
         }
 
         function updateMazeContainerColor() {
@@ -654,22 +668,22 @@
         }
 
         function goToNextLevel() {
-            
-            recolorMaze();
-            updateCanvasBorder(); // Update the canvas border color
-            updateMazeContainerColor(); // Update the maze container color
-            
+            /* currentLevel++; */ // Increment the level
             if (currentLevel === 1) {
-                // Start Level 2
+                currentLevel = 2;
+                
                 startGame('level2(1).png', { x: 180, y: 40 },{ x: 180, y: 380}); // Set maze image and exit position for Level 2
                 showLevelAnnouncement(2);
                 
-            } if (currentLevel === 2) {
+            } else if (currentLevel === 2) {
+                
+                currentLevel = 3;
                 startGame('level3(1).png', { x: 180, y: 0 }, { x: 180, y: 340});
                 showLevelAnnouncement(3);
             } else {
                 console.log("No more levels available!");
-                // Optionally, display a message or take other actions
+                const nextLevelButton = document.getElementById('nextLevelButton');
+                nextLevelButton.style.display = 'none'; // Hide the button when no more levels are available
             }
         }
 
@@ -679,13 +693,13 @@
                 player.x + player.size > exit.x &&
                 player.y < exit.y + exit.size &&
                 player.y + player.size > exit.y
-        ) {
+            ) {
                 clearInterval(movingInterval);
                 winPopup.style.display = 'block';
                 moveCountMessage.innerHTML = `you won and it took you ${moveCount} moves<br>..loser`; // Taunting message
-                // Show the Next Level button only if the current level is 1
+
                 const nextLevelButton = document.getElementById('nextLevelButton');
-                nextLevelButton.style.display = currentLevel === 1 ? 'block' : 'none';
+                nextLevelButton.style.display = currentLevel < 3 ? 'block' : 'none'; // Show only for Levels 1 and 2
             }
         }
 
