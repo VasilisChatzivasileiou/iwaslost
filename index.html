@@ -269,6 +269,31 @@
             gap: 10px;
         }
 
+        #levelAnnouncement {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(34,34,34,1); /* Dark background for the box itself */
+            color: #B2BAB1;
+            font-family: 'CustomFont', sans-serif;
+            font-size: 68px;
+            padding: 0px 0px;
+            text-align: center;
+            border-radius: 0px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6); /* Shadow around the box */
+            z-index: 1000; /* Ensure it overlays the game screen */
+            width: 320px;
+        }
+
+        #levelText {
+            font-family: 'CustomFont', sans-serif;
+            font-size: 70px;
+            color: #B2BAB1;
+            text-align: center;
+        }
+
         @media (min-width: 1024px) {
             .logo-container {
                 padding: 0px 0;
@@ -489,6 +514,11 @@
     </style>
 </head>
 <body>
+
+    <div id="levelAnnouncement">
+        <span id="levelText">LEVEL 1</span>
+    </div>
+
     <div class="logo-container">
         <img src="iwaslost01.png" alt="Logo">
         <button id="menuButton" class="menu-button" onclick="showLevelSelector()">Menu</button>
@@ -542,28 +572,51 @@
         const level2Button = document.getElementById('level2Button');
         const gameContainer = document.getElementById('gameContainer');
         const menuButton = document.getElementById('menuButton');
+        const levelAnnouncement = document.getElementById('levelAnnouncement');
+        const levelText = document.getElementById('levelText');
+
         
         let currentLevel = 1; // Start with level 1
 
         document.addEventListener('DOMContentLoaded', () => {
             menuButton.style.display = 'none';
         });
+
+        function showLevelAnnouncement(level) {
+
+            levelText.textContent = `LEVEL ${level}`;
+            levelAnnouncement.style.display = 'flex';
+
+            setTimeout(() => {
+                levelAnnouncement.style.display = 'none';
+            }, 2000);
+        }
         
         function startGame(mazeImageSrc, exitPosition) {
             currentLevel = mazeImageSrc === 'maze013.png' ? 1 : 2; // Update current level
-            // Hide the level selection screen
+
             levelSelection.style.display = 'none';
+                // Show the level announcement
+            showLevelAnnouncement(currentLevel);
+
             // Show the game container
             gameContainer.style.display = 'block';
+
             // Show the Menu button since we're in a level
             menuButton.style.display = 'block';
+
             // Set the maze image and initialize the level
             mazeImage.src = mazeImageSrc;
+
             // Update the exit position
             exit.x = exitPosition.x;
             exit.y = exitPosition.y;
+
             // Reset the game for the selected level
             restartGame();
+
+            // Show the level announcement
+            showLevelAnnouncement(currentLevel);
         }
 
         function goToNextLevel() {
@@ -595,6 +648,8 @@
 
         // Add event listener to "Level 1" button
         level1Button.addEventListener('click', () => {
+            currentLevel = 1; // Set current level
+
             startGame('maze013.png', { x: 180, y: 0 }); // Set maze image and exit position for Level 1
             // Hide the level selection screen
             levelSelection.style.display = 'none';
@@ -607,29 +662,10 @@
         });
 
         level2Button.addEventListener('click', () => {
+            currentLevel = 2; // Set current level
+
             startGame('level2(1).png', { x: 180, y: 40 }); // Set maze image and exit position for Level 2
         });
-
-        function startGame(mazeImageSrc, exitPosition) {
-            // Hide the level selection screen
-            levelSelection.style.display = 'none';
-
-            // Show the game container
-            gameContainer.style.display = 'block';
-
-            // Show the Menu button since we're in a level
-            menuButton.style.display = 'block';
-
-            // Set the maze image and initialize the level
-            mazeImage.src = mazeImageSrc;
-
-            // Update the exit position
-            exit.x = exitPosition.x;
-            exit.y = exitPosition.y;
-
-            // Reset the game for the selected level
-            restartGame();
-        }
 
         function showLevelSelector() {
             
