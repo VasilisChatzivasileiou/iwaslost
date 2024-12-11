@@ -599,9 +599,28 @@
         });
 
         function showLevelAnnouncement(level) {
+            // Define colors for text and background for each level
+            const levelColors = {
+                1: { text: "#B2BAB1", background: "#222222" }, // Level 1: Text (White), Background (Light Gray)
+                2: { text: "#C8BED2", background: "#684756" }, // Level 2: Text (Light Purple), Background (Light Lavender)
+                3: { text: "#B2BAB1", background: "#684756" }  // Level 3: Text (Light Gray-Green), Background (Pale Green)
+            };
 
+            // Fallback colors if level not found
+            const fallbackColors = { text: "#FFFFFF", background: "#000000" }; // Text (White), Background (Black)
+
+            // Get the text and background colors for the level
+            const { text, background } = levelColors[level] || fallbackColors;
+
+            // Apply the text color to the level text
+            levelText.style.color = text;
+
+            // Apply the background color to the level announcement
+            levelAnnouncement.style.backgroundColor = background;
+
+            // Set the level text
             levelText.textContent = `LEVEL ${level}`;
-            levelAnnouncement.style.display = 'flex';
+            levelAnnouncement.style.display = "flex";
 
             // Clear any existing timeout to prevent overlapping
             if (levelAnnouncementTimeout) {
@@ -610,10 +629,11 @@
 
             // Set a new timeout
             levelAnnouncementTimeout = setTimeout(() => {
-                levelAnnouncement.style.display = 'none';
+                levelAnnouncement.style.display = "none";
                 levelAnnouncementTimeout = null; // Reset timeout ID
             }, 2000);
         }
+
         
         function startGame(mazeImageSrc, exitPosition, playerPosition) {
             
@@ -904,19 +924,6 @@
             return false;
         }
 
-        function checkWin() {
-            if (
-                player.x < exit.x + exit.size &&
-                player.x + player.size > exit.x &&
-                player.y < exit.y + exit.size &&
-                player.y + player.size > exit.y
-            ) {
-                clearInterval(movingInterval);
-                winPopup.style.display = 'block';
-                moveCountMessage.innerHTML = `you won n it took you ${moveCount} moves<br>..loser`; // Taunting message
-            }
-        }
-
         function movePlayer(direction) {
             if (isMoving) return; // Prevent overlapping movements
             currentDirection = direction; // Set the current direction
@@ -997,9 +1004,28 @@
     }, 10);
 }
 
+// Define an array of audio files
+const buttonSounds = [
+    new Audio("POP1-3.wav"),
+    new Audio("POP2-3.wav"),
+    new Audio("POP3-3.wav")
+];
+
+// Function to play a random sound
+function playRandomSound() {
+    const randomIndex = Math.floor(Math.random() * buttonSounds.length);
+    const sound = buttonSounds[randomIndex];
+    sound.currentTime = 0; // Reset to start
+    sound.play();
+}
+
+
 document.querySelectorAll('.controls button').forEach(button => {
     button.addEventListener('click', () => {
         const direction = button.dataset.direction;
+
+        // Play a random sound
+        playRandomSound();
 
         // Add direction to moveQueue
         moveQueue.push(direction);
@@ -1039,7 +1065,7 @@ document.querySelectorAll('.controls button').forEach(button => {
     drawPlayer();
 }
 
-        function executeMoves() {
+function executeMoves() {
     if (isExecutingMoves || moveQueue.length === 0) return; // Prevent overlap
     isExecutingMoves = true;
 
@@ -1055,6 +1081,7 @@ document.querySelectorAll('.controls button').forEach(button => {
         startMoving(); // Start moving
     }, 300); // Delay between moves
 }
+
 
 document.addEventListener('keydown', (event) => {
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
