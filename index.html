@@ -535,7 +535,7 @@
     <div id="levelSelection" style="display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #222222;">
         <button id="level1Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #B2BAB1; color: #222222;">level 01</button>
         <button id="level2Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #C8BED2; color: #684756; margin: 0px;">Level 02</button>
-        <button id="level3Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #B2BAB1; color: #684756; margin: 0px;">Level 03</button>
+        <button id="level3Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #2e3e3c; color: #B2BAB1; margin: 0px;">Level 03</button>
 
     </div>
 
@@ -636,7 +636,9 @@
 
         
         function startGame(mazeImageSrc, exitPosition, playerPosition) {
-            
+
+            // Change body background color based on the level
+            updateBodyBackgroundColor();
 
             levelSelection.style.display = 'none';
                 // Show the level announcement
@@ -667,9 +669,49 @@
             // Update the maze container color
             updateMazeContainerColor();
 
+            // Update the tracker container style for the current level
+            updateTrackerContainerStyle();
+
             // Ensure correct visibility of the "Next Level" button
             const nextLevelButton = document.getElementById('nextLevelButton');
             nextLevelButton.style.display = currentLevel < 3 ? 'block' : 'none';
+        }
+
+        function updateTrackerContainerStyle() {
+            const trackerContainer = document.querySelector('.tracker-container');
+
+            // Define styles for each level
+            const trackerStyles = {
+                1: { background: '#222222', color: '#B2BAB1', border: '2px solid #B2BAB1' }, // Level 1
+                2: { background: '#C8BED2', color: '#684756', border: '2px solid #684756' }, // Level 2
+                3: { background: '#B2BAB1', color: '#684756', border: '2px solid #684756' }  // Level 3
+            };
+
+            // Fallback style if level not found
+            const defaultStyle = { background: '#FFFFFF', color: '#000000', border: '2px solid #000000' };
+
+            // Get the style for the current level
+            const { background, color, border } = trackerStyles[currentLevel] || defaultStyle;
+
+            // Apply styles to the tracker container
+            trackerContainer.style.backgroundColor = background;
+            trackerContainer.style.color = color;
+            trackerContainer.style.border = border;
+        }
+
+        function updateBodyBackgroundColor() {
+            const body = document.body;
+
+            const levelColors = {
+                1: '#1e1e1e', // Dark Gray for Level 1
+                2: '#3e2e3c', // Lavender Gray for Level 2
+                3: '#2e3e3c'  // Pale Greenish Gray for Level 3
+            };
+
+            const fallbackColor = '#000000'; // Black as fallback if level not found
+
+            // Set body background color based on the current level
+            body.style.backgroundColor = levelColors[currentLevel] || fallbackColor;
         }
 
         function updateMazeContainerColor() {
@@ -754,6 +796,8 @@
         });
 
         function showLevelSelector() {
+            // Reset body background color to the default menu color
+            document.body.style.backgroundColor = '#222222';
             // Hide the level announcement immediately
             levelAnnouncement.style.display = 'none';
             if (levelAnnouncementTimeout) {
@@ -1035,7 +1079,9 @@ document.querySelectorAll('.controls button').forEach(button => {
 
         console.log(`Move ${direction} added to the queue. Waiting for confirmation.`);
     });
-        });
+});
+
+
 
         function restartGame() {
     // Stop any ongoing movement
