@@ -523,6 +523,28 @@
 </head>
 <body>
 
+    <div id="errorPopup" class="error-popup">
+        You can't go that way!
+    </div>
+    
+    <style>
+        .error-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(34, 34, 34, 1);
+            color: #ff4d4d;
+            padding: 0px 0px;
+            border-radius: 0px;
+            font-size: 30px;
+            text-align: center;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+
     <div id="levelAnnouncement">
         <span id="levelText">LEVEL 1</span>
     </div>
@@ -603,6 +625,16 @@
         document.addEventListener('DOMContentLoaded', () => {
             menuButton.style.display = 'none';
         });
+
+        function showErrorPopup() {
+            const errorPopup = document.getElementById('errorPopup');
+            errorPopup.style.display = 'block';
+
+            // Hide the popup after 2 seconds
+            setTimeout(() => {
+                errorPopup.style.display = 'none';
+            }, 1000);
+        }
 
         function showLevelAnnouncement(level) {
             // Define colors for text and background for each level
@@ -934,13 +966,16 @@
         };
 
         function processNextMove() {
-    if (isMoving || moveQueue.length === 0) return; // Prevent overlapping moves
+            if (isMoving || moveQueue.length === 0) return; // Prevent overlapping moves
 
-    const direction = moveQueue.shift(); // Get the next move in the queue
-    currentDirection = direction; // Set the current direction
+            const direction = moveQueue.shift(); // Get the next move in the queue
+            currentDirection = direction; // Set the current direction
 
-    startMoving(); // Start moving the player
-}
+            startMoving(); // Start moving the player
+
+            // Update lastDirection after starting the move
+            lastDirection = direction;
+        }
 
         function recolorMaze() {
             const offscreenCanvas = document.createElement('canvas');
@@ -1031,77 +1066,76 @@
         }
 
         function addDirectionToTracker(direction) {
-    const directionMap = {
-        'ArrowUp': 'up',
-        'ArrowDown': 'down',
-        'ArrowLeft': 'left',
-        'ArrowRight': 'right',
-    };
+            const directionMap = {
+                'ArrowUp': 'up',
+                'ArrowDown': 'down',
+                'ArrowLeft': 'left',
+                'ArrowRight': 'right',
+            };
 
-    moveCount++;
+            moveCount++;
 
-    const listItem = document.createElement('li');
-    listItem.textContent = `${moveCount}. ${directionMap[direction]}`;
-    trackerList.prepend(listItem);
-}
+            const listItem = document.createElement('li');
+            listItem.textContent = `${moveCount}. ${directionMap[direction]}`;
+            trackerList.prepend(listItem);
+        }
 
         function startMoving() {
-    if (isMoving) return; // Prevent overlapping movements
+            if (isMoving) return; // Prevent overlapping movements
 
-    isMoving = true; // Lock movement
-    const speed = 2;
-    let dx = 0,
-        dy = 0;
+            isMoving = true; // Lock movement
+            const speed = 2;
+            let dx = 0, dy = 0;
 
-    switch (currentDirection) {
-        case 'ArrowUp':
-            dx = 0;
-            dy = -speed;
-            break;
-        case 'ArrowDown':
-            dx = 0;
-            dy = speed;
-            break;
-        case 'ArrowLeft':
-            dx = -speed;
-            dy = 0;
-            break;
-        case 'ArrowRight':
-            dx = speed;
-            dy = 0;
-            break;
-    }
+            switch (currentDirection) {
+                case 'ArrowUp':
+                    dx = 0;
+                    dy = -speed;
+                    break;
+                case 'ArrowDown':
+                    dx = 0;
+                    dy = speed;
+                    break;
+                case 'ArrowLeft':
+                    dx = -speed;
+                    dy = 0;
+                    break;
+                case 'ArrowRight':
+                    dx = speed;
+                    dy = 0;
+                    break;
+            }
 
-    movingInterval = setInterval(() => {
-        const newX = player.x + dx;
-        const newY = player.y + dy;
+            movingInterval = setInterval(() => {
+                const newX = player.x + dx;
+                const newY = player.y + dy;
 
-        if (
-            newX < 0 || newX + player.size > canvas.width ||
-            newY < 0 || newY + player.size > canvas.height ||
-            isCollision(newX, newY)
-        ) {
-            clearInterval(movingInterval); // Stop movement on collision
-            movingInterval = null; // Reset interval reference
-            player.x = Math.round(player.x / speed) * speed; // Align position to grid
-            player.y = Math.round(player.y / speed) * speed;
-            isMoving = false; // Unlock movement
+                if (
+                    newX < 0 || newX + player.size > canvas.width ||
+                    newY < 0 || newY + player.size > canvas.height ||
+                    isCollision(newX, newY)
+                ) {
+                    clearInterval(movingInterval); // Stop movement on collision
+                    movingInterval = null; // Reset interval reference
+                    player.x = Math.round(player.x / speed) * speed; // Align position to grid
+                    player.y = Math.round(player.y / speed) * speed;
+                    isMoving = false; // Unlock movement
 
-            // Update lastDirection only after completing a move
-            lastDirection = currentDirection;
+                    // Update lastDirection only after completing a move
+                    lastDirection = currentDirection;
 
-            drawPlayer();
-            checkWin();
-            processNextMove(); // Process the next move in the queue
-        } else {
-            // Update player position
-            player.x = newX;
-            player.y = newY;
-            drawPlayer();
-            checkWin();
+                    drawPlayer();
+                    checkWin();
+                    processNextMove(); // Process the next move in the queue
+                } else {
+                    // Update player position
+                    player.x = newX;
+                    player.y = newY;
+                    drawPlayer();
+                    checkWin();
+                }
+            }, 10);
         }
-    }, 10);
-}
 
 // Define an array of audio files
 const buttonSounds = [
@@ -1123,48 +1157,68 @@ document.querySelectorAll('.controls button').forEach(button => {
     button.addEventListener('click', () => {
         const direction = button.dataset.direction;
 
-        // Play a random sound
-        playRandomSound();
+        if (isMoving) return; // Prevent actions while moving
 
-        // Add direction to moveQueue
+        // Prevent duplicate consecutive moves
+        if (moveQueue.length > 0 && moveQueue[moveQueue.length - 1] === direction) {
+            console.log(`Duplicate move ${direction} ignored.`);
+            return; // Ignore the move if it's a duplicate
+        }
+
+        // If the move queue is empty, validate the first move
+        if (moveQueue.length === 0) {
+            let nextX = player.x, nextY = player.y;
+            switch (direction) {
+                case 'ArrowUp': nextY -= player.size; break;
+                case 'ArrowDown': nextY += player.size; break;
+                case 'ArrowLeft': nextX -= player.size; break;
+                case 'ArrowRight': nextX += player.size; break;
+            }
+
+            // Check if there's a wall for the first move
+            if (isCollision(nextX, nextY)) {
+                console.log(`Blocked! You can't move ${direction}`);
+                showErrorPopup();
+                return; // Prevent adding the invalid move to the queue
+            }
+        }
+
+        // If no collision or duplicate, add the move
         moveQueue.push(direction);
-
-        // Update the tracker visually
+        playRandomSound();
         addDirectionToTracker(direction);
-
-        console.log(`Move ${direction} added to the queue. Waiting for confirmation.`);
+        console.log(`Move ${direction} added to the queue.`);
     });
 });
 
 
-
         function restartGame() {
-    // Stop any ongoing movement
-    clearInterval(movingInterval);
-    movingInterval = null; // Reset interval reference
+            // Stop any ongoing movement
+            clearInterval(movingInterval);
+            movingInterval = null; // Reset interval reference
 
-    // Reset game states
-    isMoving = false;
-    isExecutingMoves = false;
-    currentDirection = null;
-    nextDirection = null;
-    lastDirection = null;
-    moveQueue.length = 0; // Clear the move queue
-    moveCount = 0;
+            // Reset game states
+            isMoving = false;
+            isExecutingMoves = false;
+            currentDirection = null;
+            nextDirection = null;
+            lastDirection = null;
+            moveQueue.length = 0; // Clear the move queue
+            moveCount = 0;
 
-    // Reset player position
-    player.x = player.startX;
-    player.y = player.startY;
+            // Reset player position
+            player.x = player.startX;
+            player.y = player.startY;
 
-    // Clear tracker list
-    trackerList.innerHTML = '';
+            // Clear tracker list
+            trackerList.innerHTML = '';
 
-    // Hide win popup
-    winPopup.style.display = 'none';
+            // Hide win popup
+            winPopup.style.display = 'none';
 
-    // Redraw the maze and player
-    drawPlayer();
-}
+            // Redraw the maze and player
+            drawPlayer();
+        }
 
 function executeMoves() {
     if (isExecutingMoves || moveQueue.length === 0) return; // Prevent overlap
@@ -1186,18 +1240,43 @@ function executeMoves() {
 
 document.addEventListener('keydown', (event) => {
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+        const direction = event.key;
 
+        if (isMoving) return; // Prevent actions while moving
+
+        // Prevent duplicate consecutive moves
+        if (moveQueue.length > 0 && moveQueue[moveQueue.length - 1] === direction) {
+            console.log(`Duplicate move ${direction} ignored.`);
+            return; // Ignore the move if it's a duplicate
+        }
+
+        // If the move queue is empty, validate the first move
+        if (moveQueue.length === 0) {
+            let nextX = player.x, nextY = player.y;
+            switch (direction) {
+                case 'ArrowUp': nextY -= player.size; break;
+                case 'ArrowDown': nextY += player.size; break;
+                case 'ArrowLeft': nextX -= player.size; break;
+                case 'ArrowRight': nextX += player.size; break;
+            }
+
+            // Check if there's a wall for the first move
+            if (isCollision(nextX, nextY)) {
+                console.log(`Blocked! You can't move ${direction}`);
+                showErrorPopup();
+                return; // Prevent adding the invalid move to the queue
+            }
+        }
+
+        // If no collision or duplicate, add the move
+        moveQueue.push(direction);
         playRandomSound();
-        
-        // Add direction to moveQueue
-        moveQueue.push(event.key);
-
-        // Update the tracker visually
-        addDirectionToTracker(event.key);
-
-        console.log(`Move ${event.key} added to the queue. Waiting for confirmation.`);
+        addDirectionToTracker(direction);
+        console.log(`Move ${direction} added to the queue.`);
     }
 });
+
+
 
     </script>
 </body>
