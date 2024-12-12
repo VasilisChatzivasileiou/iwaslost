@@ -302,6 +302,37 @@
             text-align: center;
         }
 
+        #optionsWindow {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 300px;
+            background-color: #333;
+            border-radius: 0px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: none; /* Initially hidden */
+            overflow: auto; /* Allow scrolling for overflow content */
+        }
+
+        #optionsHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #444;
+            color: #fff;
+            border-bottom: 1px solid #555;
+        }
+
+        #optionsContent {
+            padding: 20px;
+            color: #fff;
+            text-align: center;
+        }
+
         @media (min-width: 1024px) {
             .logo-container {
                 padding: 0px 0;
@@ -518,6 +549,14 @@
                 width: 100%;
                 margin-top: 14px; /* Push content down to allow space for the top section */
             }
+
+            #optionsWindow {
+                width: 90%; /* Set width to 90% of the viewport width */
+                height: auto; /* Allow height to adjust automatically */
+                max-height: 80%; /* Limit height to 80% of the viewport */
+                padding: 10px; /* Add padding to maintain spacing */
+                box-sizing: border-box; /* Ensure padding is included in width/height */
+            }
         }
     </style>
 </head>
@@ -554,12 +593,23 @@
         <button id="menuButton" class="menu-button" onclick="showLevelSelector()">Menu</button>
     </div>
 
-    <div id="levelSelection" style="display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #222222; flex-wrap: wrap; align-content: center;">
-        <button id="level1Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #B2BAB1; color: #222222; margin: 0px;">Level 01</button>
-        <button id="level2Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #C8BED2; color: #684756; margin: 0px;">Level 02</button>
-        <button id="level3Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #2e3e3c; color: #B2BAB1; margin: 0px;">Level 03</button>
-        <button id="level4Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #3e4e5c; color: #B2BAB1; margin: 0px;">Level 04</button>
+    <div id="levelSelection" style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background-color: #222222;">
+        <button id="level1Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #B2BAB1; color: #222222; margin: 10px 0;">Level 01</button>
+        <button id="level2Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #C8BED2; color: #684756; margin: 10px 0;">Level 02</button>
+        <button id="level3Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #2e3e3c; color: #B2BAB1; margin: 10px 0;">Level 03</button>
+        <button id="level4Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #3e4e5c; color: #B2BAB1; margin: 10px 0;">Level 04</button>
+    
+        <button id="optionsButton" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #FFD700; color: #222222; margin-top: 20px;">Options</button>
+    </div>
 
+    <div id="optionsWindow" class="hidden">
+        <div id="optionsHeader" style="background: #444; color: white; display: flex; justify-content: space-between; padding: 10px;">
+            <span>Options</span>
+            <button id="closeOptionsButton" style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">X</button>
+        </div>
+        <div id="optionsContent" style="padding: 20px; text-align: center;">
+            <p>...</p>
+        </div>
     </div>
 
     <div id="gameContainer" style="display: none;">
@@ -617,6 +667,11 @@
         const menuButtonPopup = document.getElementById('menuButtonPopup');
         menuButtonPopup.addEventListener('click', showLevelSelector);
 
+        // Get references to options button and options window
+        const optionsButton = document.getElementById('optionsButton');
+        const optionsWindow = document.getElementById('optionsWindow');
+        const closeOptionsButton = document.getElementById('closeOptionsButton');
+
         
         let currentLevel = 1; // Start with level 1
 
@@ -625,6 +680,20 @@
         document.addEventListener('DOMContentLoaded', () => {
             menuButton.style.display = 'none';
         });
+
+        // Function to show the options window
+        function showOptionsWindow() {
+            optionsWindow.style.display = 'block';
+        }
+
+        // Function to hide the options window
+        function hideOptionsWindow() {
+            optionsWindow.style.display = 'none';
+        }
+
+        // Event listeners for opening and closing the options window
+        optionsButton.addEventListener('click', showOptionsWindow);
+        closeOptionsButton.addEventListener('click', hideOptionsWindow);
 
         function playErrorSound() {
             const errorSound = new Audio('error.wav');
@@ -1284,8 +1353,6 @@ document.addEventListener('keydown', (event) => {
         console.log(`Move ${direction} added to the queue.`);
     }
 });
-
-
 
     </script>
 </body>
