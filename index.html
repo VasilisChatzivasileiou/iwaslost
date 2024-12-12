@@ -190,7 +190,7 @@
         .controls {
             display: flex;
             justify-content: center;
-            gap: 10px;
+            gap: 5px;
             margin-bottom: 5px;
         }
 
@@ -532,8 +532,8 @@
         <button id="menuButton" class="menu-button" onclick="showLevelSelector()">Menu</button>
     </div>
 
-    <div id="levelSelection" style="display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #222222;">
-        <button id="level1Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #B2BAB1; color: #222222;">level 01</button>
+    <div id="levelSelection" style="display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #222222; flex-wrap: wrap; align-content: center;">
+        <button id="level1Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #B2BAB1; color: #222222; margin: 0px;">Level 01</button>
         <button id="level2Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #C8BED2; color: #684756; margin: 0px;">Level 02</button>
         <button id="level3Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #2e3e3c; color: #B2BAB1; margin: 0px;">Level 03</button>
         <button id="level4Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #3e4e5c; color: #B2BAB1; margin: 0px;">Level 04</button>
@@ -647,6 +647,9 @@
             // Change body background color based on the level
             updateBodyBackgroundColor();
 
+            // Update controls button colors based on the level
+            updateControlsButtonColors();
+
             levelSelection.style.display = 'none';
                 // Show the level announcement
             showLevelAnnouncement(currentLevel);
@@ -681,7 +684,33 @@
 
             // Ensure correct visibility of the "Next Level" button
             const nextLevelButton = document.getElementById('nextLevelButton');
-            nextLevelButton.style.display = currentLevel < 3 ? 'block' : 'none';
+            nextLevelButton.style.display = currentLevel < 4 ? 'block' : 'none';
+        }
+
+        function updateControlsButtonColors() {
+            // Define colors for each level
+            const controlsColors = {
+                1: { background: '#B2BAB1', color: '#222222', border: '2px solid #222222' }, // Level 1
+                2: { background: '#C8BED2', color: '#684756', border: '2px solid #684756' }, // Level 2
+                3: { background: '#2e3e3c', color: '#B2BAB1', border: '2px solid #B2BAB1' },  // Level 3
+                4: { background: '#3e4e5c', color: '#B2BAB1', border: '2px solid #B2BAB1' }   // Level 4
+            };
+
+            // Fallback colors if level not found
+            const defaultColors = { background: '#FFFFFF', color: '#000000', border: '2px solid #000000' };
+
+            // Get the styles for the current level
+            const { background, color, border } = controlsColors[currentLevel] || defaultColors;
+
+            // Select all .controls buttons
+            const controlsButtons = document.querySelectorAll('.controls button');
+
+            // Apply styles to each button
+            controlsButtons.forEach(button => {
+                button.style.backgroundColor = background;
+                button.style.color = color;
+                button.style.border = border;
+            });
         }
 
         function updateTrackerContainerStyle() {
@@ -1157,6 +1186,9 @@ function executeMoves() {
 
 document.addEventListener('keydown', (event) => {
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+
+        playRandomSound();
+        
         // Add direction to moveQueue
         moveQueue.push(event.key);
 
