@@ -536,6 +536,7 @@
         <button id="level1Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #B2BAB1; color: #222222;">level 01</button>
         <button id="level2Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #C8BED2; color: #684756; margin: 0px;">Level 02</button>
         <button id="level3Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #2e3e3c; color: #B2BAB1; margin: 0px;">Level 03</button>
+        <button id="level4Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #3e4e5c; color: #B2BAB1; margin: 0px;">Level 04</button>
 
     </div>
 
@@ -545,6 +546,7 @@
             <p id="moveCountMessage"></p>
             <div class="button-container">
                 <button onclick="restartGame()">restart</button>
+                <button id="menuButtonPopup" style="display: none;">Go to Menu</button>
                 <button id="nextLevelButton" onclick="goToNextLevel()">next level</button>
             </div>
         </div>
@@ -583,11 +585,15 @@
         const level1Button = document.getElementById('level1Button');
         const level2Button = document.getElementById('level2Button');
         const level3Button = document.getElementById('level3Button');
+        const level4Button = document.getElementById('level4Button');
 
         const gameContainer = document.getElementById('gameContainer');
         const menuButton = document.getElementById('menuButton');
         const levelAnnouncement = document.getElementById('levelAnnouncement');
         const levelText = document.getElementById('levelText');
+
+        const menuButtonPopup = document.getElementById('menuButtonPopup');
+        menuButtonPopup.addEventListener('click', showLevelSelector);
 
         
         let currentLevel = 1; // Start with level 1
@@ -603,7 +609,8 @@
             const levelColors = {
                 1: { text: "#B2BAB1", background: "#222222" }, // Level 1: Text (White), Background (Light Gray)
                 2: { text: "#C8BED2", background: "#684756" }, // Level 2: Text (Light Purple), Background (Light Lavender)
-                3: { text: "#B2BAB1", background: "#684756" }  // Level 3: Text (Light Gray-Green), Background (Pale Green)
+                3: { text: "#B2BAB1", background: "#684756" },  // Level 3: Text (Light Gray-Green), Background (Pale Green)
+                4: { text: "#B2BAB1", background: "#684756" }
             };
 
             // Fallback colors if level not found
@@ -684,7 +691,8 @@
             const trackerStyles = {
                 1: { background: '#222222', color: '#B2BAB1', border: '2px solid #B2BAB1' }, // Level 1
                 2: { background: '#C8BED2', color: '#684756', border: '2px solid #684756' }, // Level 2
-                3: { background: '#B2BAB1', color: '#684756', border: '2px solid #684756' }  // Level 3
+                3: { background: '#B2BAB1', color: '#684756', border: '2px solid #684756' },  // Level 3
+                4: { background: '#3e4e5c', color: '#B2BAB1', border: '2px solid #3e4e5c' } // Level 4 style
             };
 
             // Fallback style if level not found
@@ -705,7 +713,8 @@
             const levelColors = {
                 1: '#1e1e1e', // Dark Gray for Level 1
                 2: '#3e2e3c', // Lavender Gray for Level 2
-                3: '#2e3e3c'  // Pale Greenish Gray for Level 3
+                3: '#2e3e3c',  // Pale Greenish Gray for Level 3
+                4: '#3e4e5c' // Level 4 background color
             };
 
             const fallbackColor = '#000000'; // Black as fallback if level not found
@@ -730,18 +739,18 @@
         }
 
         function goToNextLevel() {
-            /* currentLevel++; */ // Increment the level
             if (currentLevel === 1) {
                 currentLevel = 2;
-                
-                startGame('level2(1).png', { x: 180, y: 40 },{ x: 180, y: 380}); // Set maze image and exit position for Level 2
+                startGame('level2(2).png', { x: 180, y: 40 }, { x: 180, y: 380 });
                 showLevelAnnouncement(2);
-                
             } else if (currentLevel === 2) {
-                
                 currentLevel = 3;
-                startGame('level3(1).png', { x: 180, y: 0 }, { x: 180, y: 340});
+                startGame('level3(2).png', { x: 180, y: 0 }, { x: 180, y: 340 });
                 showLevelAnnouncement(3);
+            } else if (currentLevel === 3) {
+                currentLevel = 4;
+                startGame('level4(1).png', { x: 180, y: 0 }, { x: 180, y: 320 });
+                showLevelAnnouncement(4);
             } else {
                 console.log("No more levels available!");
                 const nextLevelButton = document.getElementById('nextLevelButton');
@@ -758,10 +767,20 @@
             ) {
                 clearInterval(movingInterval);
                 winPopup.style.display = 'block';
-                moveCountMessage.innerHTML = `you won and it took you ${moveCount} moves<br>..loser`; // Taunting message
+                moveCountMessage.innerHTML = `You won and it took you ${moveCount} moves.<br>..loser`;
 
                 const nextLevelButton = document.getElementById('nextLevelButton');
-                nextLevelButton.style.display = currentLevel < 3 ? 'block' : 'none'; // Show only for Levels 1 and 2
+                const menuButtonPopup = document.getElementById('menuButtonPopup');
+
+                if (currentLevel < 4) {
+                    // Show "Next Level" button for levels 1-3
+                    nextLevelButton.style.display = 'block';
+                    menuButtonPopup.style.display = 'none';
+                } else {
+                    // Show "Go to Menu" button for the last level
+                    nextLevelButton.style.display = 'none';
+                    menuButtonPopup.style.display = 'block';
+                }
             }
         }
 
@@ -793,6 +812,13 @@
             showLevelAnnouncement(3);
 
             startGame('level3(2).png', { x: 180, y: 0 }, { x: 180, y: 340}); // Replace with actual Level 3 settings
+        });
+
+        level4Button.addEventListener('click', () => {
+            currentLevel = 4; // Set current level
+            showLevelAnnouncement(4);
+
+            startGame('level4(1).png', { x: 180, y: 0 }, { x: 180, y: 320 }); // Replace with actual Level 4 settings
         });
 
         function showLevelSelector() {
