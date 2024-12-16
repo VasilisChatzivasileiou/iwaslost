@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" href="icon.ico" type="image/x-icon">
 
     <title>iwaslost</title>
     <style>
@@ -618,6 +618,15 @@
                 padding: 10px; /* Add padding to maintain spacing */
                 box-sizing: border-box; /* Ensure padding is included in width/height */
             }
+
+            #levelAnnouncement{
+                width: auto;
+            }
+
+            #levelText {
+                width: 310px;
+            }
+            
         }
     </style>
 </head>
@@ -642,6 +651,7 @@
             text-align: center;
             z-index: 1000;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 250px;
         }
     </style>
 
@@ -935,6 +945,18 @@
             // Set the level text
             levelText.textContent = `LEVEL ${level}`;
             levelAnnouncement.style.display = "flex";
+
+            // Apply styles to level announcement background
+            levelAnnouncement.style.backgroundColor = background;
+            levelAnnouncement.style.display = "flex";
+            levelAnnouncement.style.justifyContent = "center"; // Center horizontally
+            levelAnnouncement.style.alignItems = "center";     // Center vertically
+            levelAnnouncement.style.textAlign = "center";      // Fallback text alignment
+            levelAnnouncement.style.fontSize = "24px";         // Adjust font size
+            levelAnnouncement.style.fontWeight = "bold";       // Make text bold
+            levelAnnouncement.style.height = "auto";          // Example height
+            levelAnnouncement.style.width = "auto";           // Example width
+            levelAnnouncement.style.margin = "0 auto";         // Center the entire block
 
             // Clear any existing timeout to prevent overlapping
             if (levelAnnouncementTimeout) {
