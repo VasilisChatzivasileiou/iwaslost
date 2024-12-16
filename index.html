@@ -584,24 +584,57 @@
         }
     </style>
 
+    <div id="startScreen" style="
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: center; 
+    height: 100vh; 
+    background-color: #222222; 
+    color: #CCCCCC; 
+    font-size: 30px; 
+    text-align: center;">
+    <h1 style="margin-bottom: 20px; font-family: 'CustomFont', sans-serif;">i_was_lost_v0.1</h1>
+    <button id="startGameButton" style="
+        font-size: 25px; 
+        padding: 0px 30px; 
+        cursor: pointer; 
+        background-color: #222222; 
+        color: #CCCCCC; 
+        border: outset; 
+        border-radius: 0px;
+        font-family: 'CustomFont', sans-serif;">
+        start
+    </button>
+    </div>
+
     <div id="levelAnnouncement">
         <span id="levelText">LEVEL 1</span>
     </div>
 
     <div class="logo-container">
-        <img src="iwaslost01.png" alt="Logo">
+        <img id="logo" src="iwaslost01.png" alt="Logo" style="cursor: pointer;">
         <button id="menuButton" class="menu-button" onclick="showLevelSelector()">Menu</button>
     </div>
 
-    <div id="levelSelection" style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background-color: #222222;">
+    <div id="levelSelection" style="display: none; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background-color: #222222;">
         <button id="level1Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #B2BAB1; color: #222222; margin: 10px 0;">Level 01</button>
         <button id="level2Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #C8BED2; color: #684756; margin: 10px 0;">Level 02</button>
         <button id="level3Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #2e3e3c; color: #B2BAB1; margin: 10px 0;">Level 03</button>
         <button id="level4Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #3e4e5c; color: #B2BAB1; margin: 10px 0;">Level 04</button>
         <button id="level5Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #4C5E6A; color: #D1D8DB; margin: 10px 0;">Level 05</button>
 
-    
+
         <button id="optionsButton" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #FFD700; color: #222222; margin-top: 20px;">Options</button>
+        <button id="leaveButton" style="background-color: red; color: white;">Leave</button>
+
+
+    </div>
+
+    <div id="thanksMessage" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+        font-size: 30px; color: #222222; background-color: #B2BAB1;
+        padding: 20px; border-radius: 0px; text-align: center;">
+    Thanks for playing!
     </div>
 
     <div id="optionsWindow" class="hidden">
@@ -610,7 +643,16 @@
             <button id="closeOptionsButton" style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">X</button>
         </div>
         <div id="optionsContent" style="padding: 20px; text-align: center;">
-            <p>...</p>
+            <label for="volumeSlider">Volume</label>
+            <input 
+                type="range" 
+                id="volumeSlider" 
+                min="0" 
+                max="1" 
+                step="0.01" 
+                value="1"
+            />
+            <p><span id="volumeValue">100</span>%</p>
         </div>
     </div>
 
@@ -674,7 +716,93 @@
         const optionsButton = document.getElementById('optionsButton');
         const optionsWindow = document.getElementById('optionsWindow');
         const closeOptionsButton = document.getElementById('closeOptionsButton');
-        
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const startScreen = document.getElementById('startScreen');
+            const levelSelection = document.getElementById('levelSelection');
+            const startGameButton = document.getElementById('startGameButton');
+            const backgroundMusic = new Audio('i care.wav');
+
+            // Music settings
+            backgroundMusic.loop = true;
+            backgroundMusic.volume = 1;
+
+            startGameButton.addEventListener('click', () => {
+                // Hide start screen
+                startScreen.style.display = 'none';
+
+                // Show level selection screen
+                levelSelection.style.display = 'flex';
+
+                // Play background music
+                backgroundMusic.play().catch((e) => {
+                    console.warn("Autoplay prevented", e);
+                });
+            });
+
+            // Volume slider logic
+            const volumeSlider = document.getElementById('volumeSlider');
+            const volumeValueDisplay = document.getElementById('volumeValue');
+
+            volumeSlider.addEventListener('input', () => {
+                const volume = parseFloat(volumeSlider.value);
+                backgroundMusic.volume = volume;
+
+                // Update volume display
+                volumeValueDisplay.textContent = Math.round(volume * 100);
+            });
+        });
+
+        // Volume slider and display elements
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeValueDisplay = document.getElementById('volumeValue');
+
+        // Create the audio object for your song
+        const backgroundMusic = new Audio('i careOST.mp3'); // Path to your song
+        backgroundMusic.loop = true; // Makes the music loop
+        backgroundMusic.volume = 0.5; // Set the initial volume
+
+        // Update the volume based on the slider input
+        volumeSlider.addEventListener('input', () => {
+            const volume = parseFloat(volumeSlider.value);
+            backgroundMusic.volume = volume;
+
+            // Update the displayed volume percentage
+            volumeValueDisplay.textContent = Math.round(volume * 100);
+        });
+
+        // Play the background music as soon as the menu is ready
+        backgroundMusic.play().catch((e) => {
+            console.error("Music playback failed:", e);
+        });
+
+
+        document.getElementById('leaveButton').addEventListener('click', () => {
+            try {
+                // Send the quit signal to Electron if available
+                window.electronAPI.quitApp();
+            } catch (error) {
+                console.log("Electron API not detected, switching to browser behavior.");
+                // Fallback for the browser: Show the thank you message
+                const thanksMessage = document.getElementById('thanksMessage');
+                thanksMessage.style.display = 'block';
+                document.getElementById('levelSelection').style.display = 'none';
+            }
+        });
+
+
+
+
+        // Add event listener to the logo to reset the game screen
+        document.getElementById('logo').addEventListener('click', () => {
+            // Hide "Thanks for playing" message
+            const thanksMessage = document.getElementById('thanksMessage');
+            thanksMessage.style.display = 'none';
+
+            // Show level selection screen
+            document.getElementById('levelSelection').style.display = 'flex';
+        });
+
 
         
         let currentLevel = 1; // Start with level 1
