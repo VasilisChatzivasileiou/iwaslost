@@ -1595,6 +1595,12 @@ document.addEventListener('keydown', (event) => {
         addDirectionToTracker(direction);
         console.log(`Move ${direction} added to the queue.`);
     }
+
+        // Check for ENTER key
+        else if (event.key === 'Enter') {
+        console.log("ENTER key pressed. Confirm button triggered.");
+        confirmButton.click(); // Simulate the Confirm button click
+    }
 });
 
     </script>
