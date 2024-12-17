@@ -900,6 +900,11 @@
                 "up", "right", "down", "left", "up", "right", "down", "left", "up", "right", "up",
                 "left", "up", "right", "up", "right", "down", "right", "down", "left", "down",
                 "right", "down", "left", "up", "right", "down", "right", "up", "left", "up"
+            ],
+            3: [
+                "right", "up", "right", "up", "left", "down", "left", "up", "left", "down", 
+                "right", "up", "left", "up", "right", "up", "left", "up", "right", "up",
+                "left", "down", "left", "down", "right", "down", "right", "up", "left", "up"
             ]
         };
 
@@ -1267,7 +1272,7 @@
                     break;
                 case 2:
                     currentLevel = 3;
-                    startGame('level3(2).png', { x: 180, y: 0 }, { x: 180, y: 340 });
+                    startGame('level3(3).png', { x: 180, y: 0 }, { x: 180, y: 340 });
                     showLevelAnnouncement(3);
                     break;
                 case 3:
@@ -1344,7 +1349,7 @@
             currentLevel = 3; // Set current level
             showLevelAnnouncement(3);
 
-            startGame('level3(2).png', { x: 180, y: 0 }, { x: 180, y: 340 }); // Replace with actual Level 3 settings
+            startGame('level3(3).png', { x: 180, y: 0 }, { x: 180, y: 340 }); // Replace with actual Level 3 settings
         });
 
         level4Button.addEventListener('click', () => {
