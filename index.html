@@ -892,10 +892,9 @@
 
         const levelPaths = {
             1: [
-                "up", "right", "down", "right", "up", "left", "up", "right", "up",
-                "left", "down", "left", "up", "left", "down", "left", "up", "right",
-                "up", "right", "up", "right", "up", "left", "down", "left", "down",
-                "right", "up", "right", "up"
+                "up", "right", "up", "right", "down", "left", "down", "left", "up", "right", "up",
+                "right", "up", "left", "up", "left", "up", "left", "down", "left", "up", "right",
+                "up", "left", "up", "right", "down", "right", "down"
             ],
             2: [
                 "up", "left", "up", "right", "down", "right", "up", "left", "down",
@@ -990,6 +989,7 @@
 
         function showHint() {
             const correctPath = levelPaths[currentLevel];
+            console.log("working")
 
             // 1. Player hasn’t moved yet
             if (playerSteps.length === 0) {
