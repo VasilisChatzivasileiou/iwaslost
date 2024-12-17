@@ -904,12 +904,6 @@
             });
         });
 
-        const hintButton = document.getElementById('hintButton'); // Reference to the Hint button
-        const hintLabel = document.getElementById('hintLabel');
-        hintButton.addEventListener('click', showHint);
-
-        
-
         const levelPaths = {
             1: [
                 "up", "right", "up", "right", "down", "left", "down", "left", "up", "right", "up",
@@ -940,6 +934,16 @@
                 "up"
             ]
         };
+        
+        const hintUsed = {};
+
+        Object.keys(levelPaths).forEach(level => {
+            hintUsed[level] = false;
+        });
+        
+        const hintButton = document.getElementById('hintButton'); // Reference to the Hint button
+        const hintLabel = document.getElementById('hintLabel');
+
 
         playerLastPositions = [];
 
@@ -1023,9 +1027,62 @@
 
         let levelAnnouncementTimeout = null; // Store timeout ID for the level announcement
 
+        function showHintConfirmation() {
+            if (hintUsed[currentLevel]) {
+                alert("You have already used your hint for this level!");
+                return;
+            }
+
+            const modalOverlay = document.createElement('div');
+            const modalContent = document.createElement('div');
+            const message = document.createElement('p');
+            const yesButton = document.createElement('button');
+            const noButton = document.createElement('button');
+
+            modalOverlay.style.position = 'fixed';
+            modalOverlay.style.top = '0';
+            modalOverlay.style.left = '0';
+            modalOverlay.style.width = '100%';
+            modalOverlay.style.height = '100%';
+            modalOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+            modalOverlay.style.display = 'flex';
+            modalOverlay.style.justifyContent = 'center';
+            modalOverlay.style.alignItems = 'center';
+            modalOverlay.style.zIndex = '1000';
+
+            modalContent.style.backgroundColor = '#fff';
+            modalContent.style.padding = '20px';
+            modalContent.style.borderRadius = '8px';
+            modalContent.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+            modalContent.style.textAlign = 'center';
+
+            message.textContent = 'You have 1 hint, use it?';
+            yesButton.textContent = 'Yes';
+            yesButton.style.margin = '10px';
+            noButton.textContent = 'No';
+            noButton.style.margin = '10px';
+
+            modalContent.appendChild(message);
+            modalContent.appendChild(yesButton);
+            modalContent.appendChild(noButton);
+            modalOverlay.appendChild(modalContent);
+            document.body.appendChild(modalOverlay);
+
+            yesButton.addEventListener('click', () => {
+                hintUsed[currentLevel] = true; // Mark hint as used
+                disableHintButton();           // Disable the button ONLY after confirming
+                document.body.removeChild(modalOverlay);
+                showHint();
+            });
+
+            noButton.addEventListener('click', () => {
+                document.body.removeChild(modalOverlay);
+            });
+        }
+
         function showHint() {
             const correctPath = levelPaths[currentLevel];
-            console.log("Hint function triggered")
+            console.log("Hint function triggered");
 
             hintLabel.style.display = "block";
 
@@ -1052,7 +1109,29 @@
             highlightNextSteps(correctPath.slice(lastCorrectStep, lastCorrectStep + 2));
         }
 
-        hintButton.addEventListener('click', showHint);
+        function resetHints() {
+            Object.keys(levelPaths).forEach(level => {
+                hintUsed[level] = false;
+            });
+        }
+
+        function disableHintButton() {
+            hintButton.disabled = true;
+            hintButton.textContent = "Hint Used";
+        }
+
+        function enableHintButton() {
+            hintButton.disabled = false;
+            hintButton.textContent = "Hint";
+        }
+
+        hintButton.addEventListener('click', () => {
+            if (hintUsed[currentLevel]) {
+                alert("No hints left!");
+            } else {
+                showHintConfirmation();
+            }
+        });
 
         function highlightNextSteps(){
 
