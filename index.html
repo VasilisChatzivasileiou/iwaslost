@@ -428,6 +428,22 @@
             background-color: yellow; /* Highlight color */
         }
 
+        .hint-label {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(34, 34, 34, 1); /* Semi-transparent black background */
+            color: #B2BAB1;
+            padding: 10px 5px;
+            font-size: 30px;
+            font-weight: bold;
+            border-radius: 0px;
+            text-align: center;
+            z-index: 1000; /* Ensure it's on top of other elements */
+            display: none; /* Hidden by default */
+        }
+
         @keyframes blink {
             from { opacity: 1; }
             to { opacity: 0.5; }
@@ -738,10 +754,11 @@
     </div>
 
     <div class="logo-container">
-        <button id="hintButton" class="hint-button" >Hint</button>
+        <button id="hintButton" class="hint-button">Hint</button>
         <img id="logo" src="iwaslost01.png" alt="Logo" style="cursor: pointer;">
         <button id="menuButton" class="menu-button" onclick="showLevelSelector()">Menu</button>
     </div>
+    <div id="hintLabel" class="hint-label" hidden>Hint Used</div>
 
     <div id="levelSelection" style="display: none; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background-color: #222222;">
         <button id="level1Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #B2BAB1; color: #222222; margin: 10px 0;">Level 01</button>
@@ -888,7 +905,10 @@
         });
 
         const hintButton = document.getElementById('hintButton'); // Reference to the Hint button
+        const hintLabel = document.getElementById('hintLabel');
         hintButton.addEventListener('click', showHint);
+
+        
 
         const levelPaths = {
             1: [
@@ -983,8 +1003,6 @@
             document.getElementById('levelSelection').style.display = 'flex';
         });
 
-
-
         let currentLevel = 1; // Start with level 1
 
         let playerSteps = []; // Stores the player’s moves
@@ -994,7 +1012,13 @@
 
         function showHint() {
             const correctPath = levelPaths[currentLevel];
-            console.log("working")
+            console.log("Hint function triggered")
+
+            hintLabel.style.display = "block";
+
+            setTimeout(() => {
+                hintLabel.style.display = "none";
+            }, 1000);
 
             // 1. Player hasn’t moved yet
             if (playerSteps.length === 0) {
@@ -1014,6 +1038,8 @@
             // 3. Player is correct so far, show the next two steps
             highlightNextSteps(correctPath.slice(lastCorrectStep, lastCorrectStep + 2));
         }
+
+        hintButton.addEventListener('click', showHint);
 
         function highlightNextSteps(){
 
