@@ -394,6 +394,45 @@
             border: none;
         }
 
+        #hintButton {
+            position: absolute;
+            top: 13px;
+            left: 10px;
+            font-family: 'CustomFont', sans-serif;
+            display: none; /* Hidden at the start */
+            padding: 10px 5px;
+            font-size: 16px;
+            background-color: #333;
+            color: #B2BAB1;
+            border: none;
+            border-radius: 0px;
+            cursor: pointer;
+            transition: all 0.1s ease; /* Smooth transition effect */
+            border-style: outset;
+            border-width: 2px;
+            border-color: buttonborder;
+        }
+
+        #hintButton:hover {
+            background-color: #B2BAB1; /* Slightly darker on hover */
+            color:#222222;
+        }
+
+        #hintButton:active {
+            transform: scale(0.95); /* Slightly shrink button */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Add a shadow */
+        }
+
+        .hint-blink {
+            animation: blink 1s infinite alternate;
+            background-color: yellow; /* Highlight color */
+        }
+
+        @keyframes blink {
+            from { opacity: 1; }
+            to { opacity: 0.5; }
+        }
+
         @media (min-width: 1024px) {
             .logo-container {
                 padding: 0px 0;
@@ -411,6 +450,13 @@
                 line-height: 1;
                 position: relative;
                 top: 0px; /* Raise the instructions */
+            }
+
+            #hintButton {
+                position: absolute;
+                top: 288px; /* Adjust vertical position */
+                left: -88px; /* Place the button to the left of the maze */
+                transform: translateY(0); /* Fine-tune alignment if needed */
             }
         }
 
@@ -514,6 +560,8 @@
                 font-size: 20px; /* Adjust button text size */
                 padding: 8px 16px;
             }
+
+            
         }
 
         @media (max-width: 480px) {
@@ -626,6 +674,12 @@
             #levelText {
                 width: 310px;
             }
+
+            #hintButton {
+                position: absolute;
+                top: 13px;
+                left: 10px;
+            }
             
         }
     </style>
@@ -684,6 +738,7 @@
     </div>
 
     <div class="logo-container">
+        <button id="hintButton" class="hint-button" >Hint</button>
         <img id="logo" src="iwaslost01.png" alt="Logo" style="cursor: pointer;">
         <button id="menuButton" class="menu-button" onclick="showLevelSelector()">Menu</button>
     </div>
@@ -750,6 +805,9 @@
                         <canvas id="mazeCanvas" width="400" height="400"></canvas>
                     </div>
                     <div class="controls-wrapper">
+                        <div id="hintFeedback" style="margin-top: 10px; color: #CCCCCC; font-size: 18px; text-align: center; font-family: 'CustomFont', sans-serif;">
+                            Next Moves: None
+                        </div>
                         <div class="controls">
                             <button data-direction="ArrowLeft"><</button>
                             <button data-direction="ArrowUp">^</button>
@@ -829,6 +887,33 @@
             });
         });
 
+        const hintButton = document.getElementById('hintButton'); // Reference to the Hint button
+        hintButton.addEventListener('click', showHint);
+        
+        const levelPaths = {
+            1: [
+                "up", "right", "down", "right", "up", "left", "up", "right", "up", 
+                "left", "down", "left", "up", "left", "down", "left", "up", "right",
+                "up", "right", "up", "right", "up", "left", "down", "left", "down", 
+                "right", "up", "right", "up"
+            ]
+        };
+
+        const directionMap = {
+                'ArrowUp': 'up',
+                'ArrowDown': 'down',
+                'ArrowLeft': 'left',
+                'ArrowRight': 'right',
+            };
+
+            const directionMapReversed = {
+                'up': 'ArrowUp',
+                'down': 'ArrowDown',
+                'left': 'ArrowLeft',
+                'right': 'ArrowRight',
+            };
+
+
         // Volume slider and display elements
         const volumeSlider = document.getElementById('volumeSlider');
         const volumeValueDisplay = document.getElementById('volumeValue');
@@ -882,8 +967,61 @@
 
         
         let currentLevel = 1; // Start with level 1
+        
+        let playerSteps = []; // Stores the player’s moves
+        let lastCorrectStep = 0; // Tracks the last correct step
 
         let levelAnnouncementTimeout = null; // Store timeout ID for the level announcement
+
+        function showHint() {
+            console.log("playersteps",playerSteps);
+            const correctPath = levelPaths[currentLevel];
+
+            // 1. Player hasn’t moved yet
+            if (playerSteps.length === 0) {
+                
+                
+                highlightNextSteps(correctPath.slice(0, 2)); // Highlight first two steps
+                return;
+            }
+
+            // 2. Compare player's moves with the correct path
+            for (let i = 0; i < playerSteps.length; i++) {
+                if (playerSteps[i] !== correctPath[i]) {
+                    
+                // Reset player to last correct step
+               // playerSteps = correctPath.slice(0, i); // Correct moves up to 'i'
+                lastCorrectStep = i; // Update last correct step
+                movePlayerToCorrectStep(i); // Visual reset
+                highlightNextSteps(correctPath.slice(i, i + 2)); // Show next two steps
+                return;
+                }
+            }
+
+            // 3. Player is correct so far, show the next two steps
+            highlightNextSteps(correctPath.slice(lastCorrectStep, lastCorrectStep + 2));
+        }
+
+        function highlightNextSteps(steps) {
+            console.log("steps",steps);
+            steps.forEach((step, index) => {
+                const hintTile = document.querySelector(`[data-direction="${directionMapReversed[step]}"]`);
+                if (hintTile) {
+                hintTile.classList.add("hint-blink");
+                setTimeout(() => hintTile.classList.remove("hint-blink"), 2000);
+                }
+            });
+        }
+
+        function movePlayerToCorrectStep(stepIndex) {
+            // Assume each step corresponds to tile coordinates
+            const player = document.getElementById("player");
+            const path = levelPaths[currentLevel];
+
+            // Example logic: move player visually to the last correct tile
+            player.style.transform = `translate(${stepIndex * 10}px, ${stepIndex * 10}px)`;
+        }
+
 
         document.addEventListener('DOMContentLoaded', () => {
             menuButton.style.display = 'none';
@@ -988,6 +1126,9 @@
 
             // Show the Menu button since we're in a level
             menuButton.style.display = 'block';
+
+            // Show the Hint button when in a level
+            hintButton.style.display = 'block';
 
             // Set the maze image and initialize the level
             mazeImage.src = mazeImageSrc;
@@ -1214,6 +1355,7 @@
             document.getElementById('levelSelection').style.display = 'flex';
             document.getElementById('gameContainer').style.display = 'none';
             menuButton.style.display = 'none'; // Hide the Menu button
+            hintButton.style.display = 'none'; // Hide the Hint button when in menu
         }
 
         function startLevel(level) {
@@ -1385,15 +1527,8 @@
         }
 
         function addDirectionToTracker(direction) {
-            const directionMap = {
-                'ArrowUp': 'up',
-                'ArrowDown': 'down',
-                'ArrowLeft': 'left',
-                'ArrowRight': 'right',
-            };
-
             moveCount++;
-
+            playerSteps.push(directionMap[direction]);
             const listItem = document.createElement('li');
             listItem.textContent = `${moveCount}. ${directionMap[direction]}`;
             trackerList.prepend(listItem);
