@@ -897,9 +897,9 @@
                 "up", "left", "up", "right", "down", "right", "down"
             ],
             2: [
-                "up", "left", "up", "right", "down", "right", "up", "left", "down",
-                "right", "down", "left", "down", "right", "down", "right", "up", "right",
-                "up", "left", "up", "right", "up", "left", "down", "left", "up"
+                "up", "right", "down", "left", "up", "right", "down", "left", "up", "right", "up",
+                "left", "up", "right", "up", "right", "down", "right", "down", "left", "down",
+                "right", "down", "left", "up", "right", "down", "right", "up", "left", "up"
             ]
         };
 
@@ -1262,7 +1262,7 @@
             switch (currentLevel) {
                 case 1:
                     currentLevel = 2;
-                    startGame('level2(2).png', { x: 180, y: 40 }, { x: 180, y: 380 });
+                    startGame('level2(3).png', { x: 180, y: 40 }, { x: 180, y: 380 });
                     showLevelAnnouncement(2);
                     break;
                 case 2:
@@ -1337,7 +1337,7 @@
             currentLevel = 2; // Set current level
             showLevelAnnouncement(2);
 
-            startGame('level2(2).png', { x: 180, y: 40 }, { x: 180, y: 380 }); // Set maze image and exit position for Level 2
+            startGame('level2(3).png', { x: 180, y: 40 }, { x: 180, y: 380 }); // Set maze image and exit position for Level 2
         });
 
         level3Button.addEventListener('click', () => {
