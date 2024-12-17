@@ -851,11 +851,11 @@
         const closeOptionsButton = document.getElementById('closeOptionsButton');
 
         document.addEventListener('DOMContentLoaded', () => {
-        const startScreen = document.getElementById('startScreen');
-        const startGameButton = document.getElementById('startGameButton');
-        const backgroundMusic = new Audio('i careOST.mp3'); // Background music
-        const volumeSlider = document.getElementById('volumeSlider'); // Slider
-        const volumeValueDisplay = document.getElementById('volumeValue'); // Display value
+            const startScreen = document.getElementById('startScreen');
+            const startGameButton = document.getElementById('startGameButton');
+            const backgroundMusic = new Audio('i careOST.mp3'); // Background music
+            const volumeSlider = document.getElementById('volumeSlider'); // Slider
+            const volumeValueDisplay = document.getElementById('volumeValue'); // Display value
 
             // Music settings
             backgroundMusic.loop = true;
@@ -881,7 +881,7 @@
                 volumeValueDisplay.textContent = Math.round(volume * 100) + '%';
             });
             volumeValueDisplay.textContent = '100%';
-            
+
             backgroundMusic.play().catch((e) => {
                 console.error("Music playback failed:", e);
             });
@@ -889,29 +889,44 @@
 
         const hintButton = document.getElementById('hintButton'); // Reference to the Hint button
         hintButton.addEventListener('click', showHint);
-        
+
         const levelPaths = {
             1: [
-                "up", "right", "down", "right", "up", "left", "up", "right", "up", 
+                "up", "right", "down", "right", "up", "left", "up", "right", "up",
                 "left", "down", "left", "up", "left", "down", "left", "up", "right",
-                "up", "right", "up", "right", "up", "left", "down", "left", "down", 
+                "up", "right", "up", "right", "up", "left", "down", "left", "down",
                 "right", "up", "right", "up"
+            ],
+            2: [
+                "up", "left", "up", "right", "down", "right", "up", "left", "down",
+                "right", "down", "left", "down", "right", "down", "right", "up", "right",
+                "up", "left", "up", "right", "up", "left", "down", "left", "up"
             ]
         };
 
-        const directionMap = {
-                'ArrowUp': 'up',
-                'ArrowDown': 'down',
-                'ArrowLeft': 'left',
-                'ArrowRight': 'right',
-            };
+        playerLastPositions = [];
 
-            const directionMapReversed = {
-                'up': 'ArrowUp',
-                'down': 'ArrowDown',
-                'left': 'ArrowLeft',
-                'right': 'ArrowRight',
-            };
+        const directionMap = {
+            'ArrowUp': 'up',
+            'ArrowDown': 'down',
+            'ArrowLeft': 'left',
+            'ArrowRight': 'right',
+        };
+
+        const directionMapReversed = {
+            'up': 'ArrowUp',
+            'down': 'ArrowDown',
+            'left': 'ArrowLeft',
+            'right': 'ArrowRight',
+        };
+
+        const directionsMapReversi = {
+            'up': 'down',
+            'down': 'up',
+            'left': 'right',
+            'right': 'left',
+        };
+
 
 
         // Volume slider and display elements
@@ -965,22 +980,19 @@
         });
 
 
-        
+
         let currentLevel = 1; // Start with level 1
-        
+
         let playerSteps = []; // Stores the player’s moves
         let lastCorrectStep = 0; // Tracks the last correct step
 
         let levelAnnouncementTimeout = null; // Store timeout ID for the level announcement
 
         function showHint() {
-            console.log("playersteps",playerSteps);
             const correctPath = levelPaths[currentLevel];
 
             // 1. Player hasn’t moved yet
             if (playerSteps.length === 0) {
-                
-                
                 highlightNextSteps(correctPath.slice(0, 2)); // Highlight first two steps
                 return;
             }
@@ -988,13 +1000,9 @@
             // 2. Compare player's moves with the correct path
             for (let i = 0; i < playerSteps.length; i++) {
                 if (playerSteps[i] !== correctPath[i]) {
-                    
-                // Reset player to last correct step
-               // playerSteps = correctPath.slice(0, i); // Correct moves up to 'i'
-                lastCorrectStep = i; // Update last correct step
-                movePlayerToCorrectStep(i); // Visual reset
-                highlightNextSteps(correctPath.slice(i, i + 2)); // Show next two steps
-                return;
+                    lastCorrectStep = i; // Update last correct step
+                    movePlayerToCorrectStep(i); // Visual reset
+                    return;
                 }
             }
 
@@ -1002,24 +1010,35 @@
             highlightNextSteps(correctPath.slice(lastCorrectStep, lastCorrectStep + 2));
         }
 
-        function highlightNextSteps(steps) {
-            console.log("steps",steps);
-            steps.forEach((step, index) => {
-                const hintTile = document.querySelector(`[data-direction="${directionMapReversed[step]}"]`);
-                if (hintTile) {
-                hintTile.classList.add("hint-blink");
-                setTimeout(() => hintTile.classList.remove("hint-blink"), 2000);
-                }
-            });
+        function highlightNextSteps(){
+
+        };
+
+        function updateDirectionsToTracker(stopIndex) {
+            // Get all the child <li> elements
+            let listItems = trackerList.querySelectorAll('li');
+
+            // Remove elements after the last correct move index
+            for (let i = listItems.length - 1; i > stopIndex; i--) {
+                trackerList.removeChild(trackerList.firstChild);
+            }
         }
 
-        function movePlayerToCorrectStep(stepIndex) {
-            // Assume each step corresponds to tile coordinates
-            const player = document.getElementById("player");
-            const path = levelPaths[currentLevel];
 
-            // Example logic: move player visually to the last correct tile
-            player.style.transform = `translate(${stepIndex * 10}px, ${stepIndex * 10}px)`;
+        function movePlayerToCorrectStep(stepIndex) {
+            const lastCorrect = playerLastPositions[stepIndex - 1];
+
+            // move player to last correct position
+            player.x = lastCorrect?.x || player.startX;
+            player.y = lastCorrect?.y || player.startY;
+
+            drawPlayer();
+
+            updateDirectionsToTracker(stepIndex - 1);
+
+            // remove incorrect values
+            playerLastPositions = playerLastPositions.slice(0, stepIndex);
+            playerSteps = playerSteps.slice(0, stepIndex);
         }
 
 
@@ -1108,7 +1127,7 @@
             }, 2000);
         }
 
-        
+
         function startGame(mazeImageSrc, exitPosition, playerPosition) {
 
             // Change body background color based on the level
@@ -1118,7 +1137,7 @@
             updateControlsButtonColors();
 
             levelSelection.style.display = 'none';
-                // Show the level announcement
+            // Show the level announcement
             showLevelAnnouncement(currentLevel);
 
             // Show the game container
@@ -1148,7 +1167,7 @@
 
             // Update the maze container color
             updateMazeContainerColor();
-            
+
             // Update the tracker container style for the current level
             updateTrackerContainerStyle();
 
@@ -1228,14 +1247,14 @@
             const mazeContainer = document.querySelector('.maze-container');
             const containerColor = currentLevel === 2 ? '#C8BED2'
                 : currentLevel === 3 ? '#B2BAB1'
-                : '#B2BAB1'; // Add Level 3 color
+                    : '#B2BAB1'; // Add Level 3 color
             mazeContainer.style.backgroundColor = containerColor;
         }
 
         function updateCanvasBorder() {
             const mazeColor = currentLevel === 2 ? '#684756'
                 : currentLevel === 3 ? '#684756'
-                : '#222222'; // Add Level 3 color
+                    : '#222222'; // Add Level 3 color
             document.querySelector('canvas').style.border = `1px solid ${mazeColor}`;
         }
 
@@ -1303,7 +1322,7 @@
             currentLevel = 1; // Set current level
             showLevelAnnouncement(1);
 
-            startGame('maze013.png', { x: 180, y: 0 },{ x: 180, y: 380} ); // Set maze image and exit position for Level 1
+            startGame('maze013.png', { x: 180, y: 0 }, { x: 180, y: 380 }); // Set maze image and exit position for Level 1
             // Hide the level selection screen
             levelSelection.style.display = 'none';
 
@@ -1318,14 +1337,14 @@
             currentLevel = 2; // Set current level
             showLevelAnnouncement(2);
 
-            startGame('level2(2).png', { x: 180, y: 40 },{ x: 180, y: 380} ); // Set maze image and exit position for Level 2
+            startGame('level2(2).png', { x: 180, y: 40 }, { x: 180, y: 380 }); // Set maze image and exit position for Level 2
         });
 
         level3Button.addEventListener('click', () => {
             currentLevel = 3; // Set current level
             showLevelAnnouncement(3);
 
-            startGame('level3(2).png', { x: 180, y: 0 }, { x: 180, y: 340}); // Replace with actual Level 3 settings
+            startGame('level3(2).png', { x: 180, y: 0 }, { x: 180, y: 340 }); // Replace with actual Level 3 settings
         });
 
         level4Button.addEventListener('click', () => {
@@ -1351,7 +1370,7 @@
                 clearTimeout(levelAnnouncementTimeout);
                 levelAnnouncementTimeout = null;
             }
-            
+
             document.getElementById('levelSelection').style.display = 'flex';
             document.getElementById('gameContainer').style.display = 'none';
             menuButton.style.display = 'none'; // Hide the Menu button
@@ -1415,8 +1434,8 @@
         let currentDirection = null;
         let nextDirection = null;
         let moveCount = 0;
-        
-        
+
+
 
         mazeImage.onload = () => {
             ctx.imageSmoothingEnabled = false;
@@ -1451,7 +1470,7 @@
             // Choose color based on the current level
             const newColor = currentLevel === 2 ? { r: 104, g: 71, b: 86 }
                 : currentLevel === 3 ? { r: 104, g: 71, b: 86 }
-                : { r: 34, g: 34, b: 34 }; // Add Level 3 color
+                    : { r: 34, g: 34, b: 34 }; // Add Level 3 color
 
             for (let i = 0; i < data.length; i += 4) {
                 if (data[i] === 0 && data[i + 1] === 0 && data[i + 2] === 0 && data[i + 3] !== 0) {
@@ -1534,6 +1553,7 @@
             trackerList.prepend(listItem);
         }
 
+
         function startMoving() {
             if (isMoving) return; // Prevent overlapping movements
 
@@ -1575,6 +1595,9 @@
                     player.y = Math.round(player.y / speed) * speed;
                     isMoving = false; // Unlock movement
 
+
+                    playerLastPositions.push({ x: Math.round(player.x / speed) * speed, y: Math.round(player.y / speed) * speed });
+
                     // Update lastDirection only after completing a move
                     lastDirection = currentDirection;
 
@@ -1591,60 +1614,60 @@
             }, 10);
         }
 
-// Define an array of audio files
-const buttonSounds = [
-    new Audio("POP1-3.wav"),
-    new Audio("POP2-3.wav"),
-    new Audio("POP3-3.wav")
-];
+        // Define an array of audio files
+        const buttonSounds = [
+            new Audio("POP1-3.wav"),
+            new Audio("POP2-3.wav"),
+            new Audio("POP3-3.wav")
+        ];
 
-// Function to play a random sound
-function playRandomSound() {
-    const randomIndex = Math.floor(Math.random() * buttonSounds.length);
-    const sound = buttonSounds[randomIndex];
-    sound.currentTime = 0; // Reset to start
-    sound.play();
-}
-
-
-document.querySelectorAll('.controls button').forEach(button => {
-    button.addEventListener('click', () => {
-        const direction = button.dataset.direction;
-
-        if (isMoving) return; // Prevent actions while moving
-
-        // Prevent duplicate consecutive moves
-        if (moveQueue.length > 0 && moveQueue[moveQueue.length - 1] === direction) {
-            console.log(`Duplicate move ${direction} ignored.`);
-            return; // Ignore the move if it's a duplicate
+        // Function to play a random sound
+        function playRandomSound() {
+            const randomIndex = Math.floor(Math.random() * buttonSounds.length);
+            const sound = buttonSounds[randomIndex];
+            sound.currentTime = 0; // Reset to start
+            sound.play();
         }
 
-        // If the move queue is empty, validate the first move
-        if (moveQueue.length === 0) {
-            let nextX = player.x, nextY = player.y;
-            switch (direction) {
-                case 'ArrowUp': nextY -= player.size; break;
-                case 'ArrowDown': nextY += player.size; break;
-                case 'ArrowLeft': nextX -= player.size; break;
-                case 'ArrowRight': nextX += player.size; break;
-            }
 
-            // Check if there's a wall for the first move
-            if (isCollision(nextX, nextY)) {
-                console.log(`Blocked! You can't move ${direction}`);
-                showErrorPopup();
-                playErrorSound(); // Play the error sound
-                return; // Prevent adding the invalid move to the queue
-            }
-        }
+        document.querySelectorAll('.controls button').forEach(button => {
+            button.addEventListener('click', () => {
+                const direction = button.dataset.direction;
 
-        // If no collision or duplicate, add the move
-        moveQueue.push(direction);
-        playRandomSound();
-        addDirectionToTracker(direction);
-        console.log(`Move ${direction} added to the queue.`);
-    });
-});
+                if (isMoving) return; // Prevent actions while moving
+
+                // Prevent duplicate consecutive moves
+                if (moveQueue.length > 0 && moveQueue[moveQueue.length - 1] === direction) {
+                    console.log(`Duplicate move ${direction} ignored.`);
+                    return; // Ignore the move if it's a duplicate
+                }
+
+                // If the move queue is empty, validate the first move
+                if (moveQueue.length === 0) {
+                    let nextX = player.x, nextY = player.y;
+                    switch (direction) {
+                        case 'ArrowUp': nextY -= player.size; break;
+                        case 'ArrowDown': nextY += player.size; break;
+                        case 'ArrowLeft': nextX -= player.size; break;
+                        case 'ArrowRight': nextX += player.size; break;
+                    }
+
+                    // Check if there's a wall for the first move
+                    if (isCollision(nextX, nextY)) {
+                        console.log(`Blocked! You can't move ${direction}`);
+                        showErrorPopup();
+                        playErrorSound(); // Play the error sound
+                        return; // Prevent adding the invalid move to the queue
+                    }
+                }
+
+                // If no collision or duplicate, add the move
+                moveQueue.push(direction);
+                playRandomSound();
+                addDirectionToTracker(direction);
+                console.log(`Move ${direction} added to the queue.`);
+            });
+        });
 
 
         function restartGame() {
@@ -1675,68 +1698,68 @@ document.querySelectorAll('.controls button').forEach(button => {
             drawPlayer();
         }
 
-function executeMoves() {
-    if (isExecutingMoves || moveQueue.length === 0) return; // Prevent overlap
-    isExecutingMoves = true;
+        function executeMoves() {
+            if (isExecutingMoves || moveQueue.length === 0) return; // Prevent overlap
+            isExecutingMoves = true;
 
-    const interval = setInterval(() => {
-        if (moveQueue.length === 0 || isMoving) {
-            clearInterval(interval); // Stop when all moves are processed or already moving
-            isExecutingMoves = false; // Reset flag
-            return;
+            const interval = setInterval(() => {
+                if (moveQueue.length === 0 || isMoving) {
+                    clearInterval(interval); // Stop when all moves are processed or already moving
+                    isExecutingMoves = false; // Reset flag
+                    return;
+                }
+
+                const direction = moveQueue.shift(); // Get next move
+                currentDirection = direction; // Set current direction
+                startMoving(); // Start moving
+            }, 300); // Delay between moves
         }
 
-        const direction = moveQueue.shift(); // Get next move
-        currentDirection = direction; // Set current direction
-        startMoving(); // Start moving
-    }, 300); // Delay between moves
-}
 
+        document.addEventListener('keydown', (event) => {
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+                const direction = event.key;
 
-document.addEventListener('keydown', (event) => {
-    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
-        const direction = event.key;
+                if (isMoving) return; // Prevent actions while moving
 
-        if (isMoving) return; // Prevent actions while moving
+                // Prevent duplicate consecutive moves
+                if (moveQueue.length > 0 && moveQueue[moveQueue.length - 1] === direction) {
+                    console.log(`Duplicate move ${direction} ignored.`);
+                    return; // Ignore the move if it's a duplicate
+                }
 
-        // Prevent duplicate consecutive moves
-        if (moveQueue.length > 0 && moveQueue[moveQueue.length - 1] === direction) {
-            console.log(`Duplicate move ${direction} ignored.`);
-            return; // Ignore the move if it's a duplicate
-        }
+                // If the move queue is empty, validate the first move
+                if (moveQueue.length === 0) {
+                    let nextX = player.x, nextY = player.y;
+                    switch (direction) {
+                        case 'ArrowUp': nextY -= player.size; break;
+                        case 'ArrowDown': nextY += player.size; break;
+                        case 'ArrowLeft': nextX -= player.size; break;
+                        case 'ArrowRight': nextX += player.size; break;
+                    }
 
-        // If the move queue is empty, validate the first move
-        if (moveQueue.length === 0) {
-            let nextX = player.x, nextY = player.y;
-            switch (direction) {
-                case 'ArrowUp': nextY -= player.size; break;
-                case 'ArrowDown': nextY += player.size; break;
-                case 'ArrowLeft': nextX -= player.size; break;
-                case 'ArrowRight': nextX += player.size; break;
+                    // Check if there's a wall for the first move
+                    if (isCollision(nextX, nextY)) {
+                        console.log(`Blocked! You can't move ${direction}`);
+                        showErrorPopup();
+                        playErrorSound(); // Play the error sound
+                        return; // Prevent adding the invalid move to the queue
+                    }
+                }
+
+                // If no collision or duplicate, add the move
+                moveQueue.push(direction);
+                playRandomSound();
+                addDirectionToTracker(direction);
+                console.log(`Move ${direction} added to the queue.`);
             }
 
-            // Check if there's a wall for the first move
-            if (isCollision(nextX, nextY)) {
-                console.log(`Blocked! You can't move ${direction}`);
-                showErrorPopup();
-                playErrorSound(); // Play the error sound
-                return; // Prevent adding the invalid move to the queue
+            // Check for ENTER key
+            else if (event.key === 'Enter') {
+                console.log("ENTER key pressed. Confirm button triggered.");
+                confirmButton.click(); // Simulate the Confirm button click
             }
-        }
-
-        // If no collision or duplicate, add the move
-        moveQueue.push(direction);
-        playRandomSound();
-        addDirectionToTracker(direction);
-        console.log(`Move ${direction} added to the queue.`);
-    }
-
-        // Check for ENTER key
-        else if (event.key === 'Enter') {
-        console.log("ENTER key pressed. Confirm button triggered.");
-        confirmButton.click(); // Simulate the Confirm button click
-    }
-});
+        });
 
     </script>
 </body>
