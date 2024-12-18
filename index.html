@@ -795,17 +795,16 @@
     <div id="hintLabel" class="hint-label" hidden>Hint Wasted</div>
 
     <div id="levelSelection" style="display: none; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background-color: #222222;">
-        <button id="level1Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #B2BAB1; color: #222222; margin: 10px 0;">Level 01</button>
-        <button id="level2Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #C8BED2; color: #684756; margin: 10px 0;">Level 02</button>
-        <button id="level3Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #2e3e3c; color: #B2BAB1; margin: 10px 0;">Level 03</button>
-        <button id="level4Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #3e4e5c; color: #B2BAB1; margin: 10px 0;">Level 04</button>
-        <button id="level5Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #4C5E6A; color: #D1D8DB; margin: 10px 0;">Level 05</button>
-
-
-        <button id="optionsButton" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #FFD700; color: #222222; margin-top: 20px;">Options</button>
-        <button id="leaveButton" style="background-color: red; color: white;">Leave</button>
-
-
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px;">
+            <button id="level1Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #B2BAB1; color: #222222;">Level 01</button>
+            <button id="level2Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #C8BED2; color: #684756;">Level 02</button>
+            <button id="level3Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #2e3e3c; color: #B2BAB1;">Level 03</button>
+            <button id="level4Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #3e4e5c; color: #B2BAB1;">Level 04</button>
+            <button id="level5Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #4C5E6A; color: #D1D8DB;">Level 05</button>
+            <button id="level6Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: not-allowed; background-color: #AAA; color: #555; opacity: 0.25;" disabled>Level 06</button>
+        </div>
+        <button id="optionsButton" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #FFD700; color: #222222;">Options</button>
+        <button id="leaveButton" style="background-color: red; color: white; margin-top: 10px;">Leave</button>
     </div>
 
     <div id="thanksMessage" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
