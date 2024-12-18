@@ -1310,6 +1310,15 @@
             }, 1000);
         }
 
+        const exitColors = {
+            1: '#298a52', // Level 1
+            2: '#298a52', // Level 2
+            3: '#298a52', // Level 3
+            4: '#298a52', // Level 4
+            5: '#298a52', // Level 5
+            6: '#EFF0D1'  // Level 6
+        };
+
         function showLevelAnnouncement(level) {
             // Define colors for text and background for each level
             const levelColors = {
@@ -1317,7 +1326,8 @@
                 2: { text: "#C8BED2", background: "#684756" }, // Level 2: Text (Light Purple), Background (Light Lavender)
                 3: { text: "#B2BAB1", background: "#684756" },  // Level 3: Text (Light Gray-Green), Background (Pale Green)
                 4: { text: "#B2BAB1", background: "#684756" },
-                5: { text: "#D1D8DB", background: "#4C5E6A" } // Add Level 5 colors
+                5: { text: "#D1D8DB", background: "#4C5E6A" }, // Add Level 5 colors
+                6: { text: "#DDB771", background: "#0B6E4F" }
             };
 
             // Fallback colors if level not found
@@ -1416,7 +1426,8 @@
                 2: { background: '#C8BED2', color: '#684756', border: '2px solid #684756' }, // Level 2
                 3: { background: '#2e3e3c', color: '#B2BAB1', border: '2px solid #B2BAB1' }, // Level 3
                 4: { background: '#3e4e5c', color: '#B2BAB1', border: '2px solid #B2BAB1' }, // Level 4
-                5: { background: '#445C6E', color: '#B2BAB1', border: '2px solid #B2BAB1' }  // Level 5
+                5: { background: '#445C6E', color: '#B2BAB1', border: '2px solid #B2BAB1' },  // Level 5
+                6: { background: '#0B6E4F', color: '#DDB771', border: '2px solid #DDB771' }
             };
 
             // Fallback colors if level not found
@@ -1444,7 +1455,8 @@
                 2: { background: '#C8BED2', color: '#684756', border: '2px solid #684756' }, // Level 2
                 3: { background: '#B2BAB1', color: '#684756', border: '2px solid #684756' },  // Level 3
                 4: { background: '#3e4e5c', color: '#B2BAB1', border: '2px solid #3e4e5c' }, // Level 4 style
-                5: { background: '#4C5E6A', color: '#D1D8DB', border: '2px solid #D1D8DB' } // Add Level 5 style
+                5: { background: '#4C5E6A', color: '#D1D8DB', border: '2px solid #D1D8DB' }, // Add Level 5 style
+                6: { background: '#DDB771', color: '#0B6E4F', border: '2px solid #0B6E4F' }
             };
 
             // Fallback style if level not found
@@ -1467,7 +1479,8 @@
                 2: '#3e2e3c', // Lavender Gray for Level 2
                 3: '#2e3e3c',  // Pale Greenish Gray for Level 3
                 4: '#3e4e5c', // Level 4 background color
-                5: '#633d50'
+                5: '#633d50',
+                6: '#0B6E4F'
             };
 
             const fallbackColor = '#000000'; // Black as fallback if level not found
@@ -1480,6 +1493,7 @@
             const mazeContainer = document.querySelector('.maze-container');
             const containerColor = currentLevel === 2 ? '#C8BED2'
                 : currentLevel === 3 ? '#B2BAB1'
+                : currentLevel === 6 ? '#DDB771'
                     : '#B2BAB1'; // Add Level 3 color
             mazeContainer.style.backgroundColor = containerColor;
         }
@@ -1487,6 +1501,7 @@
         function updateCanvasBorder() {
             const mazeColor = currentLevel === 2 ? '#684756'
                 : currentLevel === 3 ? '#684756'
+                : currentLevel === 6 ? '#0B6E4F'
                     : '#222222'; // Add Level 3 color
             document.querySelector('canvas').style.border = `1px solid ${mazeColor}`;
         }
@@ -1510,8 +1525,13 @@
                     break;
                 case 4:
                     currentLevel = 5; // Add Level 5
-                    startGame('level5(1).png', { x: 180, y: 0 }, { x: 180, y: 380 });
+                    startGame('level5(2).png', { x: 180, y: 0 }, { x: 180, y: 380 });
                     showLevelAnnouncement(5);
+                    break;
+                case 5:
+                    currentLevel = 6; // Add Level 5
+                    startGame('level6.png', { x: 180, y: 0 }, { x: 180, y: 380 });
+                    showLevelAnnouncement(6);
                     break;
                 default:
                     console.log("No more levels available!");
@@ -1538,7 +1558,7 @@
                 const nextLevelButton = document.getElementById('nextLevelButton');
                 const menuButtonPopup = document.getElementById('menuButtonPopup');
 
-                if (currentLevel < 5) {
+                if (currentLevel < 6) {
                     // Show "Next Level" button for levels 1-4
                     nextLevelButton.style.display = 'block';
                     menuButtonPopup.style.display = 'none';
@@ -1591,7 +1611,14 @@
             currentLevel = 5; // Set current level
             showLevelAnnouncement(5);
 
-            startGame('level5(1).png', { x: 180, y: 0 }, { x: 180, y: 380 }); // Replace with Level 5 maze image and settings
+            startGame('level5(2).png', { x: 180, y: 0 }, { x: 180, y: 380 }); // Replace with Level 5 maze image and settings
+        });
+
+        level6Button.addEventListener('click', () => {
+            currentLevel = 6; // Set current level
+            showLevelAnnouncement(6);
+
+            startGame('level6.png', { x: 180, y: 0 }, { x: 180, y: 380 });
         });
 
         function showLevelSelector() {
@@ -1706,6 +1733,7 @@
             // Choose color based on the current level
             const newColor = currentLevel === 2 ? { r: 104, g: 71, b: 86 }
                 : currentLevel === 3 ? { r: 104, g: 71, b: 86 }
+                : currentLevel === 6 ? { r: 11, g: 110, b: 79}
                     : { r: 34, g: 34, b: 34 }; // Add Level 3 color
 
             for (let i = 0; i < data.length; i += 4) {
@@ -1747,7 +1775,8 @@
         }
 
         function drawExit() {
-            ctx.fillStyle = '#298a52'; // Use the new color for the exit block
+            const exitColor = exitColors[currentLevel] || '#298a52'; // Fallback color if level not defined
+            ctx.fillStyle = exitColor; // Use the color based on the current level
             ctx.fillRect(exit.x, exit.y, exit.size, exit.size);
         }
 
