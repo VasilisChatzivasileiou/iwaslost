@@ -781,6 +781,7 @@
         font-family: 'CustomFont', sans-serif;">
         start
     </button>
+    <button id="leaveButton" style="background-color: #D33F49; color: white; margin-top: 10px;">Leave</button>
     </div>
 
     <div id="levelAnnouncement">
@@ -804,7 +805,6 @@
             <button id="level6Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #0B6E4F; color: #DDB771;">Level 06</button>
         </div>
         <button id="optionsButton" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #FFD700; color: #222222;">Options</button>
-        <button id="leaveButton" style="background-color: #D33F49; color: white; margin-top: 10px;">Leave</button>
     </div>
 
     <div id="thanksMessage" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
@@ -938,6 +938,8 @@
             });
         });
 
+        let logoClickable = false; // Flag to control logo behavior
+
         const levelPaths = {
             1: [
                 "up", "right", "up", "right", "down", "left", "down", "left", "up", "right", "up",
@@ -1034,10 +1036,17 @@
                 window.electronAPI.quitApp();
             } catch (error) {
                 console.log("Electron API not detected, switching to browser behavior.");
+                
                 // Fallback for the browser: Show the thank you message
                 const thanksMessage = document.getElementById('thanksMessage');
                 thanksMessage.style.display = 'block';
+
+                // Hide other screens
+                document.getElementById('startScreen').style.display = 'none';
                 document.getElementById('levelSelection').style.display = 'none';
+
+                // Enable logo clickability
+                logoClickable = true;
             }
         });
 
@@ -1049,12 +1058,17 @@
 
         // Add event listener to the logo to reset the game screen
         document.getElementById('logo').addEventListener('click', () => {
-            // Hide "Thanks for playing" message
-            const thanksMessage = document.getElementById('thanksMessage');
-            thanksMessage.style.display = 'none';
+            if (logoClickable) { // Check if the logo is allowed to be clickable
+                // Hide "Thanks for playing" message
+                const thanksMessage = document.getElementById('thanksMessage');
+                thanksMessage.style.display = 'none';
 
-            // Show level selection screen
-            document.getElementById('levelSelection').style.display = 'flex';
+                // Show start screen
+                document.getElementById('startScreen').style.display = 'flex';
+
+                // Reset the flag
+                logoClickable = false;
+            }
         });
 
         let currentLevel = 1; // Start with level 1
