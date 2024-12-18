@@ -471,7 +471,7 @@
             #hintButton {
                 position: absolute;
                 top: 254.5px; /* Adjust vertical position */
-                left: -103px; /* Place the button to the left of the maze */
+                left: -143px; /* Place the button to the left of the maze */
                 transform: translateY(0); /* Fine-tune alignment if needed */
             }
         }
@@ -758,7 +758,7 @@
         <img id="logo" src="iwaslost01.png" alt="Logo" style="cursor: pointer;">
         <button id="menuButton" class="menu-button" onclick="showLevelSelector()">Menu</button>
     </div>
-    <div id="hintLabel" class="hint-label" hidden>Hint Used</div>
+    <div id="hintLabel" class="hint-label" hidden>Hint Wasted</div>
 
     <div id="levelSelection" style="display: none; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background-color: #222222;">
         <button id="level1Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #B2BAB1; color: #222222; margin: 10px 0;">Level 01</button>
@@ -1007,8 +1007,11 @@
             }
         });
 
-
-
+        function resetHints() {
+            Object.keys(levelPaths).forEach(level => {
+                hintUsed[level] = false; // Reset all hints
+            });
+        }
 
         // Add event listener to the logo to reset the game screen
         document.getElementById('logo').addEventListener('click', () => {
@@ -1039,6 +1042,8 @@
             const yesButton = document.createElement('button');
             const noButton = document.createElement('button');
 
+            // Modal Overlay Styles
+            modalOverlay.style.fontSize = '20px';
             modalOverlay.style.position = 'fixed';
             modalOverlay.style.top = '0';
             modalOverlay.style.left = '0';
@@ -1050,17 +1055,32 @@
             modalOverlay.style.alignItems = 'center';
             modalOverlay.style.zIndex = '1000';
 
-            modalContent.style.backgroundColor = '#fff';
+            // Modal Content Styles
+            modalContent.style.backgroundColor = '#222222'; // Dark gray background
             modalContent.style.padding = '20px';
-            modalContent.style.borderRadius = '8px';
+            modalContent.style.borderRadius = '0px';
             modalContent.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
             modalContent.style.textAlign = 'center';
+            modalContent.style.color = '#B2BAB1'; // Light gray-green text
 
-            message.textContent = 'You have 1 hint, use it?';
+            // Message Text Style
+            message.innerHTML = 'You have only ONE hint<br>..use it?';
+            message.style.color = '#B2BAB1'; // Light gray-green color
+
+            // Button Styles
             yesButton.textContent = 'Yes';
+            yesButton.style.fontFamily = 'CustomFont', 'sans-serif';
             yesButton.style.margin = '10px';
+            yesButton.style.fontSize = '20px';
+            yesButton.style.backgroundColor = '#222222'; // Matching modal background
+            yesButton.style.color = '#B2BAB1'; // Text color
+
             noButton.textContent = 'No';
+            noButton.style.fontFamily = 'CustomFont', 'sans-serif';
             noButton.style.margin = '10px';
+            noButton.style.fontSize = '20px';
+            noButton.style.backgroundColor = '#222222'; // Matching modal background
+            noButton.style.color = '#B2BAB1'; // Text color
 
             modalContent.appendChild(message);
             modalContent.appendChild(yesButton);
@@ -1088,7 +1108,7 @@
 
             setTimeout(() => {
                 hintLabel.style.display = "none";
-            }, 1000);
+            }, 1500);
 
             // 1. Player hasn’t moved yet
             if (playerSteps.length === 0) {
@@ -1494,6 +1514,9 @@
                 levelAnnouncementTimeout = null;
             }
 
+            resetHints();
+            enableHintButton();
+
             document.getElementById('levelSelection').style.display = 'flex';
             document.getElementById('gameContainer').style.display = 'none';
             menuButton.style.display = 'none'; // Hide the Menu button
@@ -1797,6 +1820,10 @@
             // Stop any ongoing movement
             clearInterval(movingInterval);
             movingInterval = null; // Reset interval reference
+
+            playerSteps = [];
+            playerLastPositions = [];
+            lastCorrectStep = 0;
 
             // Reset game states
             isMoving = false;
