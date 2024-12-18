@@ -1139,30 +1139,63 @@
             console.log("Hint function triggered");
 
             hintLabel.style.display = "block";
-
             setTimeout(() => {
                 hintLabel.style.display = "none";
             }, 1500);
 
-            // 1. Player hasn’t moved yet
+            // Case 1: Player hasn’t moved yet
             if (playerSteps.length === 0) {
-                highlightNextSteps(correctPath.slice(0, 2)); // Highlight first two steps
+                highlightNextSteps(correctPath.slice(0, 2)); // Highlight first two buttons
+                highlightPathOnMaze(correctPath.slice(0, 2), player.startX, player.startY);
                 return;
             }
 
-            // 2. Compare player's moves with the correct path
+            // Case 2: Compare player's moves with the correct path
+            let stepsCorrectSoFar = 0;
+
             for (let i = 0; i < playerSteps.length; i++) {
-                if (playerSteps[i] !== correctPath[i]) {
-                    lastCorrectStep = i; // Update last correct step
-                    movePlayerToCorrectStep(i); // Visual reset
+                if (playerSteps[i] === correctPath[i]) {
+                    stepsCorrectSoFar = i + 1; // Update the number of correct steps so far
+                } else {
+                    // Incorrect step found, reset player and show hint
+                    lastCorrectStep = stepsCorrectSoFar;
+                    movePlayerToCorrectStep(stepsCorrectSoFar); 
+                    highlightNextSteps(correctPath.slice(stepsCorrectSoFar, stepsCorrectSoFar + 2)); // Buttons
+                    highlightPathOnMaze(correctPath.slice(stepsCorrectSoFar, stepsCorrectSoFar + 2), player.startX, player.startY);
                     return;
                 }
             }
 
-            // 3. Player is correct so far, show the next two steps
-            highlightNextSteps(correctPath.slice(lastCorrectStep, lastCorrectStep + 2));
+            // Case 3: Player is correct so far, show the next two steps
+            lastCorrectStep = stepsCorrectSoFar;
+            highlightNextSteps(correctPath.slice(lastCorrectStep, lastCorrectStep + 2)); // Buttons
+            highlightPathOnMaze(correctPath.slice(lastCorrectStep, lastCorrectStep + 2), player.startX, player.startY);
         }
 
+        function highlightPathOnMaze(moves, startX, startY) {
+            let currentX = startX; // Starting X position
+            let currentY = startY; // Starting Y position
+
+            const cellSize = player.size; // The size of one step
+            const highlightColor = 'rgba(255, 255, 0, 0.5)'; // Yellow transparent color
+
+            moves.forEach((move) => {
+                // Calculate the next step based on the move direction
+                if (move === 'up') currentY -= cellSize;
+                if (move === 'down') currentY += cellSize;
+                if (move === 'left') currentX -= cellSize;
+                if (move === 'right') currentX += cellSize;
+
+                // Draw the highlight rectangle at the next position
+                ctx.fillStyle = highlightColor;
+                ctx.fillRect(currentX, currentY, cellSize, cellSize);
+            });
+
+            // Redraw the player and exit to ensure they are visible
+            drawExit();
+            drawPlayer();
+        }
+        
         function resetHints() {
             Object.keys(levelPaths).forEach(level => {
                 hintUsed[level] = false;
