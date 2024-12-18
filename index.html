@@ -423,9 +423,10 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Add a shadow */
         }
 
-        .hint-blink {
-            animation: blink 1s infinite alternate;
-            background-color: yellow; /* Highlight color */
+        .blink-highlight {
+            animation: blink 0.75s ease-in-out 2; /* Blinks 2 times */
+            border: 2px solid #FFD700; /* Optional: add a border */
+            box-shadow: 0 0 8px #FFD700; /* Optional: glow effect */
         }
 
         .hint-label {
@@ -445,8 +446,14 @@
         }
 
         @keyframes blink {
-            from { opacity: 1; }
-            to { opacity: 0.5; }
+            0%, 100% {
+                background-color: #FFD700; /* Yellow highlight */
+                color: black;
+            }
+            50% {
+                background-color: #FF4500; /* Orange highlight */
+                color: white;
+            }
         }
 
         @media (min-width: 1024px) {
@@ -724,7 +731,7 @@
                 font-size: 28px;
             }
         }
-        
+
     </style>
 </head>
 <body>
@@ -1180,9 +1187,32 @@
             }
         });
 
-        function highlightNextSteps(){
+        function highlightNextSteps(nextMoves) {
+            // Map directions to their respective buttons
+            const buttonMap = {
+                'up': document.querySelector('button[data-direction="ArrowUp"]'),
+                'down': document.querySelector('button[data-direction="ArrowDown"]'),
+                'left': document.querySelector('button[data-direction="ArrowLeft"]'),
+                'right': document.querySelector('button[data-direction="ArrowRight"]')
+            };
 
-        };
+            // Highlight each of the next two steps
+            nextMoves.forEach((move, index) => {
+                const button = buttonMap[move];
+                if (!button) return;
+
+                // Add blinking effect with a CSS class
+                setTimeout(() => {
+                    button.classList.add('blink-highlight');
+
+                    // Remove the class after blinking
+                    setTimeout(() => {
+                        button.classList.remove('blink-highlight');
+                    }, 1500); // Blink duration (adjust as needed)
+
+                }, index * 1600); // Delay for each move's highlight
+            });
+        }
 
         function updateDirectionsToTracker(stopIndex) {
             // Get all the child <li> elements
