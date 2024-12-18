@@ -579,7 +579,6 @@
 
             
         }
-
         @media (max-width: 480px) {
             .logo-container {
                 padding: 0px 0; /* Optional spacing between logo and instructions */
@@ -601,6 +600,7 @@
                 flex-direction: column;
                 justify-content: center;
                 align-items: center;
+                margin: 0; /* Remove unnecessary margin */
                 gap: 0px;
                 padding: 0px;
                 position: relative; /* Allow absolute positioning of maze */
@@ -623,7 +623,8 @@
 
             .maze-container {
                 overflow: hidden;
-                width: 400px; /* Fixed width for the maze */
+                width: 100%;
+                max-width: 400px; /* Ensure consistency with tracker width */
                 height: auto;
                 display: flex;
                 top: 0; /* Fix it to the top */
@@ -632,15 +633,25 @@
                 margin: 0 auto; /* Remove any extra margin */
                 padding: 10px; /* Remove any extra padding */
                 transform: scale(.9);
-                transform-origin:top center; /* Anchor scaling */
-                margin: auto; /* Center within parent container */
+                transform-origin:bottom center; /* Anchor scaling to top */
+                margin: 0; /* Remove margin to close the gap */
             }
 
             .tracker-container {
+                position: absolute;
+                top: 0; /* Align it to the top */
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 2; /* Ensure it stays above other elements */
                 margin: 0px auto;
-                width: 379.8px;
+                padding: 0px;
+                width: 100%;
+                max-width: 370px;
+                text-align: center;
+                overflow-y: auto;
                 height: auto;
-                max-height: 42px;
+                max-height: 49px;
+                line-height: 1; /* Tighten text spacing */
                 overflow-y: auto; /* Add a scrollbar when content exceeds the max height */
                 font-size: 12px;
                 display: flex;
@@ -654,20 +665,20 @@
 
             .controls button {
                 width: 90px;
-                height: 100px;
+                height: 80px;
                 font-size: 28px;
             }
 
             .reset-button {
-                width: 128px;
-                height: 75px;
-                font-size: 28px;
+                width: 120px;
+                height: 55px;
+                font-size: 25px;
             }
 
             .confirm-button {
-                width: 128px;
-                height: 75px;
-                font-size: 28px;
+                width: 120px;
+                height: 55px;
+                font-size: 25px;
             }
 
             .main-container {
@@ -696,8 +707,24 @@
                 top: 13px;
                 left: 10px;
             }
+
+            .buttons-container {
+            gap: 10px;
+            }
             
         }
+        @media (max-height: 720px) {
+            .tracker-container {
+                max-height: 34px; /* Reduce max height when screen height is below 749px */
+            }
+
+            .controls button {
+                width: 90px;
+                height: 80px;
+                font-size: 28px;
+            }
+        }
+        
     </style>
 </head>
 <body>
@@ -822,7 +849,7 @@
                         <canvas id="mazeCanvas" width="400" height="400"></canvas>
                     </div>
                     <div class="controls-wrapper">
-                        <div id="hintFeedback" style="margin-top: 10px; color: #CCCCCC; font-size: 18px; text-align: center; font-family: 'CustomFont', sans-serif;">
+                        <div id="hintFeedback" style="margin-top: 0px; color: #CCCCCC; font-size: 18px; text-align: center; font-family: 'CustomFont', sans-serif;">
                             Next Moves: None
                         </div>
                         <div class="controls">
