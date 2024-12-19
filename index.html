@@ -800,12 +800,36 @@
         cursor: pointer; 
         background-color: #222222; 
         color: #CCCCCC; 
-        border: outset; 
+        border: outset;
         border-radius: 0px;
         font-family: 'CustomFont', sans-serif;">
         start
     </button>
-    <button id="leaveButton" style="background-color: #D33F49; color: white; margin-top: 10px;">Leave</button>
+    <button id="optionsButton" style="font-family: 'CustomFont', sans-serif; font-size: 25px; padding: 0px 30px; cursor: pointer; background-color: #222222; color: #CCCCCC; border: outset;">options</button>
+
+    <div id="optionsWindow" class="hidden">
+        <div id="optionsHeader" style="background: #444; color: white; display: flex; justify-content: space-between; padding: 10px;">
+            <span>Options</span>
+            <button id="closeOptionsButton" style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">X</button>
+        </div>
+        <div id="optionsContent" style="padding: 20px; text-align: center;">
+            
+            <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <label for="volumeSlider" style="white-space: nowrap;">Music</label>
+                <input 
+                    type="range" 
+                    id="volumeSlider" 
+                    min="0" 
+                    max="1" 
+                    step="0.01" 
+                    value="1"
+                    style="width: 200px;"
+                />
+            </div>
+            <p>Volume: <span id="volumeValue">100</span></p>
+        </div>
+    </div>
+    <button id="leaveButton" style="font-size: 25px; font-family: 'CustomFont', sans-serif; padding: 0px 30px; background-color: #222222; color: #CCCCCC; margin-top: 0px; cursor: pointer; border: outset;">leave</button>
     </div>
 
     <div id="levelAnnouncement">
@@ -829,7 +853,6 @@
             <button id="level6Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #0B6E4F; color: #DDB771;">Level 06</button>
             
         </div>
-        <button id="optionsButton" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px 30px; cursor: pointer; background-color: #FFD700; color: #222222;">Options</button>
         <button id="mainMenuButton" style="
     font-family: 'CustomFont', sans-serif;
     font-size: 20px;
@@ -845,29 +868,6 @@
         font-size: 30px; color: #222222; background-color: #B2BAB1;
         padding: 0px; border-radius: 0px; text-align: center; width: 300px;">
     Thanks for playing!
-    </div>
-
-    <div id="optionsWindow" class="hidden">
-        <div id="optionsHeader" style="background: #444; color: white; display: flex; justify-content: space-between; padding: 10px;">
-            <span>Options</span>
-            <button id="closeOptionsButton" style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">X</button>
-        </div>
-        <div id="optionsContent" style="padding: 20px; text-align: center;">
-            
-            <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-                <label for="volumeSlider" style="white-space: nowrap;">Music</label>
-                <input 
-                    type="range" 
-                    id="volumeSlider" 
-                    min="0" 
-                    max="1" 
-                    step="0.01" 
-                    value="1"
-                    style="width: 200px;"
-                />
-            </div>
-            <p>Volume: <span id="volumeValue">100</span></p>
-        </div>
     </div>
 
     <div id="gameContainer" style="display: none;">
@@ -1073,6 +1073,9 @@
                 "up", "right", "up", "right", "up", "right", "up", "left", "up", "left",
                 "down", "left","up", "right", "up", "left", "down", "right", "up", "right",
                 "up"
+            ],
+            6: [
+                
             ]
         };
         
