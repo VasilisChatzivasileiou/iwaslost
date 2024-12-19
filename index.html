@@ -445,6 +445,18 @@
             display: none; /* Hidden by default */
         }
 
+        #menuElement {
+            position: absolute;
+            top: 20%; /* Adjust to position above the title */
+            width: 300px;
+            padding-left: 10px;
+            
+            
+            
+            image-rendering: pixelated; /* Keep it crisp */
+            animation: float 3s infinite ease-in-out; /* Add the floating animation */
+        }
+
         @keyframes float {
             0% {
                 transform: translateY(0px) rotate(0deg);
@@ -455,17 +467,6 @@
             100% {
                 transform: translateY(0px) rotate(0deg);
             }
-        }
-
-        #menuElement {
-            image-rendering: pixelated;
-            image-rendering: crisp-edges;
-            position: relative;
-            animation: float 3s ease-in-out infinite; /* Floating animation */
-            display: block;
-            margin-bottom: 20px; /* Spacing from the button */
-            width: 100px; /* Adjust size as needed */
-            height: auto; /* Maintain aspect ratio */
         }
 
         @keyframes blink {
@@ -607,6 +608,7 @@
                 padding: 8px 16px;
             }
 
+
             
         }
         @media (max-width: 480px) {
@@ -743,6 +745,7 @@
             }
             
         }
+
         @media (max-height: 720px) {
             .tracker-container {
                 max-height: 34px; /* Reduce max height when screen height is below 749px */
@@ -754,6 +757,43 @@
                 font-size: 28px;
             }
         }
+
+        @media (max-height:870px) {
+            #menuElement {
+
+            top: 15%; /* Adjust to position above the title */
+            }
+        }
+
+        @media (max-height:779px) {
+            #menuElement {
+
+            top: 13%; /* Adjust to position above the title */
+            }
+        }
+
+
+        @media (max-height:735px) {
+            #menuElement {
+
+            top: 9%; /* Adjust to position above the title */
+            }
+        }
+
+        @media (max-height:680px) {
+            #menuElement {
+
+            top: 5%; /* Adjust to position above the title */
+            }
+        }
+
+        @media (max-height:605px) {
+            #menuElement {
+
+            top: 3.5%; /* Adjust to position above the title */
+            }
+        }
+
 
     </style>
 </head>
@@ -783,17 +823,19 @@
     </style>
 
     <div id="startScreen" style="
-    display: flex; 
-    flex-direction: column; 
-    justify-content: center; 
-    align-items: center; 
-    height: 100vh; 
-    background-color: #222222; 
-    color: #CCCCCC; 
-    font-size: 20px; 
-    text-align: center;">
-    <img id="menuElement" src="menuelement.png" alt="Menu Element">
-    <h1 style="margin-bottom: 20px; font-family: 'CustomFont', sans-serif;">i_was_lost_v0.1</h1>
+        display: flex; 
+        flex-direction: column; 
+        justify-content: center; 
+        align-items: center; 
+        height: 100vh; 
+        background-color: #222222; 
+        color: #CCCCCC; 
+        font-size: 20px; 
+        text-align: center;">
+
+    <img id="menuElement" src="frames/menuelementframe1.png" alt="Menu Element">
+
+    <h1 style="margin-bottom: 20px; font-family: 'CustomFont', sans-serif;z-index: 1;">i_was_lost_v0.1</h1>
     <button id="startGameButton" style="
         font-size: 25px; 
         padding: 0px 30px; 
@@ -970,6 +1012,62 @@
             backgroundMusic.play().catch((e) => {
                 console.error("Music playback failed:", e);
             });
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const menuElement = document.getElementById('menuElement');
+
+            // Array of frame URLs
+            const frames = [
+                'frames/menuelementframe1.png',
+                'frames/menuelementframe2.png',
+                'frames/menuelementframe3.png',
+                'frames/menuelementframe4.png',
+                'frames/menuelementframe5.png',
+                'frames/menuelementframe6.png',
+                'frames/menuelementframe7.png',
+                'frames/menuelementframe8.png',
+                'frames/menuelementframe9.png',
+                'frames/menuelementframe10.png',
+                'frames/menuelementframe11.png',
+                'frames/menuelementframe12.png',
+                'frames/menuelementframe13.png',
+                'frames/menuelementframe14.png',
+                'frames/menuelementframe15.png',
+                'frames/menuelementframe16.png',
+                'frames/menuelementframe17.png',
+                'frames/menuelementframe18.png',
+                'frames/menuelementframe19.png',
+                'frames/menuelementframe20.png',
+                'frames/menuelementframe21.png',
+                'frames/menuelementframe22.png',
+                'frames/menuelementframe23.png',
+                'frames/menuelementframe24.png',
+                'frames/menuelementframe25.png',
+                'frames/menuelementframe26.png',
+                'frames/menuelementframe27.png',
+                'frames/menuelementframe28.png',
+                'frames/menuelementframe29.png'
+                // Add more frames as needed
+            ];
+
+            let currentFrame = 0;
+            const frameDuration = 125; // Duration per frame in milliseconds (0.3 seconds)
+
+            // Function to update the frame
+            function updateFrame() {
+                currentFrame = (currentFrame + 1) % frames.length; // Loop back to the first frame
+                menuElement.src = frames[currentFrame];
+            }
+
+            // Preload all frames to avoid flickering
+            frames.forEach((frame) => {
+                const img = new Image();
+                img.src = frame;
+            });
+
+            // Start the frame animation
+            setInterval(updateFrame, frameDuration); // Frame animation
         });
 
         function hexToRgb(hex) {
