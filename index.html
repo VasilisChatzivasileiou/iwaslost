@@ -607,10 +607,8 @@
                 font-size: 20px; /* Adjust button text size */
                 padding: 8px 16px;
             }
-
-
-
         }
+        
         @media (max-width: 480px) {
             .logo-container {
                 padding: 0px 0; /* Optional spacing between logo and instructions */
@@ -794,6 +792,13 @@
             }
         }
 
+        @media (max-width: 375px) {
+            .maze-container {
+                width: fit-content;
+                transform: scale(0.77); /* Scale down the maze */
+                transform-origin: bottom center; /* Anchor scaling */
+            }
+        }
 
     </style>
 </head>
@@ -844,7 +849,8 @@
         color: #CCCCCC;
         border: outset;
         border-radius: 0px;
-        font-family: 'CustomFont', sans-serif;">
+        font-family: 'CustomFont', sans-serif;
+        z-index: 1;">
         start
     </button>
     <button id="optionsButton" style="font-family: 'CustomFont', sans-serif; font-size: 25px; padding: 0px 30px; cursor: pointer; background-color: #222222; color: #CCCCCC; border: outset;">options</button>
