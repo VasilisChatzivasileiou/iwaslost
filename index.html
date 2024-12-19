@@ -68,7 +68,7 @@
             color: #B2BAB1;
             font-size: 18px;
             font-family: 'CustomFont';
-            
+
             border-radius: 0px;
             padding: 10px 5px;
             cursor: pointer;
@@ -336,7 +336,7 @@
             text-align: center;
         }
 
-        input[type="range"] { 
+        input[type="range"] {
             -webkit-appearance: none; /* For Safari and Chrome */
             appearance: none; /* Standard property for compatibility */
             position: relative;
@@ -375,11 +375,11 @@
             box-sizing: border-box;
         }
 
-        ::-ms-fill-lower { 
+        ::-ms-fill-lower {
             background: dodgerblue;
         }
 
-        ::-ms-thumb { 
+        ::-ms-thumb {
             background: #fff;
             border: 2px solid #999;
             height: 40px;
@@ -387,7 +387,7 @@
             box-sizing: border-box;
         }
 
-        ::-ms-track { 
+        ::-ms-track {
             background: #ddd;
             color: transparent;
             height: 40px;
@@ -450,9 +450,9 @@
             top: 20%; /* Adjust to position above the title */
             width: 300px;
             padding-left: 10px;
-            
-            
-            
+
+
+
             image-rendering: pixelated; /* Keep it crisp */
             animation: float 3s infinite ease-in-out; /* Add the floating animation */
         }
@@ -485,7 +485,7 @@
                 padding: 0px 0;
                 position: absolute;
                 top: 5px;
-                left: 50%; 
+                left: 50%;
                 transform: translateX(-50%);
                 max-width: 450px; /* Smaller logo size */
             }
@@ -609,7 +609,7 @@
             }
 
 
-            
+
         }
         @media (max-width: 480px) {
             .logo-container {
@@ -743,7 +743,7 @@
             .buttons-container {
             gap: 10px;
             }
-            
+
         }
 
         @media (max-height: 720px) {
@@ -802,7 +802,7 @@
     <div id="errorPopup" class="error-popup">
         can't go that way!
     </div>
-    
+
     <style>
         .error-popup {
             display: none;
@@ -823,25 +823,25 @@
     </style>
 
     <div id="startScreen" style="
-        display: flex; 
-        flex-direction: column; 
-        justify-content: center; 
-        align-items: center; 
-        height: 100vh; 
-        background-color: #222222; 
-        color: #CCCCCC; 
-        font-size: 20px; 
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #222222;
+        color: #CCCCCC;
+        font-size: 20px;
         text-align: center;">
 
     <img id="menuElement" src="frames/menuelementframe1.png" alt="Menu Element">
 
     <h1 style="margin-bottom: 20px; font-family: 'CustomFont', sans-serif;z-index: 1;">i_was_lost_v0.1</h1>
     <button id="startGameButton" style="
-        font-size: 25px; 
-        padding: 0px 30px; 
-        cursor: pointer; 
-        background-color: #222222; 
-        color: #CCCCCC; 
+        font-size: 25px;
+        padding: 0px 30px;
+        cursor: pointer;
+        background-color: #222222;
+        color: #CCCCCC;
         border: outset;
         border-radius: 0px;
         font-family: 'CustomFont', sans-serif;">
@@ -855,15 +855,15 @@
             <button id="closeOptionsButton" style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">X</button>
         </div>
         <div id="optionsContent" style="padding: 20px; text-align: center;">
-            
+
             <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
                 <label for="volumeSlider" style="white-space: nowrap;">Music</label>
-                <input 
-                    type="range" 
-                    id="volumeSlider" 
-                    min="0" 
-                    max="1" 
-                    step="0.01" 
+                <input
+                    type="range"
+                    id="volumeSlider"
+                    min="0"
+                    max="1"
+                    step="0.01"
                     value="1"
                     style="width: 200px;"
                 />
@@ -893,7 +893,7 @@
             <button id="level4Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #3e4e5c; color: #B2BAB1;">Level 04</button>
             <button id="level5Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #4C5E6A; color: #D1D8DB;">Level 05</button>
             <button id="level6Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #0B6E4F; color: #DDB771;">Level 06</button>
-            
+
         </div>
         <button id="mainMenuButton" style="
     font-family: 'CustomFont', sans-serif;
@@ -906,7 +906,7 @@
 ">Main Menu</button>
     </div>
 
-    <div id="thanksMessage" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+    <div id="thanksMessage" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
         font-size: 30px; color: #222222; background-color: #B2BAB1;
         padding: 0px; border-radius: 0px; text-align: center; width: 300px;">
     Thanks for playing!
@@ -1155,7 +1155,7 @@
                 "right", "down", "left", "up", "right", "down", "right", "up", "left", "up"
             ],
             3: [
-                "right", "up", "right", "up", "left", "down", "left", "up", "left", "down", 
+                "right", "up", "right", "up", "left", "down", "left", "up", "left", "down",
                 "right", "up", "left", "up", "right", "up", "left", "up", "right", "up",
                 "left", "down", "left", "down", "right", "down", "right", "up", "left", "up"
             ],
@@ -1173,16 +1173,16 @@
                 "up"
             ],
             6: [
-                
+
             ]
         };
-        
+
         const hintUsed = {};
 
         Object.keys(levelPaths).forEach(level => {
             hintUsed[level] = false;
         });
-        
+
         const hintButton = document.getElementById('hintButton'); // Reference to the Hint button
         const hintLabel = document.getElementById('hintLabel');
 
@@ -1242,7 +1242,7 @@
                 window.electronAPI.quitApp();
             } catch (error) {
                 console.log("Electron API not detected, switching to browser behavior.");
-                
+
                 // Fallback for the browser: Show the thank you message
                 const thanksMessage = document.getElementById('thanksMessage');
                 thanksMessage.style.display = 'block';
@@ -1379,7 +1379,7 @@
                 } else {
                     // Incorrect step found, reset player and show hint
                     lastCorrectStep = stepsCorrectSoFar;
-                    movePlayerToCorrectStep(stepsCorrectSoFar); 
+                    movePlayerToCorrectStep(stepsCorrectSoFar);
                     highlightNextSteps(correctPath.slice(stepsCorrectSoFar, stepsCorrectSoFar + 2)); // Buttons
                     highlightPathOnMaze(correctPath.slice(stepsCorrectSoFar, stepsCorrectSoFar + 2), player.startX, player.startY);
                     return;
@@ -1415,7 +1415,7 @@
             drawExit();
             drawPlayer();
         }
-        
+
         function resetHints() {
             Object.keys(levelPaths).forEach(level => {
                 hintUsed[level] = false;
