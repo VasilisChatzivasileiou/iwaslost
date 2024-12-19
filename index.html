@@ -445,6 +445,29 @@
             display: none; /* Hidden by default */
         }
 
+        @keyframes float {
+            0% {
+                transform: translateY(0px) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-10px) rotate(2deg); /* Moves up and rotates slightly */
+            }
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+        }
+
+        #menuElement {
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            position: relative;
+            animation: float 3s ease-in-out infinite; /* Floating animation */
+            display: block;
+            margin-bottom: 20px; /* Spacing from the button */
+            width: 100px; /* Adjust size as needed */
+            height: auto; /* Maintain aspect ratio */
+        }
+
         @keyframes blink {
             0%, 100% {
                 background-color: #FFD700; /* Yellow highlight */
@@ -769,6 +792,7 @@
     color: #CCCCCC; 
     font-size: 20px; 
     text-align: center;">
+    <img id="menuElement" src="menuelement.png" alt="Menu Element">
     <h1 style="margin-bottom: 20px; font-family: 'CustomFont', sans-serif;">i_was_lost_v0.1</h1>
     <button id="startGameButton" style="
         font-size: 25px; 
@@ -946,6 +970,66 @@
             backgroundMusic.play().catch((e) => {
                 console.error("Music playback failed:", e);
             });
+        });
+
+        function hexToRgb(hex) {
+            // Convert hex code to RGB
+            const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+            const fullHex = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b);
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(fullHex);
+
+            return result
+                ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16),
+                }
+                : null;
+        }
+
+        function recolorMenuElement(hexColor) {
+            const menuElementImage = document.getElementById('menuElement');
+            const offscreenCanvas = document.createElement('canvas');
+            offscreenCanvas.width = menuElementImage.naturalWidth;
+            offscreenCanvas.height = menuElementImage.naturalHeight;
+            const offscreenCtx = offscreenCanvas.getContext('2d');
+
+            // Disable image smoothing for pixel art sharpness
+            offscreenCtx.imageSmoothingEnabled = false;
+
+            // Draw the original image onto the canvas
+            offscreenCtx.drawImage(menuElementImage, 0, 0);
+
+            // Get image data
+            const imageData = offscreenCtx.getImageData(0, 0, menuElementImage.naturalWidth, menuElementImage.naturalHeight);
+            const data = imageData.data;
+
+            // Convert the hex color to RGB
+            const newColor = hexToRgb(hexColor);
+            if (!newColor) {
+                console.error("Invalid hex color provided.");
+                return;
+            }
+
+            // Replace black (0, 0, 0, non-transparent) pixels with the desired color
+            for (let i = 0; i < data.length; i += 4) {
+                if (data[i] === 0 && data[i + 1] === 0 && data[i + 2] === 0 && data[i + 3] !== 0) {
+                    data[i] = newColor.r;     // Red
+                    data[i + 1] = newColor.g; // Green
+                    data[i + 2] = newColor.b; // Blue
+                }
+            }
+
+            // Update the canvas with the recolored image data
+            offscreenCtx.putImageData(imageData, 0, 0);
+
+            // Replace the original image with the recolored canvas data
+            menuElementImage.src = offscreenCanvas.toDataURL();
+        }
+
+        // Example usage: Set the desired hex color (e.g., "#FF8552")
+        document.getElementById('menuElement').addEventListener('load', () => {
+            recolorMenuElement('#CCCCCC');
         });
 
         document.getElementById('mainMenuButton').addEventListener('click', () => {
