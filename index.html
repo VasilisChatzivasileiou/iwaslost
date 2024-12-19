@@ -10,7 +10,7 @@
     <style>
         @font-face {
             font-family: 'CustomFont';
-            src: url('IDTFIdentifier-0.1-Bold.otf') format('opentype');
+            src: url('./assets/fonts/IDTFIdentifier-0.1-Bold.otf') format('opentype');
         }
 
         html, body {
@@ -68,7 +68,7 @@
             color: #B2BAB1;
             font-size: 18px;
             font-family: 'CustomFont';
-            
+
             border-radius: 0px;
             padding: 10px 5px;
             cursor: pointer;
@@ -336,7 +336,7 @@
             text-align: center;
         }
 
-        input[type="range"] { 
+        input[type="range"] {
             -webkit-appearance: none; /* For Safari and Chrome */
             appearance: none; /* Standard property for compatibility */
             position: relative;
@@ -375,11 +375,11 @@
             box-sizing: border-box;
         }
 
-        ::-ms-fill-lower { 
+        ::-ms-fill-lower {
             background: dodgerblue;
         }
 
-        ::-ms-thumb { 
+        ::-ms-thumb {
             background: #fff;
             border: 2px solid #999;
             height: 40px;
@@ -387,7 +387,7 @@
             box-sizing: border-box;
         }
 
-        ::-ms-track { 
+        ::-ms-track {
             background: #ddd;
             color: transparent;
             height: 40px;
@@ -450,9 +450,9 @@
             top: 20%; /* Adjust to position above the title */
             width: 300px;
             padding-left: 10px;
-            
-            
-            
+
+
+
             image-rendering: pixelated; /* Keep it crisp */
             animation: float 3s infinite ease-in-out; /* Add the floating animation */
         }
@@ -485,7 +485,7 @@
                 padding: 0px 0;
                 position: absolute;
                 top: 5px;
-                left: 50%; 
+                left: 50%;
                 transform: translateX(-50%);
                 max-width: 450px; /* Smaller logo size */
             }
@@ -609,7 +609,7 @@
             }
 
 
-            
+
         }
         @media (max-width: 480px) {
             .logo-container {
@@ -743,7 +743,7 @@
             .buttons-container {
             gap: 10px;
             }
-            
+
         }
 
         @media (max-height: 720px) {
@@ -802,7 +802,7 @@
     <div id="errorPopup" class="error-popup">
         can't go that way!
     </div>
-    
+
     <style>
         .error-popup {
             display: none;
@@ -823,25 +823,25 @@
     </style>
 
     <div id="startScreen" style="
-        display: flex; 
-        flex-direction: column; 
-        justify-content: center; 
-        align-items: center; 
-        height: 100vh; 
-        background-color: #222222; 
-        color: #CCCCCC; 
-        font-size: 20px; 
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #222222;
+        color: #CCCCCC;
+        font-size: 20px;
         text-align: center;">
 
-    <img id="menuElement" src="frames/menuelementframe1.png" alt="Menu Element">
+    <img id="menuElement" alt="Menu Element">
 
     <h1 style="margin-bottom: 20px; font-family: 'CustomFont', sans-serif;z-index: 1;">i_was_lost_v0.1</h1>
     <button id="startGameButton" style="
-        font-size: 25px; 
-        padding: 0px 30px; 
-        cursor: pointer; 
-        background-color: #222222; 
-        color: #CCCCCC; 
+        font-size: 25px;
+        padding: 0px 30px;
+        cursor: pointer;
+        background-color: #222222;
+        color: #CCCCCC;
         border: outset;
         border-radius: 0px;
         font-family: 'CustomFont', sans-serif;">
@@ -855,15 +855,15 @@
             <button id="closeOptionsButton" style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">X</button>
         </div>
         <div id="optionsContent" style="padding: 20px; text-align: center;">
-            
+
             <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
                 <label for="volumeSlider" style="white-space: nowrap;">Music</label>
-                <input 
-                    type="range" 
-                    id="volumeSlider" 
-                    min="0" 
-                    max="1" 
-                    step="0.01" 
+                <input
+                    type="range"
+                    id="volumeSlider"
+                    min="0"
+                    max="1"
+                    step="0.01"
                     value="1"
                     style="width: 200px;"
                 />
@@ -893,7 +893,7 @@
             <button id="level4Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #3e4e5c; color: #B2BAB1;">Level 04</button>
             <button id="level5Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #4C5E6A; color: #D1D8DB;">Level 05</button>
             <button id="level6Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #0B6E4F; color: #DDB771;">Level 06</button>
-            
+
         </div>
         <button id="mainMenuButton" style="
     font-family: 'CustomFont', sans-serif;
@@ -906,7 +906,7 @@
 ">Main Menu</button>
     </div>
 
-    <div id="thanksMessage" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+    <div id="thanksMessage" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
         font-size: 30px; color: #222222; background-color: #B2BAB1;
         padding: 0px; border-radius: 0px; text-align: center; width: 300px;">
     Thanks for playing!
@@ -980,7 +980,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             const startScreen = document.getElementById('startScreen');
             const startGameButton = document.getElementById('startGameButton');
-            const backgroundMusic = new Audio('i careOST.mp3'); // Background music
+            const backgroundMusic = new Audio('./assets/audio/i careOST.mp3'); // Background music
             const volumeSlider = document.getElementById('volumeSlider'); // Slider
             const volumeValueDisplay = document.getElementById('volumeValue'); // Display value
 
@@ -1019,35 +1019,35 @@
 
             // Array of frame URLs
             const frames = [
-                'frames/menuelementframe1.png',
-                'frames/menuelementframe2.png',
-                'frames/menuelementframe3.png',
-                'frames/menuelementframe4.png',
-                'frames/menuelementframe5.png',
-                'frames/menuelementframe6.png',
-                'frames/menuelementframe7.png',
-                'frames/menuelementframe8.png',
-                'frames/menuelementframe9.png',
-                'frames/menuelementframe10.png',
-                'frames/menuelementframe11.png',
-                'frames/menuelementframe12.png',
-                'frames/menuelementframe13.png',
-                'frames/menuelementframe14.png',
-                'frames/menuelementframe15.png',
-                'frames/menuelementframe16.png',
-                'frames/menuelementframe17.png',
-                'frames/menuelementframe18.png',
-                'frames/menuelementframe19.png',
-                'frames/menuelementframe20.png',
-                'frames/menuelementframe21.png',
-                'frames/menuelementframe22.png',
-                'frames/menuelementframe23.png',
-                'frames/menuelementframe24.png',
-                'frames/menuelementframe25.png',
-                'frames/menuelementframe26.png',
-                'frames/menuelementframe27.png',
-                'frames/menuelementframe28.png',
-                'frames/menuelementframe29.png'
+                'assets/frames/menuelementframe1.png',
+                'assets/frames/menuelementframe2.png',
+                'assets/frames/menuelementframe3.png',
+                'assets/frames/menuelementframe4.png',
+                'assets/frames/menuelementframe5.png',
+                'assets/frames/menuelementframe6.png',
+                'assets/frames/menuelementframe7.png',
+                'assets/frames/menuelementframe8.png',
+                'assets/frames/menuelementframe9.png',
+                'assets/frames/menuelementframe10.png',
+                'assets/frames/menuelementframe11.png',
+                'assets/frames/menuelementframe12.png',
+                'assets/frames/menuelementframe13.png',
+                'assets/frames/menuelementframe14.png',
+                'assets/frames/menuelementframe15.png',
+                'assets/frames/menuelementframe16.png',
+                'assets/frames/menuelementframe17.png',
+                'assets/frames/menuelementframe18.png',
+                'assets/frames/menuelementframe19.png',
+                'assets/frames/menuelementframe20.png',
+                'assets/frames/menuelementframe21.png',
+                'assets/frames/menuelementframe22.png',
+                'assets/frames/menuelementframe23.png',
+                'assets/frames/menuelementframe24.png',
+                'assets/frames/menuelementframe25.png',
+                'assets/frames/menuelementframe26.png',
+                'assets/frames/menuelementframe27.png',
+                'assets/frames/menuelementframe28.png',
+                'assets/frames/menuelementframe29.png'
                 // Add more frames as needed
             ];
 
@@ -1155,7 +1155,7 @@
                 "right", "down", "left", "up", "right", "down", "right", "up", "left", "up"
             ],
             3: [
-                "right", "up", "right", "up", "left", "down", "left", "up", "left", "down", 
+                "right", "up", "right", "up", "left", "down", "left", "up", "left", "down",
                 "right", "up", "left", "up", "right", "up", "left", "up", "right", "up",
                 "left", "down", "left", "down", "right", "down", "right", "up", "left", "up"
             ],
@@ -1173,16 +1173,16 @@
                 "up"
             ],
             6: [
-                
+
             ]
         };
-        
+
         const hintUsed = {};
 
         Object.keys(levelPaths).forEach(level => {
             hintUsed[level] = false;
         });
-        
+
         const hintButton = document.getElementById('hintButton'); // Reference to the Hint button
         const hintLabel = document.getElementById('hintLabel');
 
@@ -1217,7 +1217,7 @@
         const volumeValueDisplay = document.getElementById('volumeValue');
 
         // Create the audio object for your song
-        const backgroundMusic = new Audio('i careOST.mp3'); // Path to your song
+        const backgroundMusic = new Audio('./assets/audio/i careOST.mp3'); // Path to your song
         backgroundMusic.loop = true; // Makes the music loop
         backgroundMusic.volume = 1; // Set the initial volume
 
@@ -1242,7 +1242,7 @@
                 window.electronAPI.quitApp();
             } catch (error) {
                 console.log("Electron API not detected, switching to browser behavior.");
-                
+
                 // Fallback for the browser: Show the thank you message
                 const thanksMessage = document.getElementById('thanksMessage');
                 thanksMessage.style.display = 'block';
@@ -1379,7 +1379,7 @@
                 } else {
                     // Incorrect step found, reset player and show hint
                     lastCorrectStep = stepsCorrectSoFar;
-                    movePlayerToCorrectStep(stepsCorrectSoFar); 
+                    movePlayerToCorrectStep(stepsCorrectSoFar);
                     highlightNextSteps(correctPath.slice(stepsCorrectSoFar, stepsCorrectSoFar + 2)); // Buttons
                     highlightPathOnMaze(correctPath.slice(stepsCorrectSoFar, stepsCorrectSoFar + 2), player.startX, player.startY);
                     return;
@@ -1393,33 +1393,94 @@
         }
 
         function highlightPathOnMaze(moves, startX, startY) {
+            console.log('moves ->', moves);
+
             let currentX = startX; // Starting X position
             let currentY = startY; // Starting Y position
 
-            const cellSize = player.size; // The size of one step
             const highlightColor = 'rgba(255, 255, 0, 0.5)'; // Yellow transparent color
 
-            moves.forEach((move) => {
-                // Calculate the next step based on the move direction
-                if (move === 'up') currentY -= cellSize;
-                if (move === 'down') currentY += cellSize;
-                if (move === 'left') currentX -= cellSize;
-                if (move === 'right') currentX += cellSize;
-
-                // Draw the highlight rectangle at the next position
-                ctx.fillStyle = highlightColor;
-                ctx.fillRect(currentX, currentY, cellSize, cellSize);
-            });
+            executeAdvancedMoves(moves);
 
             // Redraw the player and exit to ensure they are visible
             drawExit();
             drawPlayer();
         }
-        
-        function resetHints() {
-            Object.keys(levelPaths).forEach(level => {
-                hintUsed[level] = false;
-            });
+
+        function processAdvancedNextMove(queue, cPlayer) {
+            if (isMoving || queue.length === 0) return; // Prevent overlapping moves
+
+            const direction = queue.shift(); // Get the next move in the queue
+
+            startAdvancedMoving(direction, cPlayer, queue); // Start moving the player
+        }
+
+        function startAdvancedMoving(direction, cPlayer, queue) {
+            if (isMoving) return; // Prevent overlapping movements
+
+            isMoving = true; // Lock movement
+            const speed = 1;
+            let dx = 0, dy = 0;
+
+            switch (direction) {
+                case 'up':
+                    dx = 0;
+                    dy = -speed;
+                    break;
+                case 'down':
+                    dx = 0;
+                    dy = speed;
+                    break;
+                case 'left':
+                    dx = -speed;
+                    dy = 0;
+                    break;
+                case 'right':
+                    dx = speed;
+                    dy = 0;
+                    break;
+            }
+
+            movingInterval = setInterval(() => {
+                const newX = cPlayer.x + dx;
+                const newY = cPlayer.y + dy;
+
+                if (
+                    newX < 0 || newX + cPlayer.size > canvas.width ||
+                    newY < 0 || newY + cPlayer.size > canvas.height ||
+                    isCollision(newX, newY, cPlayer)
+                ) {
+                    clearInterval(movingInterval); // Stop movement on collision
+                    movingInterval = null; // Reset interval reference
+                    cPlayer.x = Math.round(cPlayer.x / speed) * speed; // Align position to grid
+                    cPlayer.y = Math.round(cPlayer.y / speed) * speed;
+                    isMoving = false; // Unlock movement
+
+                    drawPlayer(cPlayer);
+                    processAdvancedNextMove(queue, cPlayer); // Process the next move in the queue
+                } else {
+                    // Update player position
+                    cPlayer.x = newX;
+                    cPlayer.y = newY;
+                    drawPlayer(cPlayer);
+                }
+            }, 10);
+        }
+
+        function executeAdvancedMoves(moveQueue) {
+            if (isExecutingMoves || moveQueue.length === 0) return; // Prevent overlap
+            isExecutingMoves = true;
+
+            const interval = setInterval(() => {
+                if (moveQueue.length === 0 || isMoving) {
+                    clearInterval(interval); // Stop when all moves are processed or already moving
+                    isExecutingMoves = false; // Reset flag
+                    return;
+                }
+                const cPlayer = {...player};
+
+                startAdvancedMoving(moveQueue[0], cPlayer, moveQueue); // Start moving
+            }, 300); // Delay between moves
         }
 
         function disableHintButton() {
@@ -1514,7 +1575,7 @@
         closeOptionsButton.addEventListener('click', hideOptionsWindow);
 
         function playErrorSound() {
-            const errorSound = new Audio('error.wav');
+            const errorSound = new Audio('./assets/audio/error.wav');
             errorSound.play().catch(err => {
                 console.error("Error playing sound:", err);
             });
@@ -1987,9 +2048,15 @@
             mazeData = imageData.data;
         }
 
-        function drawPlayer() {
+        function drawPlayer(cPlayer) {
             recolorMaze();
             drawExit();
+            // draw hint
+            if (cPlayer){
+                ctx.fillStyle = 'rgba(255, 255, 0, 0.5)';
+                ctx.fillRect(cPlayer.x, cPlayer.y, cPlayer.size, cPlayer.size);
+            }
+            // and draw player
             ctx.fillStyle = player.color; // Use the player's color
             ctx.fillRect(player.x, player.y, player.size, player.size);
         }
@@ -2000,15 +2067,21 @@
             ctx.fillRect(exit.x, exit.y, exit.size, exit.size);
         }
 
-        function isCollision(newX, newY) {
+        function isCollision(newX, newY, pPlayer) {
+            let cPlayer = player;
+
+            if (pPlayer){
+                cPlayer = pPlayer;
+            }
+
             const mazeX = Math.floor(newX / scale);
             const mazeY = Math.floor(newY / scale);
 
             const corners = [
                 { x: mazeX, y: mazeY },
-                { x: mazeX + player.size / scale - 1, y: mazeY },
-                { x: mazeX, y: mazeY + player.size / scale - 1 },
-                { x: mazeX + player.size / scale - 1, y: mazeY + player.size / scale - 1 },
+                { x: mazeX + cPlayer.size / scale - 1, y: mazeY },
+                { x: mazeX, y: mazeY + cPlayer.size / scale - 1 },
+                { x: mazeX + cPlayer.size / scale - 1, y: mazeY + cPlayer.size / scale - 1 },
             ];
 
             const scaledWidth = canvas.width / scale;
@@ -2021,13 +2094,6 @@
                 }
             }
             return false;
-        }
-
-        function movePlayer(direction) {
-            if (isMoving) return; // Prevent overlapping movements
-            currentDirection = direction; // Set the current direction
-            console.log('Moving in direction:', direction); // Debugging
-            startMoving(); // Start movement logic
         }
 
         function addDirectionToTracker(direction) {
@@ -2101,9 +2167,9 @@
 
         // Define an array of audio files
         const buttonSounds = [
-            new Audio("POP1-3.wav"),
-            new Audio("POP2-3.wav"),
-            new Audio("POP3-3.wav")
+            new Audio("./assets/audio/POP1-3.wav"),
+            new Audio("./assets/audio/POP2-3.wav"),
+            new Audio("./assets/audio/POP3-3.wav")
         ];
 
         // Function to play a random sound
