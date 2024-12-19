@@ -984,6 +984,8 @@
             const volumeSlider = document.getElementById('volumeSlider'); // Slider
             const volumeValueDisplay = document.getElementById('volumeValue'); // Display value
 
+            volumeValueDisplay.textContent = '100%';
+
             // Music settings
             backgroundMusic.loop = true;
             backgroundMusic.volume = 1;
@@ -1000,17 +1002,13 @@
                     console.warn("Autoplay prevented", e);
                 });
             });
+
             volumeSlider.addEventListener('input', () => {
                 const volume = parseFloat(volumeSlider.value);
                 backgroundMusic.volume = volume;
 
                 // Update volume display
                 volumeValueDisplay.textContent = Math.round(volume * 100) + '%';
-            });
-            volumeValueDisplay.textContent = '100%';
-
-            backgroundMusic.play().catch((e) => {
-                console.error("Music playback failed:", e);
             });
         });
 
@@ -1209,32 +1207,6 @@
             'left': 'right',
             'right': 'left',
         };
-
-
-
-        // Volume slider and display elements
-        const volumeSlider = document.getElementById('volumeSlider');
-        const volumeValueDisplay = document.getElementById('volumeValue');
-
-        // Create the audio object for your song
-        const backgroundMusic = new Audio('./assets/audio/i careOST.mp3'); // Path to your song
-        backgroundMusic.loop = true; // Makes the music loop
-        backgroundMusic.volume = 1; // Set the initial volume
-
-        // Update the volume based on the slider input
-        volumeSlider.addEventListener('input', () => {
-            const volume = parseFloat(volumeSlider.value);
-            backgroundMusic.volume = volume;
-
-            // Update the displayed volume percentage
-            volumeValueDisplay.textContent = Math.round(volume * 100);
-        });
-
-        // Play the background music as soon as the menu is ready
-        backgroundMusic.play().catch((e) => {
-            console.error("Music playback failed:", e);
-        });
-
 
         document.getElementById('leaveButton').addEventListener('click', () => {
             try {
