@@ -943,8 +943,8 @@
                         <canvas id="mazeCanvas" width="400" height="400"></canvas>
                     </div>
                     <div class="controls-wrapper">
-                        <div id="hintFeedback" style="margin-top: 0px; color: #CCCCCC; font-size: 18px; text-align: center; font-family: 'CustomFont', sans-serif;">
-                            Next Moves: None
+                        <div id="timerDisplay" style="margin-top: 0px; color: #CCCCCC; font-size: 18px; text-align: center; font-family: 'CustomFont', sans-serif;">
+                            Time: 00:00
                         </div>
                         <div class="controls">
                             <button data-direction="ArrowLeft"><</button>
@@ -1024,6 +1024,9 @@
             });
         });
 
+        const levelCompletionTimes = {};
+
+
         document.addEventListener('DOMContentLoaded', () => {
             const menuElement = document.getElementById('menuElement');
 
@@ -1079,6 +1082,34 @@
             // Start the frame animation
             setInterval(updateFrame, frameDuration); // Frame animation
         });
+
+        let timerInterval;
+            let startTime;
+
+            function startTimer() {
+                startTime = Date.now(); // Reset the start time
+                clearInterval(timerInterval); // Clear any previous intervals
+                timerInterval = setInterval(() => {
+                    const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+                    const minutes = String(Math.floor(elapsedTime / 60)).padStart(2, '0');
+                    const seconds = String(elapsedTime % 60).padStart(2, '0');
+                    document.getElementById('timerDisplay').textContent = `Time: ${minutes}:${seconds}`;
+                }, 1000);
+            }
+
+            function stopTimer() {
+                // Clear the timer interval
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+            }
+
+            // Display the elapsed time in the win popup
+            function getElapsedTime() {
+                if (!startTime) return 0;
+                return Date.now() - startTime;
+            }
 
         function hexToRgb(hex) {
             // Convert hex code to RGB
@@ -1141,11 +1172,20 @@
         });
 
         document.getElementById('mainMenuButton').addEventListener('click', () => {
-            // Hide level selection screen
+            // Hide the level selection screen
             document.getElementById('levelSelection').style.display = 'none';
 
-            // Show start screen
+            // Show the start screen
             document.getElementById('startScreen').style.display = 'flex';
+
+            // Stop the timer
+            stopTimer();
+
+            // Reset the timer display
+            document.getElementById('timerDisplay').textContent = "Time: 00:00";
+
+            // Update level completion times in the level selector
+            updateLevelCompletionTime();
 
             // Optional: Stop any level music or reset settings
             console.log("Returning to Main Menu...");
@@ -1772,6 +1812,10 @@
         }
 
         function goToNextLevel() {
+            // Reset the timer display and restart the timer
+            document.getElementById('timerDisplay').textContent = "Time: 00:00";
+            startTimer();
+
             switch (currentLevel) {
                 case 1:
                     currentLevel = 2;
@@ -1789,12 +1833,12 @@
                     showLevelAnnouncement(4);
                     break;
                 case 4:
-                    currentLevel = 5; // Add Level 5
+                    currentLevel = 5;
                     startGame('level5(2).png', { x: 180, y: 0 }, { x: 180, y: 380 });
                     showLevelAnnouncement(5);
                     break;
                 case 5:
-                    currentLevel = 6; // Add Level 5
+                    currentLevel = 6;
                     startGame('level6.png', { x: 180, y: 0 }, { x: 180, y: 380 });
                     showLevelAnnouncement(6);
                     break;
@@ -1808,7 +1852,6 @@
             }
         }
 
-
         function checkWin() {
             if (
                 player.x < exit.x + exit.size &&
@@ -1816,7 +1859,11 @@
                 player.y < exit.y + exit.size &&
                 player.y + player.size > exit.y
             ) {
-                clearInterval(movingInterval);
+                clearInterval(timerInterval);
+
+                const elapsedTime = document.getElementById('timerDisplay').textContent.split(': ')[1];
+                levelCompletionTimes[`level${currentLevel}`] = elapsedTime;
+
                 winPopup.style.display = 'block';
                 moveCountMessage.innerHTML = `You won and it took you ${moveCount} moves.<br>..loser`;
 
@@ -1824,23 +1871,49 @@
                 const menuButtonPopup = document.getElementById('menuButtonPopup');
 
                 if (currentLevel < 6) {
-                    // Show "Next Level" button for levels 1-4
                     nextLevelButton.style.display = 'block';
                     menuButtonPopup.style.display = 'none';
                 } else {
-                    // Show "Go to Menu" button for the last level
                     nextLevelButton.style.display = 'none';
                     menuButtonPopup.style.display = 'block';
+                }
+
+                // Update level selector with completion time
+                updateLevelCompletionTime();
+            }
+        }
+
+        function updateLevelCompletionTime() {
+            for (let level in levelCompletionTimes) {
+                const button = document.getElementById(`${level}Button`);
+                if (button) {
+                    // Check if the time label already exists
+                    let timeLabel = document.getElementById(`${level}TimeLabel`);
+                    if (!timeLabel) {
+                        // Create a new time label if it doesn't exist
+                        timeLabel = document.createElement('div');
+                        timeLabel.id = `${level}TimeLabel`;
+                        timeLabel.style.color = '#CCCCCC';
+                        timeLabel.style.fontSize = '14px';
+                        timeLabel.style.textAlign = 'center';
+                        button.parentElement.insertBefore(timeLabel, button);
+                    }
+                    // Update the time label content
+                    timeLabel.textContent = `Time: ${levelCompletionTimes[level]}`;
                 }
             }
         }
 
-        // Add event listener to "Level 1" button
         level1Button.addEventListener('click', () => {
             currentLevel = 1; // Set current level
             showLevelAnnouncement(1);
 
+            // Reset the timer display and start the timer
+            document.getElementById('timerDisplay').textContent = "Time: 00:00";
+            startTimer();
+
             startGame('maze013.png', { x: 180, y: 0 }, { x: 180, y: 380 }); // Set maze image and exit position for Level 1
+
             // Hide the level selection screen
             levelSelection.style.display = 'none';
 
@@ -1852,15 +1925,22 @@
         });
 
         level2Button.addEventListener('click', () => {
-            currentLevel = 2; // Set current level
+            currentLevel = 2;
             showLevelAnnouncement(2);
 
-            startGame('level2(3).png', { x: 180, y: 40 }, { x: 180, y: 380 }); // Set maze image and exit position for Level 2
+            // Reset the timer display and start the timer
+            document.getElementById('timerDisplay').textContent = "Time: 00:00";
+            startTimer();
+
+            startGame('level2(3).png', { x: 180, y: 40 }, { x: 180, y: 380 });
         });
 
         level3Button.addEventListener('click', () => {
             currentLevel = 3; // Set current level
             showLevelAnnouncement(3);
+
+            document.getElementById('timerDisplay').textContent = "Time: 00:00";
+            startTimer();
 
             startGame('level3(3).png', { x: 180, y: 0 }, { x: 180, y: 340 }); // Replace with actual Level 3 settings
         });
@@ -1869,6 +1949,9 @@
             currentLevel = 4; // Set current level
             showLevelAnnouncement(4);
 
+            document.getElementById('timerDisplay').textContent = "Time: 00:00";
+            startTimer();
+
             startGame('level4(1).png', { x: 180, y: 0 }, { x: 180, y: 320 }); // Replace with actual Level 4 settings
         });
 
@@ -1876,12 +1959,18 @@
             currentLevel = 5; // Set current level
             showLevelAnnouncement(5);
 
+            document.getElementById('timerDisplay').textContent = "Time: 00:00";
+            startTimer();
+
             startGame('level5(2).png', { x: 180, y: 0 }, { x: 180, y: 380 }); // Replace with Level 5 maze image and settings
         });
 
         level6Button.addEventListener('click', () => {
             currentLevel = 6; // Set current level
             showLevelAnnouncement(6);
+
+            document.getElementById('timerDisplay').textContent = "Time: 00:00";
+            startTimer();
 
             startGame('level6.png', { x: 180, y: 0 }, { x: 180, y: 380 });
         });
@@ -2129,7 +2218,6 @@
                     player.x = Math.round(player.x / speed) * speed; // Align position to grid
                     player.y = Math.round(player.y / speed) * speed;
                     isMoving = false; // Unlock movement
-
 
                     playerLastPositions.push({ x: Math.round(player.x / speed) * speed, y: Math.round(player.y / speed) * speed });
 
