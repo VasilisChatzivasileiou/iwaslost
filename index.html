@@ -1915,12 +1915,18 @@
             ) {
                 clearInterval(timerInterval);
 
+                // Extract the elapsed time from the timer display
                 const elapsedTime = document.getElementById('timerDisplay').textContent.split(': ')[1];
                 levelCompletionTimes[`level${currentLevel}`] = elapsedTime;
 
+                // Display the win popup
                 winPopup.style.display = 'block';
-                moveCountMessage.innerHTML = `You won and it took you ${moveCount} moves.<br>..loser`;
 
+                // Update the move count message with elapsed time
+                moveCountMessage.innerHTML = `You won and it took you ${moveCount} moves.<br>
+                your time was ${elapsedTime}.<br>..loser`;
+
+                // Show or hide the next level button based on the current level
                 const nextLevelButton = document.getElementById('nextLevelButton');
                 const menuButtonPopup = document.getElementById('menuButtonPopup');
 
