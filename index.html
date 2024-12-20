@@ -842,24 +842,83 @@
         background-color: #222222;
         color: #CCCCCC;
         font-size: 20px;
-        text-align: center;">
+        text-align: center;
+    ">
 
-    <img id="menuElement" alt="Menu Element">
+        <img id="menuElement" alt="Menu Element">
 
-    <h1 style="margin-bottom: 20px; font-family: 'CustomFont', sans-serif;z-index: 1;">i_was_lost_v0.1.1</h1>
-    <button id="startGameButton" style="
-        font-size: 25px;
-        padding: 0px 30px;
-        cursor: pointer;
-        background-color: #222222;
-        color: #CCCCCC;
-        border: outset;
-        border-radius: 0px;
-        font-family: 'CustomFont', sans-serif;
-        z-index: 1;">
-        start
-    </button>
-    <button id="optionsButton" style="font-family: 'CustomFont', sans-serif; font-size: 25px; padding: 0px 30px; cursor: pointer; background-color: #222222; color: #CCCCCC; border: outset;">options</button>
+        <h1 style="margin-bottom: 20px; font-family: 'CustomFont', sans-serif;z-index: 1;">i_was_lost_v0.1.1</h1>
+
+        <div id="buttonBackground" style="
+            position: relative;
+            width: 400px;
+            height: 110px;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        ">
+            <div id="menuBackgroundImage" style="
+                background-image: url('menubackground9.png');
+                background-size: cover;
+                background-position: center;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: -1;
+                border-radius: 0px;
+                image-rendering: pixelated;
+                pointer-events: none; /* Prevent blocking button clicks */
+            "></div>
+
+            <button id="startGameButton" style="
+                font-size: 25px;
+                padding: 0px 30px;
+                cursor: pointer;
+                background-color: #222222;
+                color: #CCCCCC;
+                border: none;
+                border-radius: 0px;
+                font-family: 'CustomFont', sans-serif;
+                z-index: 2;
+                margin-bottom: 0px;
+            ">
+                start
+            </button>
+
+            <button id="optionsButton" style="
+                font-family: 'CustomFont', sans-serif;
+                font-size: 25px;
+                padding: 0px 30px;
+                cursor: pointer;
+                background-color: #222222;
+                color: #CCCCCC;
+                border: none;
+                border-radius: 0px;
+                
+                margin-bottom: 0px;
+            ">
+                options
+            </button>
+
+        <button id="leaveButton" style="
+            font-size: 25px;
+            font-family: 'CustomFont', sans-serif;
+            padding: 0px 30px;
+            background-color: #222222;
+            color: #CCCCCC;
+            cursor: pointer;
+            border: none;
+            border-radius: 0px;
+        ">
+            leave
+        </button>
+            
+        </div>
+    </div>
 
     <div id="optionsWindow" class="hidden">
         <div id="optionsHeader" style="background: #444; color: white; display: flex; justify-content: space-between; padding: 10px;">
@@ -883,8 +942,7 @@
             <p>Volume: <span id="volumeValue">100</span></p>
         </div>
     </div>
-    <button id="leaveButton" style="font-size: 25px; font-family: 'CustomFont', sans-serif; padding: 0px 30px; background-color: #222222; color: #CCCCCC; margin-top: 0px; cursor: pointer; border: outset;">leave</button>
-    </div>
+    
 
     <div id="levelAnnouncement">
         <span id="levelText">LEVEL 1</span>
@@ -991,6 +1049,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const startScreen = document.getElementById('startScreen');
+            const levelSelection = document.getElementById('levelSelection'); // Declare this variable
             const startGameButton = document.getElementById('startGameButton');
             const backgroundMusic = new Audio('./assets/audio/i careOST.mp3'); // Background music
             const volumeSlider = document.getElementById('volumeSlider'); // Slider
