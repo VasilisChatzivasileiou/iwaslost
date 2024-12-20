@@ -451,10 +451,62 @@
             width: 300px;
             padding-left: 10px;
 
-
-
             image-rendering: pixelated; /* Keep it crisp */
             animation: float 3s infinite ease-in-out; /* Add the floating animation */
+        }
+        /* Common button styles */
+        #startGameButton, #optionsButton, #leaveButton {
+            font-size: 25px;
+            padding: 0px 30px;
+            cursor: pointer;
+            background-color: #222222;
+            color: #CCCCCC;
+            border: none;
+            border-radius: 0px;
+            font-family: 'CustomFont', sans-serif;
+            z-index: 2;
+            margin-bottom: 0px;
+            transition: background-color 0.3s ease, transform 0.3s ease, color 0.3s ease;
+        }
+
+        /* Hover effect */
+        #startGameButton:hover, #optionsButton:hover, #leaveButton:hover {
+            background-color: #cccccc; /* Darker background */
+            color: #222222; /* Lighter text */
+            transform: scale(1.05); /* Slight zoom */
+        }
+
+        /* Active (click) effect */
+        #startGameButton:active, #optionsButton:active, #leaveButton:active {
+            transform: scale(0.95); /* Shrink slightly when clicked */
+        }
+
+        /* Button container background image */
+        #menuBackgroundImage {
+            background-image: url('menubackground9.png');
+            background-size: cover;
+            background-position: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            border-radius: 0px;
+            image-rendering: pixelated;
+            pointer-events: none; /* Prevent blocking button clicks */
+        }
+
+        /* Button container */
+        #buttonBackground {
+            position: relative;
+            width: 400px;
+            height: 110px;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
         @keyframes float {
@@ -849,73 +901,20 @@
 
         <h1 style="margin-bottom: 20px; font-family: 'CustomFont', sans-serif;z-index: 1;">i_was_lost_v0.1.1</h1>
 
-        <div id="buttonBackground" style="
-            position: relative;
-            width: 400px;
-            height: 110px;
-            z-index: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        ">
-            <div id="menuBackgroundImage" style="
-                background-image: url('menubackground9.png');
-                background-size: cover;
-                background-position: center;
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                z-index: -1;
-                border-radius: 0px;
-                image-rendering: pixelated;
-                pointer-events: none; /* Prevent blocking button clicks */
-            "></div>
+        <div id="buttonBackground">
+            <div id="menuBackgroundImage"></div>
 
-            <button id="startGameButton" style="
-                font-size: 25px;
-                padding: 0px 30px;
-                cursor: pointer;
-                background-color: #222222;
-                color: #CCCCCC;
-                border: none;
-                border-radius: 0px;
-                font-family: 'CustomFont', sans-serif;
-                z-index: 2;
-                margin-bottom: 0px;
-            ">
+            <button id="startGameButton">
                 start
             </button>
 
-            <button id="optionsButton" style="
-                font-family: 'CustomFont', sans-serif;
-                font-size: 25px;
-                padding: 0px 30px;
-                cursor: pointer;
-                background-color: #222222;
-                color: #CCCCCC;
-                border: none;
-                border-radius: 0px;
-                
-                margin-bottom: 0px;
-            ">
+            <button id="optionsButton">
                 options
             </button>
 
-        <button id="leaveButton" style="
-            font-size: 25px;
-            font-family: 'CustomFont', sans-serif;
-            padding: 0px 30px;
-            background-color: #222222;
-            color: #CCCCCC;
-            cursor: pointer;
-            border: none;
-            border-radius: 0px;
-        ">
-            leave
-        </button>
+            <button id="leaveButton">
+                leave
+            </button>
             
         </div>
     </div>
