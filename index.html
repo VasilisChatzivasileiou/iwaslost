@@ -956,14 +956,35 @@
     <div id="hintLabel" class="hint-label" hidden>Hint Wasted</div>
 
     <div id="levelSelection" style="display: none; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background-color: #222222;">
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px;">
-            <button id="level1Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #B2BAB1; color: #222222;">Level 01</button>
-            <button id="level2Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #C8BED2; color: #684756;">Level 02</button>
-            <button id="level3Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #2e3e3c; color: #B2BAB1;">Level 03</button>
-            <button id="level4Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #3e4e5c; color: #B2BAB1;">Level 04</button>
-            <button id="level5Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #4C5E6A; color: #D1D8DB;">Level 05</button>
-            <button id="level6Button" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #0B6E4F; color: #DDB771;">Level 06</button>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; row-gap: 40px; margin-bottom: 20px;">
+            <div style="position: relative;">
+                <button id="level1Button" onclick="preStartGame(1)" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #B2BAB1; color: #222222;">Level 01</button>
+                <span id="level1Timer" style="position: absolute; top: -2rem; left: 0;color: rgb(204, 204, 204);display: none;text-align: center;width: 100%"></span>
+            </div>
+            <div style="position: relative;">
+                <button id="level2Button" onclick="preStartGame(2)" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #C8BED2; color: #684756;">Level 02</button>
+                <span id="level2Timer" style="position: absolute; top: -2rem; left: 0;color: rgb(204, 204, 204);display: none;text-align: center;width: 100%"></span>
+            </div>
 
+            <div style="position: relative;">
+                <button id="level3Button" onclick="preStartGame(3)" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #2e3e3c; color: #B2BAB1;">Level 03</button>
+                <span id="level3Timer" style="position: absolute; top: -2rem; left: 0;color: rgb(204, 204, 204);display: none;text-align: center;width: 100%"></span>
+            </div>
+
+            <div style="position: relative;">
+                <button id="level4Button" onclick="preStartGame(4)" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #3e4e5c; color: #B2BAB1;">Level 04</button>
+                <span id="level4Timer" style="position: absolute; top: -2rem; left: 0;color: rgb(204, 204, 204);display: none;text-align: center;width: 100%"></span>
+            </div>
+
+            <div style="position: relative;">
+                <button id="level5Button" onclick="preStartGame(5)" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #4C5E6A; color: #D1D8DB;">Level 05</button>
+                <span id="level5Timer" style="position: absolute; top: -2rem; left: 0;color: rgb(204, 204, 204);display: none;text-align: center;width: 100%"></span>
+            </div>
+
+            <div style="position: relative;">
+                <button id="level6Button" onclick="preStartGame(6)" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #0B6E4F; color: #DDB771;">Level 06</button>
+                <span id="level6Timer" style="position: absolute; top: -2rem; left: 0;color: rgb(204, 204, 204);display: none;text-align: center;width: 100%"></span>
+            </div>
         </div>
         <button id="mainMenuButton" style="
     font-family: 'CustomFont', sans-serif;
@@ -1143,32 +1164,32 @@
         });
 
         let timerInterval;
-            let startTime;
+        let startTime;
 
-            function startTimer() {
-                startTime = Date.now(); // Reset the start time
-                clearInterval(timerInterval); // Clear any previous intervals
-                timerInterval = setInterval(() => {
-                    const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
-                    const minutes = String(Math.floor(elapsedTime / 60)).padStart(2, '0');
-                    const seconds = String(elapsedTime % 60).padStart(2, '0');
-                    document.getElementById('timerDisplay').textContent = `Time: ${minutes}:${seconds}`;
-                }, 1000);
-            }
+        function startTimer() {
+            startTime = Date.now(); // Reset the start time
+            clearInterval(timerInterval); // Clear any previous intervals
+            timerInterval = setInterval(() => {
+                const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+                const minutes = String(Math.floor(elapsedTime / 60)).padStart(2, '0');
+                const seconds = String(elapsedTime % 60).padStart(2, '0');
+                document.getElementById('timerDisplay').textContent = `Time: ${minutes}:${seconds}`;
+            }, 1000);
+        }
 
-            function stopTimer() {
-                // Clear the timer interval
-                if (timerInterval) {
-                    clearInterval(timerInterval);
-                    timerInterval = null;
-                }
+        function stopTimer() {
+            // Clear the timer interval
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
             }
+        }
 
-            // Display the elapsed time in the win popup
-            function getElapsedTime() {
-                if (!startTime) return 0;
-                return Date.now() - startTime;
-            }
+        // Display the elapsed time in the win popup
+        function getElapsedTime() {
+            if (!startTime) return 0;
+            return Date.now() - startTime;
+        }
 
         function hexToRgb(hex) {
             // Convert hex code to RGB
@@ -1278,7 +1299,7 @@
                 "up", "left", "up", "right", "up", "left", "up", "right", "down", "right",
                 "up", "right", "down", "left", "up", "left", "up", "left", "down", "right",
                 "up", "right", "up", "right", "up", "right", "up", "left", "up", "left",
-                "down", "left","up", "right", "up", "left", "down", "right", "up", "right",
+                "down", "left", "up", "right", "up", "left", "down", "right", "up", "right",
                 "up"
             ],
             6: [
@@ -1428,7 +1449,7 @@
             modalContent.appendChild(noButton);
             modalOverlay.appendChild(modalContent);
             document.body.appendChild(modalOverlay);
-
+            
             yesButton.addEventListener('click', () => {
                 hintUsed[currentLevel] = true; // Mark hint as used
                 disableHintButton();           // Disable the button ONLY after confirming
@@ -1564,7 +1585,7 @@
                     isExecutingMoves = false; // Reset flag
                     return;
                 }
-                const cPlayer = {...player};
+                const cPlayer = { ...player };
 
                 startAdvancedMoving(moveQueue[0], cPlayer, moveQueue); // Start moving
             }, 300); // Delay between moves
@@ -1861,66 +1882,37 @@
             const mazeContainer = document.querySelector('.maze-container');
             const containerColor = currentLevel === 2 ? '#C8BED2'
                 : currentLevel === 3 ? '#B2BAB1'
-                : currentLevel === 6 ? '#DDB771'
-                    : '#B2BAB1'; // Add Level 3 color
+                    : currentLevel === 6 ? '#DDB771'
+                        : '#B2BAB1'; // Add Level 3 color
             mazeContainer.style.backgroundColor = containerColor;
         }
 
         function updateCanvasBorder() {
             const mazeColor = currentLevel === 2 ? '#684756'
                 : currentLevel === 3 ? '#684756'
-                : currentLevel === 6 ? '#0B6E4F'
-                    : '#222222'; // Add Level 3 color
+                    : currentLevel === 6 ? '#0B6E4F'
+                        : '#222222'; // Add Level 3 color
             document.querySelector('canvas').style.border = `1px solid ${mazeColor}`;
         }
 
         function goToNextLevel() {
-            // Reset the timer display and restart the timer
-            document.getElementById('timerDisplay').textContent = "Time: 00:00";
-            startTimer();
-
-            switch (currentLevel) {
-                case 1:
-                    currentLevel = 2;
-                    startGame('level2(4).png', { x: 180, y: 40 }, { x: 180, y: 380 });
-                    showLevelAnnouncement(2);
-                    break;
-                case 2:
-                    currentLevel = 3;
-                    startGame('level3(3).png', { x: 180, y: 0 }, { x: 180, y: 340 });
-                    showLevelAnnouncement(3);
-                    break;
-                case 3:
-                    currentLevel = 4;
-                    startGame('level4(1).png', { x: 180, y: 0 }, { x: 180, y: 320 });
-                    showLevelAnnouncement(4);
-                    break;
-                case 4:
-                    currentLevel = 5;
-                    startGame('level5(2).png', { x: 180, y: 0 }, { x: 180, y: 380 });
-                    showLevelAnnouncement(5);
-                    break;
-                case 5:
-                    currentLevel = 6;
-                    startGame('level6(2).png', { x: 180, y: 0 }, { x: 180, y: 380 });
-                    showLevelAnnouncement(6);
-                    break;
-                default:
-                    console.log("No more levels available!");
-                    const nextLevelButton = document.getElementById('nextLevelButton');
-                    if (nextLevelButton) {
-                        nextLevelButton.style.display = 'none'; // Hide the button when no more levels are available
-                    }
-                    break;
+            if (currentLevel === stupidLevels.length){
+                console.log("No more levels available!");
+                const nextLevelButton = document.getElementById('nextLevelButton');
+                if (nextLevelButton) {
+                    nextLevelButton.style.display = 'none'; // Hide the button when no more levels are available
+                }
+            }else {
+                preStartGame(currentLevel + 1);
             }
         }
 
-        function checkWin() {
+        function checkWin(bypass = false) {
             if (
-                player.x < exit.x + exit.size &&
-                player.x + player.size > exit.x &&
-                player.y < exit.y + exit.size &&
-                player.y + player.size > exit.y
+                (player.x < exit.x + exit.size &&
+                    player.x + player.size > exit.x &&
+                    player.y < exit.y + exit.size &&
+                    player.y + player.size > exit.y) || bypass
             ) {
                 clearInterval(timerInterval);
 
@@ -1950,93 +1942,36 @@
             for (let level in levelCompletionTimes) {
                 const button = document.getElementById(`${level}Button`);
                 if (button) {
-                    // Check if the time label already exists
-                    let timeLabel = document.getElementById(`${level}TimeLabel`);
-                    if (!timeLabel) {
-                        // Create a new time label if it doesn't exist
-                        timeLabel = document.createElement('div');
-                        timeLabel.id = `${level}TimeLabel`;
-                        timeLabel.style.color = '#CCCCCC';
-                        timeLabel.style.fontSize = '14px';
-                        timeLabel.style.textAlign = 'center';
-                        button.parentElement.insertBefore(timeLabel, button);
-                    }
+                    // Grab id for timer
+                    let timeLabel = document.getElementById(`${level}Timer`);
                     // Update the time label content
                     timeLabel.textContent = `Time: ${levelCompletionTimes[level]}`;
+                    // show timeLabel
+                    timeLabel.style.display = 'block';
                 }
             }
         }
 
-        level1Button.addEventListener('click', () => {
-            currentLevel = 1; // Set current level
-            showLevelAnnouncement(1);
+        const stupidLevels = [
+            { src: 'maze013.png', s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
+            { src: 'level2(4).png', s: { x: 180, y: 40 }, f: { x: 180, y: 380 } },
+            { src: 'level3(3).png', s:{ x: 180, y: 0 }, f: { x: 180, y: 340 } },
+            { src: 'level4(1).png', s:{ x: 180, y: 0 }, f: { x: 180, y: 320 } },
+            { src: 'level5(2).png', s:{ x: 180, y: 0 }, f:{ x: 180, y: 380 } },
+            { src: 'level6(2).png', s:{ x: 180, y: 0 }, f:{ x: 180, y: 380 } }
+        ]
 
-            // Reset the timer display and start the timer
-            document.getElementById('timerDisplay').textContent = "Time: 00:00";
-            startTimer();
+        function preStartGame(level) {
+            currentLevel = level; // Set current level
+            showLevelAnnouncement(level);
 
-            startGame('maze013.png', { x: 180, y: 0 }, { x: 180, y: 380 }); // Set maze image and exit position for Level 1
-
-            // Hide the level selection screen
-            levelSelection.style.display = 'none';
-
-            // Show the game container
-            gameContainer.style.display = 'block';
-
-            // Optionally initialize the game for level 1
-            initLevel1();
-        });
-
-        level2Button.addEventListener('click', () => {
-            currentLevel = 2;
-            showLevelAnnouncement(2);
-
-            // Reset the timer display and start the timer
-            document.getElementById('timerDisplay').textContent = "Time: 00:00";
-            startTimer();
-
-            startGame('level2(4).png', { x: 180, y: 40 }, { x: 180, y: 380 });
-        });
-
-        level3Button.addEventListener('click', () => {
-            currentLevel = 3; // Set current level
-            showLevelAnnouncement(3);
+            const getStupidLevel = stupidLevels[level - 1];
 
             document.getElementById('timerDisplay').textContent = "Time: 00:00";
             startTimer();
 
-            startGame('level3(3).png', { x: 180, y: 0 }, { x: 180, y: 340 }); // Replace with actual Level 3 settings
-        });
-
-        level4Button.addEventListener('click', () => {
-            currentLevel = 4; // Set current level
-            showLevelAnnouncement(4);
-
-            document.getElementById('timerDisplay').textContent = "Time: 00:00";
-            startTimer();
-
-            startGame('level4(1).png', { x: 180, y: 0 }, { x: 180, y: 320 }); // Replace with actual Level 4 settings
-        });
-
-        level5Button.addEventListener('click', () => {
-            currentLevel = 5; // Set current level
-            showLevelAnnouncement(5);
-
-            document.getElementById('timerDisplay').textContent = "Time: 00:00";
-            startTimer();
-
-            startGame('level5(2).png', { x: 180, y: 0 }, { x: 180, y: 380 }); // Replace with Level 5 maze image and settings
-        });
-
-        level6Button.addEventListener('click', () => {
-            currentLevel = 6; // Set current level
-            showLevelAnnouncement(6);
-
-            document.getElementById('timerDisplay').textContent = "Time: 00:00";
-            startTimer();
-
-            startGame('level6(2).png', { x: 180, y: 0 }, { x: 180, y: 380 });
-        });
+            startGame(getStupidLevel.src, getStupidLevel.s, getStupidLevel.f);
+        }
 
         function showLevelSelector() {
             // Reset body background color to the default menu color
@@ -2063,11 +1998,6 @@
             document.getElementById('gameContainer').style.display = 'flex';
             menuButton.style.display = 'block'; // Show the Menu button
             // Initialize game logic for the selected level here
-        }
-
-        function initLevel1() {
-            console.log("Level 1 initialized!");
-            // Any additional setup for Level 1 can be added here
         }
 
         let lastDirection = null; // Store the last completed move direction
@@ -2150,8 +2080,8 @@
             // Choose color based on the current level
             const newColor = currentLevel === 2 ? { r: 104, g: 71, b: 86 }
                 : currentLevel === 3 ? { r: 104, g: 71, b: 86 }
-                : currentLevel === 6 ? { r: 11, g: 110, b: 79}
-                    : { r: 34, g: 34, b: 34 }; // Add Level 3 color
+                    : currentLevel === 6 ? { r: 11, g: 110, b: 79 }
+                        : { r: 34, g: 34, b: 34 }; // Add Level 3 color
 
             for (let i = 0; i < data.length; i += 4) {
                 if (data[i] === 0 && data[i + 1] === 0 && data[i + 2] === 0 && data[i + 3] !== 0) {
@@ -2188,7 +2118,7 @@
             recolorMaze();
             drawExit();
             // draw hint
-            if (cPlayer){
+            if (cPlayer) {
                 ctx.fillStyle = 'rgba(255, 255, 0, 0.5)';
                 ctx.fillRect(cPlayer.x, cPlayer.y, cPlayer.size, cPlayer.size);
             }
@@ -2206,7 +2136,7 @@
         function isCollision(newX, newY, pPlayer) {
             let cPlayer = player;
 
-            if (pPlayer){
+            if (pPlayer) {
                 cPlayer = pPlayer;
             }
 
@@ -2453,4 +2383,5 @@
 
     </script>
 </body>
+
 </html>
