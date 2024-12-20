@@ -466,7 +466,7 @@
             font-family: 'CustomFont', sans-serif;
             z-index: 2;
             margin-bottom: 0px;
-            transition: background-color 0.3s ease, transform 0.3s ease, color 0.3s ease;
+            transition: background-color 0.2s ease, transform 0.2s ease, color 0.2s ease;
         }
 
         /* Hover effect */
@@ -984,16 +984,21 @@
                 <button id="level6Button" onclick="preStartGame(6)" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #0B6E4F; color: #DDB771;">Level 06</button>
                 <span id="level6Timer" style="position: absolute; top: -2rem; left: 0;color: rgb(204, 204, 204);display: none;text-align: center;width: 100%"></span>
             </div>
+
+            <div style="position: relative;">
+                <button id="level7Button" onclick="preStartGame(7)" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #B2BAB1; color: #222222;">Level 07</button>
+                <span id="level7Timer" style="position: absolute; top: -2rem; left: 0;color: rgb(204, 204, 204);display: none;text-align: center;width: 100%"></span>
+            </div>
         </div>
         <button id="mainMenuButton" style="
-    font-family: 'CustomFont', sans-serif;
-    font-size: 20px;
-    padding: 15px 10px;
-    cursor: pointer;
-    background-color: #E6E6E6;
-    color: #39393A;
-    margin-top: 20px;
-">Main Menu</button>
+            font-family: 'CustomFont', sans-serif;
+            font-size: 20px;
+            padding: 15px 10px;
+            cursor: pointer;
+            background-color: #B2BAB1;
+            color: #222222;
+            margin-top: 20px;
+        ">Main Menu</button>
     </div>
 
     <div id="thanksMessage" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -1053,6 +1058,7 @@
         const level4Button = document.getElementById('level4Button');
         const level5Button = document.getElementById('level5Button');
         const level6Button = document.getElementById('level6Button');
+        const level7Button = document.getElementById('level7Button');
 
         const gameContainer = document.getElementById('gameContainer');
         const menuButton = document.getElementById('menuButton');
@@ -1715,7 +1721,8 @@
                 3: { text: "#B2BAB1", background: "#684756" },  // Level 3: Text (Light Gray-Green), Background (Pale Green)
                 4: { text: "#B2BAB1", background: "#684756" },
                 5: { text: "#D1D8DB", background: "#4C5E6A" }, // Add Level 5 colors
-                6: { text: "#DDB771", background: "#0B6E4F" }
+                6: { text: "#DDB771", background: "#0B6E4F" },
+                7: { text: "#B2BAB1", background: "#222222" }
             };
 
             // Fallback colors if level not found
@@ -1815,7 +1822,8 @@
                 3: { background: '#2e3e3c', color: '#B2BAB1', border: '2px solid #B2BAB1' }, // Level 3
                 4: { background: '#3e4e5c', color: '#B2BAB1', border: '2px solid #B2BAB1' }, // Level 4
                 5: { background: '#445C6E', color: '#B2BAB1', border: '2px solid #B2BAB1' },  // Level 5
-                6: { background: '#0B6E4F', color: '#DDB771', border: '2px solid #DDB771' }
+                6: { background: '#0B6E4F', color: '#DDB771', border: '2px solid #DDB771' },
+                7: { background: '#B2BAB1', color: '#222222', border: '2px solid #222222' }
             };
 
             // Fallback colors if level not found
@@ -1844,7 +1852,8 @@
                 3: { background: '#B2BAB1', color: '#684756', border: '2px solid #684756' },  // Level 3
                 4: { background: '#3e4e5c', color: '#B2BAB1', border: '2px solid #3e4e5c' }, // Level 4 style
                 5: { background: '#4C5E6A', color: '#D1D8DB', border: '2px solid #D1D8DB' }, // Add Level 5 style
-                6: { background: '#DDB771', color: '#0B6E4F', border: '2px solid #0B6E4F' }
+                6: { background: '#DDB771', color: '#0B6E4F', border: '2px solid #0B6E4F' },
+                7: { background: '#222222', color: '#B2BAB1', border: '2px solid #B2BAB1' }
             };
 
             // Fallback style if level not found
@@ -1863,12 +1872,13 @@
             const body = document.body;
 
             const levelColors = {
-                1: '#1e1e1e', // Dark Gray for Level 1
+                1: '#222222', // Dark Gray for Level 1
                 2: '#3e2e3c', // Lavender Gray for Level 2
                 3: '#2e3e3c',  // Pale Greenish Gray for Level 3
                 4: '#3e4e5c', // Level 4 background color
                 5: '#633d50',
-                6: '#0B6E4F'
+                6: '#0B6E4F',
+                7: '#222222'
             };
 
             const fallbackColor = '#000000'; // Black as fallback if level not found
@@ -1930,7 +1940,7 @@
                 const nextLevelButton = document.getElementById('nextLevelButton');
                 const menuButtonPopup = document.getElementById('menuButtonPopup');
 
-                if (currentLevel < 6) {
+                if (currentLevel < 7) {
                     nextLevelButton.style.display = 'block';
                     menuButtonPopup.style.display = 'none';
                 } else {
@@ -1958,13 +1968,24 @@
         }
 
         const stupidLevels = [
-            { src: 'maze013.png', s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
+            { src: 'level1.png', s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
             { src: 'level2(4).png', s: { x: 180, y: 40 }, f: { x: 180, y: 380 } },
             { src: 'level3(3).png', s:{ x: 180, y: 0 }, f: { x: 180, y: 340 } },
             { src: 'level4(1).png', s:{ x: 180, y: 0 }, f: { x: 180, y: 320 } },
             { src: 'level5(2).png', s:{ x: 180, y: 0 }, f:{ x: 180, y: 380 } },
-            { src: 'level6(2).png', s:{ x: 180, y: 0 }, f:{ x: 180, y: 380 } }
+            { src: 'level6(2).png', s:{ x: 180, y: 0 }, f:{ x: 180, y: 380 } },
+            { src: 'level7.png', s:{ x: 180, y: 0 }, f:{ x: 180, y: 380 } }
         ]
+
+        const timerColors = {
+            1: "#B2BAB1",
+            2: "#B2BAB1",
+            3: "#B2BAB1",
+            4: "#B2BAB1",
+            5: "#B2BAB1",
+            6: "#B2BAB1",
+            7: "#B2BAB1" 
+        };
 
         function preStartGame(level) {
             currentLevel = level; // Set current level
@@ -1974,6 +1995,9 @@
 
             document.getElementById('timerDisplay').textContent = "Time: 00:00";
             startTimer();
+
+            const timerDisplay = document.getElementById('timerDisplay');
+            timerDisplay.style.color = timerColors[level] || "#CCCCCC"; // Default to gray if no color is set
 
             startGame(getStupidLevel.src, getStupidLevel.s, getStupidLevel.f);
         }
@@ -2024,7 +2048,7 @@
         const moveCountMessage = document.getElementById('moveCountMessage');
 
         const mazeImage = new Image();
-        mazeImage.src = 'maze013.png';
+        mazeImage.src = 'level1.png';
 
         resetButton.addEventListener('click', restartGame);
 
