@@ -1,0 +1,25 @@
+.arrowWrapper {
+  position: relative;
+}
+
+.arrow {
+  background: url("../images/arrow.svg");
+  background-size: contain;
+  background-repeat: no-repeat;
+  height: 2rem;
+  width: 4rem;
+  margin: auto;
+}
+
+@keyframes moveUpFade {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.arrow.animate {
+  animation: moveUpFade 0.5s ease-out;
+}
