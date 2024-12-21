@@ -32,21 +32,21 @@
         .confirm-button {
             width: auto;
             height: 50px;
-            background-color: #298a52; /* Different color for distinction */
-            color: #B2BAB1;
+            background-color: #222222; /* Different color for distinction */
+            color: #999999;
             font-size: 25px;
             font-weight: bold;
             border: none;
             border-radius: 0px;
             cursor: pointer;
             font-family: 'CustomFont';
-            border-bottom: 5px solid #1e633b;
-            border-radius: 10px;
+            border: 2px solid #999999;
+            border-radius: 0px;
         }
 
         .confirm-button:hover {
-            background-color: #B2BAB1;
-            color: #4C9068;
+            background-color: #999999;
+            color: #222222;
         }
 
         .logo-container {
@@ -65,7 +65,7 @@
             top: 13px;
             right: 10px;
             background-color: #333;
-            color: #B2BAB1;
+            color: #999999;
             font-size: 18px;
             font-family: 'CustomFont';
 
@@ -75,7 +75,7 @@
         }
 
         .menu-button:hover {
-            background-color: #B2BAB1;
+            background-color: #999999;
             color: #222222;
         }
 
@@ -117,8 +117,8 @@
         .level-button {
             padding: 10px 20px;
             font-size: 20px;
-            background-color: #4C9068;
-            color: white;
+            background-color: #222222;
+            color: #999999;
             border: none;
             border-radius: 5px;
             cursor: pointer;
@@ -126,8 +126,8 @@
         }
 
         .level-button:hover {
-            background-color: #B2BAB1;
-            color: #4C9068;
+            background-color: #999999;
+            color: #222222;
         }
 
         .content-container {
@@ -138,7 +138,7 @@
         }
 
         .maze-container {
-            background-color: #B2BAB1;
+            background-color: #999999;
             padding: 10px;
             display: inline-block;
         }
@@ -149,8 +149,8 @@
         }
 
         .tracker-container {
-            color: #B2BAB1;
-            background-color: #333;
+            color: #999999;
+            background-color: #222222;
             padding: 10px;
             border-radius: 0px;
             width: auto;
@@ -201,7 +201,7 @@
             width: 80px;
             height: 80px;
             background-color: #222222;
-            color: #B2BAB1;
+            color: #999999;
             font-size: 25px;
             font-weight: bold;
             border: none;
@@ -210,28 +210,28 @@
         }
 
         .controls button:hover {
-            background-color: #d1406e;
-            color: #B2BAB1;
+            background-color: #999999;
+            color: #222222;
         }
 
         .reset-button {
             width: 100px;
             height: 50px;
-            background-color: #d1406e;
-            color: #B2BAB1;
+            background-color: #222222;
+            color: #999999;
             font-size: 25px;
             font-weight: bold;
             border: none;
             border-radius: 0px;
             cursor: pointer;
             font-family: 'CustomFont';
-            border-bottom: 5px solid #942f4f;
-            border-radius: 10px;
+            border: 2px solid #999999;
+            border-radius: 0px;
         }
 
         .reset-button:hover {
-            background-color: #B2BAB1;
-            color: #d1406e;
+            background-color: #999999;
+            color: #222222;
         }
 
         #winPopup {
@@ -240,7 +240,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            color: #B2BAB1;
+            color: #999999;
             background-color: #222222;
             padding: 20px;
             box-shadow: 0px 0px 0px rgba(0, 0, 0, 0);
@@ -258,14 +258,14 @@
 
         #winPopup button:hover {
             background-color: #222222;
-            color: #d1406e;
+            color: #999999;
         }
 
         #winPopup button {
             margin-top: 20px;
             padding: 10px 20px;
-            background-color: #d1406e;
-            color: #B2BAB1;
+            background-color: #222222;
+            color: #999999;
             border: none;
             cursor: pointer;
             border-radius: 0px;
@@ -287,13 +287,13 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background-color: rgba(34,34,34,1); /* Dark background for the box itself */
-            color: #B2BAB1;
+            color: #999999;
             font-family: 'CustomFont', sans-serif;
             font-size: 68px;
             padding: 0px 0px;
             text-align: center;
             border-radius: 0px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6); /* Shadow around the box */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0); /* Shadow around the box */
             z-index: 1000; /* Ensure it overlays the game screen */
             width: 320px;
         }
@@ -301,7 +301,7 @@
         #levelText {
             font-family: 'CustomFont', sans-serif;
             font-size: 70px;
-            color: #B2BAB1;
+            color: #999999;
             text-align: center;
         }
 
@@ -312,9 +312,11 @@
             transform: translate(-50%, -50%);
             width: 400px;
             height: 300px;
-            background-color: #333;
+            
+            background-color: #222222;
             border-radius: 0px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            border: 5px solid #CCCCCC;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0);
             z-index: 1000;
             display: none; /* Initially hidden */
             overflow: auto; /* Allow scrolling for overflow content */
@@ -325,14 +327,14 @@
             justify-content: space-between;
             align-items: center;
             padding: 10px;
-            background-color: #444;
-            color: #fff;
-            border-bottom: 1px solid #555;
+            background-color: #CCCCCC;
+            color: #CCCCCC;
+            border-bottom: 1px solid #CCCCCC;
         }
 
         #optionsContent {
             padding: 20px;
-            color: #fff;
+            color: #CCCCCC;
             text-align: center;
         }
 
@@ -403,7 +405,7 @@
             padding: 10px 5px;
             font-size: 16px;
             background-color: #333;
-            color: #B2BAB1;
+            color: #999999;
             border: none;
             border-radius: 0px;
             cursor: pointer;
@@ -414,7 +416,7 @@
         }
 
         #hintButton:hover {
-            background-color: #B2BAB1; /* Slightly darker on hover */
+            background-color: #999999; /* Slightly darker on hover */
             color:#222222;
         }
 
@@ -435,7 +437,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background-color: rgba(34, 34, 34, 1); /* Semi-transparent black background */
-            color: #B2BAB1;
+            color: #999999;
             padding: 10px 5px;
             font-size: 30px;
             font-weight: bold;
@@ -507,6 +509,10 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+        }
+
+        :root {
+            --exit-color: #CCCCCC; /* Example of changing level 1's exit color */
         }
 
         @keyframes float {
@@ -957,52 +963,53 @@
     <div id="levelSelection" style="display: none; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background-color: #222222;">
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; row-gap: 40px; margin-bottom: 20px;">
             <div style="position: relative;">
-                <button id="level1Button" onclick="preStartGame(1)" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #B2BAB1; color: #222222;">Level 01</button>
+                <button id="level1Button" onclick="preStartGame(1)" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #999999; color: #222222;">Level 01</button>
                 <span id="level1Timer" style="position: absolute; top: -2rem; left: 0;color: rgb(204, 204, 204);display: none;text-align: center;width: 100%"></span>
             </div>
             <div style="position: relative;">
-                <button id="level2Button" onclick="preStartGame(2)" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #C8BED2; color: #684756;">Level 02</button>
+                <button id="level2Button" onclick="preStartGame(2)" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #999999; color: #222222;">Level 02</button>
                 <span id="level2Timer" style="position: absolute; top: -2rem; left: 0;color: rgb(204, 204, 204);display: none;text-align: center;width: 100%"></span>
             </div>
 
             <div style="position: relative;">
-                <button id="level3Button" onclick="preStartGame(3)" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #2e3e3c; color: #B2BAB1;">Level 03</button>
+                <button id="level3Button" onclick="preStartGame(3)" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #999999; color: #222222;">Level 03</button>
                 <span id="level3Timer" style="position: absolute; top: -2rem; left: 0;color: rgb(204, 204, 204);display: none;text-align: center;width: 100%"></span>
             </div>
 
             <div style="position: relative;">
-                <button id="level4Button" onclick="preStartGame(4)" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #3e4e5c; color: #B2BAB1;">Level 04</button>
+                <button id="level4Button" onclick="preStartGame(4)" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #999999; color: #222222;">Level 04</button>
                 <span id="level4Timer" style="position: absolute; top: -2rem; left: 0;color: rgb(204, 204, 204);display: none;text-align: center;width: 100%"></span>
             </div>
 
             <div style="position: relative;">
-                <button id="level5Button" onclick="preStartGame(5)" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #4C5E6A; color: #D1D8DB;">Level 05</button>
+                <button id="level5Button" onclick="preStartGame(5)" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #999999; color: #222222;">Level 05</button>
                 <span id="level5Timer" style="position: absolute; top: -2rem; left: 0;color: rgb(204, 204, 204);display: none;text-align: center;width: 100%"></span>
             </div>
 
             <div style="position: relative;">
-                <button id="level6Button" onclick="preStartGame(6)" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #0B6E4F; color: #DDB771;">Level 06</button>
+                <button id="level6Button" onclick="preStartGame(6)" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #999999; color: #222222;">Level 06</button>
                 <span id="level6Timer" style="position: absolute; top: -2rem; left: 0;color: rgb(204, 204, 204);display: none;text-align: center;width: 100%"></span>
             </div>
 
             <div style="position: relative;">
-                <button id="level7Button" onclick="preStartGame(7)" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #B2BAB1; color: #222222;">Level 07</button>
+                <button id="level7Button" onclick="preStartGame(7)" style="font-family: 'CustomFont', sans-serif; font-size: 20px; padding: 15px; cursor: pointer; background-color: #999999; color: #222222;">Level 07</button>
                 <span id="level7Timer" style="position: absolute; top: -2rem; left: 0;color: rgb(204, 204, 204);display: none;text-align: center;width: 100%"></span>
             </div>
         </div>
+        
         <button id="mainMenuButton" style="
             font-family: 'CustomFont', sans-serif;
             font-size: 20px;
             padding: 15px 10px;
             cursor: pointer;
-            background-color: #B2BAB1;
+            background-color: #999999;
             color: #222222;
             margin-top: 20px;
         ">Main Menu</button>
     </div>
 
     <div id="thanksMessage" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-        font-size: 30px; color: #222222; background-color: #B2BAB1;
+        font-size: 30px; color: #222222; background-color: #999999;
         padding: 0px; border-radius: 0px; text-align: center; width: 300px;">
     Thanks for playing!
     </div>
@@ -1704,53 +1711,33 @@
             }, 1000);
         }
 
-        const exitColors = {
-            1: '#298a52', // Level 1
-            2: '#298a52', // Level 2
-            3: '#298a52', // Level 3
-            4: '#298a52', // Level 4
-            5: '#298a52', // Level 5
-            6: '#EFF0D1'  // Level 6
-        };
-
         function showLevelAnnouncement(level) {
-            // Define colors for text and background for each level
-            const levelColors = {
-                1: { text: "#B2BAB1", background: "#222222" }, // Level 1: Text (White), Background (Light Gray)
-                2: { text: "#C8BED2", background: "#684756" }, // Level 2: Text (Light Purple), Background (Light Lavender)
-                3: { text: "#B2BAB1", background: "#684756" },  // Level 3: Text (Light Gray-Green), Background (Pale Green)
-                4: { text: "#B2BAB1", background: "#684756" },
-                5: { text: "#D1D8DB", background: "#4C5E6A" }, // Add Level 5 colors
-                6: { text: "#DDB771", background: "#0B6E4F" },
-                7: { text: "#B2BAB1", background: "#222222" }
-            };
+            // Use CSS variables for text and background colors
+            const root = document.documentElement;
 
-            // Fallback colors if level not found
-            const fallbackColors = { text: "#FFFFFF", background: "#000000" }; // Text (White), Background (Black)
-
-            // Get the text and background colors for the level
-            const { text, background } = levelColors[level] || fallbackColors;
+            // Apply the text and background colors from CSS variables
+            const textColor = getComputedStyle(root).getPropertyValue('--text-color').trim();
+            const backgroundColor = getComputedStyle(root).getPropertyValue('--background-color').trim();
 
             // Apply the text color to the level text
-            levelText.style.color = text;
+            levelText.style.color = textColor;
 
             // Apply the background color to the level announcement
-            levelAnnouncement.style.backgroundColor = background;
+            levelAnnouncement.style.backgroundColor = backgroundColor;
 
             // Set the level text
             levelText.textContent = `LEVEL ${level}`;
             levelAnnouncement.style.display = "flex";
 
             // Apply styles to level announcement background
-            levelAnnouncement.style.backgroundColor = background;
             levelAnnouncement.style.display = "flex";
             levelAnnouncement.style.justifyContent = "center"; // Center horizontally
             levelAnnouncement.style.alignItems = "center";     // Center vertically
             levelAnnouncement.style.textAlign = "center";      // Fallback text alignment
             levelAnnouncement.style.fontSize = "24px";         // Adjust font size
             levelAnnouncement.style.fontWeight = "bold";       // Make text bold
-            levelAnnouncement.style.height = "auto";          // Example height
-            levelAnnouncement.style.width = "auto";           // Example width
+            levelAnnouncement.style.height = "auto";           // Example height
+            levelAnnouncement.style.width = "auto";            // Example width
             levelAnnouncement.style.margin = "0 auto";         // Center the entire block
 
             // Clear any existing timeout to prevent overlapping
@@ -1815,22 +1802,10 @@
         }
 
         function updateControlsButtonColors() {
-            // Define colors for each level
-            const controlsColors = {
-                1: { background: '#B2BAB1', color: '#222222', border: '2px solid #222222' }, // Level 1
-                2: { background: '#C8BED2', color: '#684756', border: '2px solid #684756' }, // Level 2
-                3: { background: '#2e3e3c', color: '#B2BAB1', border: '2px solid #B2BAB1' }, // Level 3
-                4: { background: '#3e4e5c', color: '#B2BAB1', border: '2px solid #B2BAB1' }, // Level 4
-                5: { background: '#445C6E', color: '#B2BAB1', border: '2px solid #B2BAB1' },  // Level 5
-                6: { background: '#0B6E4F', color: '#DDB771', border: '2px solid #DDB771' },
-                7: { background: '#B2BAB1', color: '#222222', border: '2px solid #222222' }
-            };
-
-            // Fallback colors if level not found
-            const defaultColors = { background: '#FFFFFF', color: '#000000', border: '2px solid #000000' };
-
-            // Get the styles for the current level
-            const { background, color, border } = controlsColors[currentLevel] || defaultColors;
+            // Retrieve CSS variables for styling
+            const background = getComputedStyle(document.documentElement).getPropertyValue('--button-color').trim();
+            const color = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim();
+            const border = `2px solid ${getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim()}`;
 
             // Select all .controls buttons
             const controlsButtons = document.querySelectorAll('.controls button');
@@ -1842,27 +1817,16 @@
                 button.style.border = border;
             });
         }
+
         function updateTrackerContainerStyle() {
             const trackerContainer = document.querySelector('.tracker-container');
 
-            // Define styles for each level
-            const trackerStyles = {
-                1: { background: '#222222', color: '#B2BAB1', border: '2px solid #B2BAB1' }, // Level 1
-                2: { background: '#C8BED2', color: '#684756', border: '2px solid #684756' }, // Level 2
-                3: { background: '#B2BAB1', color: '#684756', border: '2px solid #684756' },  // Level 3
-                4: { background: '#3e4e5c', color: '#B2BAB1', border: '2px solid #3e4e5c' }, // Level 4 style
-                5: { background: '#4C5E6A', color: '#D1D8DB', border: '2px solid #D1D8DB' }, // Add Level 5 style
-                6: { background: '#DDB771', color: '#0B6E4F', border: '2px solid #0B6E4F' },
-                7: { background: '#222222', color: '#B2BAB1', border: '2px solid #B2BAB1' }
-            };
+            // Use CSS variables to define styles
+            const background = getComputedStyle(document.documentElement).getPropertyValue('--background-color').trim();
+            const color = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim();
+            const border = `2px solid ${getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim()}`;
 
-            // Fallback style if level not found
-            const defaultStyle = { background: '#FFFFFF', color: '#000000', border: '2px solid #000000' };
-
-            // Get the style for the current level
-            const { background, color, border } = trackerStyles[currentLevel] || defaultStyle;
-
-            // Apply styles to the tracker container
+            // Apply the styles
             trackerContainer.style.backgroundColor = background;
             trackerContainer.style.color = color;
             trackerContainer.style.border = border;
@@ -1870,38 +1834,19 @@
 
         function updateBodyBackgroundColor() {
             const body = document.body;
-
-            const levelColors = {
-                1: '#222222', // Dark Gray for Level 1
-                2: '#3e2e3c', // Lavender Gray for Level 2
-                3: '#2e3e3c',  // Pale Greenish Gray for Level 3
-                4: '#3e4e5c', // Level 4 background color
-                5: '#633d50',
-                6: '#0B6E4F',
-                7: '#222222'
-            };
-
-            const fallbackColor = '#000000'; // Black as fallback if level not found
-
-            // Set body background color based on the current level
-            body.style.backgroundColor = levelColors[currentLevel] || fallbackColor;
+            // Use the default background color defined in a CSS variable
+            body.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--background-color').trim();
         }
 
         function updateMazeContainerColor() {
             const mazeContainer = document.querySelector('.maze-container');
-            const containerColor = currentLevel === 2 ? '#C8BED2'
-                : currentLevel === 3 ? '#B2BAB1'
-                    : currentLevel === 6 ? '#DDB771'
-                        : '#B2BAB1'; // Add Level 3 color
+            const containerColor = getComputedStyle(document.documentElement).getPropertyValue('--maze-color').trim();
             mazeContainer.style.backgroundColor = containerColor;
         }
 
         function updateCanvasBorder() {
-            const mazeColor = currentLevel === 2 ? '#684756'
-                : currentLevel === 3 ? '#684756'
-                    : currentLevel === 6 ? '#0B6E4F'
-                        : '#222222'; // Add Level 3 color
-            document.querySelector('canvas').style.border = `1px solid ${mazeColor}`;
+            const mazeBorderColor = getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim();
+            document.querySelector('canvas').style.border = `1px solid ${mazeBorderColor}`;
         }
 
         function goToNextLevel() {
@@ -1978,13 +1923,13 @@
         ]
 
         const timerColors = {
-            1: "#B2BAB1",
-            2: "#B2BAB1",
-            3: "#B2BAB1",
-            4: "#B2BAB1",
-            5: "#B2BAB1",
-            6: "#B2BAB1",
-            7: "#B2BAB1" 
+            1: "#999999",
+            2: "#999999",
+            3: "#999999",
+            4: "#999999",
+            5: "#999999",
+            6: "#999999",
+            7: "#999999" 
         };
 
         function preStartGame(level) {
@@ -2106,13 +2051,11 @@
             const imageData = offscreenCtx.getImageData(0, 0, mazeImage.width, mazeImage.height);
             const data = imageData.data;
 
-            // Choose color based on the current level
-            const newColor = currentLevel === 2 ? { r: 104, g: 71, b: 86 }
-                : currentLevel === 3 ? { r: 104, g: 71, b: 86 }
-                    : currentLevel === 6 ? { r: 11, g: 110, b: 79 }
-                        : { r: 34, g: 34, b: 34 }; // Add Level 3 color
+            // Use a single color for all levels
+            const newColor = { r: 34, g: 34, b: 34 }; // Replace this with your desired color
 
             for (let i = 0; i < data.length; i += 4) {
+                // If the pixel is black and non-transparent
                 if (data[i] === 0 && data[i + 1] === 0 && data[i + 2] === 0 && data[i + 3] !== 0) {
                     data[i] = newColor.r;
                     data[i + 1] = newColor.g;
@@ -2157,8 +2100,9 @@
         }
 
         function drawExit() {
-            const exitColor = exitColors[currentLevel] || '#298a52'; // Fallback color if level not defined
-            ctx.fillStyle = exitColor; // Use the color based on the current level
+            // Retrieve the exit color from the CSS variable
+            const exitColor = getComputedStyle(document.documentElement).getPropertyValue('--exit-color').trim();
+            ctx.fillStyle = exitColor; // Use the color from the palette
             ctx.fillRect(exit.x, exit.y, exit.size, exit.size);
         }
 
