@@ -179,6 +179,13 @@
             font-size: 16px;
             margin-bottom: 5px;
             text-align: left;
+            color: #999999; /* Default text color */
+        }
+
+        .tracker-container li.highlight-entry {
+            color: #CCCCCC; /* New entry color */
+            font-weight: bold; /* Optional: make the highlighted entry bold */
+            font-size: 19px;
         }
 
         .controls-wrapper {
@@ -2169,11 +2176,24 @@
         function addDirectionToTracker(direction) {
             moveCount++;
             playerSteps.push(directionMap[direction]);
+
+            // Create a new list item
             const listItem = document.createElement('li');
             listItem.textContent = `${moveCount}. ${directionMap[direction]}`;
+
+            // Add a class to highlight the new entry
+            listItem.classList.add('highlight-entry');
+
+            // Remove the highlight class from the previous last item
+            const previousLastItem = trackerList.querySelector('.highlight-entry');
+            if (previousLastItem) {
+                previousLastItem.classList.remove('highlight-entry');
+            }
+
+            // Prepend the new item to the tracker list
             trackerList.prepend(listItem);
 
-            // Add "highlight" effect to the tracker container
+            // Add the tracker container highlight effect (optional)
             const trackerContainer = document.querySelector('.tracker-container');
             trackerContainer.classList.add('highlight');
             setTimeout(() => {
