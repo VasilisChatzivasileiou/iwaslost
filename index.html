@@ -557,6 +557,21 @@
             z-index: 1; /* Ensure buttons are above the background */
         }
 
+        .tracker-container.highlight {
+            animation: highlightEffect 0.1s ease-in-out;
+        }
+
+        @keyframes highlightEffect {
+            0% {
+                background-color: #CCCCCC;
+                opacity: 1;
+            }
+            100% {
+                background-color: #CCCCCC;
+                opacity: 0;
+            }
+        }
+
         @keyframes float {
             0% {
                 transform: translateY(0px) rotate(0deg);
@@ -2157,6 +2172,13 @@
             const listItem = document.createElement('li');
             listItem.textContent = `${moveCount}. ${directionMap[direction]}`;
             trackerList.prepend(listItem);
+
+            // Add "highlight" effect to the tracker container
+            const trackerContainer = document.querySelector('.tracker-container');
+            trackerContainer.classList.add('highlight');
+            setTimeout(() => {
+                trackerContainer.classList.remove('highlight');
+            }, 100); // Duration of the fade-out effect
         }
 
 
