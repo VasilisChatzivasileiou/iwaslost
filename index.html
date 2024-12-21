@@ -153,14 +153,35 @@
             background-color: #222222;
             padding: 10px;
             border-radius: 0px;
-            width: auto;
+            width: 90px;
             height: 407px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
             align-items: center;
+
+            scrollbar-width: thin; /* For Firefox */
+            scrollbar-color: #CCCCCC #222222; /* Thumb and track colors */
         }
 
+        .tracker-container::-webkit-scrollbar {
+            width: 8px; /* Slim scrollbar */
+        }
+
+        .tracker-container::-webkit-scrollbar-track {
+            background: #222222; /* Background of the scrollbar track */
+            border-radius: 4px; /* Optional: round corners */
+        }
+
+        .tracker-container::-webkit-scrollbar-thumb {
+            background: #CCCCCC; /* Thumb color */
+            border-radius: 4px; /* Optional: round corners */
+        }
+
+        .tracker-container::-webkit-scrollbar-thumb:hover {
+            background: #AAAAAA; /* Thumb color on hover */
+        }
+        
         .tracker-container h3 {
             margin: 0;
             margin-bottom: 10px;
@@ -808,7 +829,7 @@
                 text-align: center;
                 overflow-y: auto;
                 height: auto;
-                max-height: 49px;
+                max-height: 53px;
                 line-height: 1; /* Tighten text spacing */
                 overflow-y: auto; /* Add a scrollbar when content exceeds the max height */
                 font-size: 12px;
@@ -921,6 +942,11 @@
         }
 
         @media (max-width: 375px) {
+            
+            .tracker-container {
+                width: 320px;
+            }
+            
             .maze-container {
                 width: fit-content;
                 transform: scale(0.77); /* Scale down the maze */
