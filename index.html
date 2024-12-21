@@ -323,7 +323,7 @@
             border-radius: 0px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0); /* Shadow around the box */
             z-index: 1000; /* Ensure it overlays the game screen */
-            width: 320px;
+            width: auto;
         }
 
         #levelText {
@@ -1776,44 +1776,59 @@
         }
 
         function showLevelAnnouncement(level) {
-            // Use CSS variables for text and background colors
             const root = document.documentElement;
 
-            // Apply the text and background colors from CSS variables
-            const textColor = getComputedStyle(root).getPropertyValue('--text-color').trim();
+            // Set base and highlight colors
+            const baseColor = "#999999";
+            const highlightColor = "#CCCCCC";
+
+            // Apply the background color
             const backgroundColor = getComputedStyle(root).getPropertyValue('--background-color').trim();
-
-            // Apply the text color to the level text
-            levelText.style.color = textColor;
-
-            // Apply the background color to the level announcement
             levelAnnouncement.style.backgroundColor = backgroundColor;
 
-            // Set the level text
-            levelText.textContent = `LEVEL ${level}`;
-            levelAnnouncement.style.display = "flex";
+            // Set the level text content and split into letters
+            levelText.innerHTML = ''; // Clear any previous content
+            const levelTextContent = `LEVEL ${level}`;
+            const totalDuration = 2000; // Total display duration (2 seconds)
+            const highlightDuration = 100; // Duration for each letter's highlight
+            const delayBeforeHighlight = 300; // Delay before the highlighting starts
 
-            // Apply styles to level announcement background
+            // Calculate the interval between highlights so all fit within the total duration
+            const highlightSequenceDuration = totalDuration - delayBeforeHighlight;
+            const interval = Math.min(
+                (highlightSequenceDuration - highlightDuration) / (levelTextContent.length - 1),
+                highlightDuration
+            );
+
+            [...levelTextContent].forEach((char, index) => {
+                const span = document.createElement('span');
+                span.textContent = char;
+                span.style.color = baseColor; // Set base color
+                span.style.display = 'inline-block'; // Ensure proper spacing
+                levelText.appendChild(span);
+
+                // Add a highlight effect to each letter with a delay
+                setTimeout(() => {
+                    span.style.color = highlightColor; // Highlight the letter
+                    setTimeout(() => {
+                        span.style.color = baseColor; // Revert to base color
+                    }, highlightDuration); // Highlight duration
+                }, delayBeforeHighlight + index * interval); // Start highlighting after the delay
+            });
+
+            // Show the announcement container
             levelAnnouncement.style.display = "flex";
-            levelAnnouncement.style.justifyContent = "center"; // Center horizontally
-            levelAnnouncement.style.alignItems = "center";     // Center vertically
-            levelAnnouncement.style.textAlign = "center";      // Fallback text alignment
-            levelAnnouncement.style.fontSize = "24px";         // Adjust font size
-            levelAnnouncement.style.fontWeight = "bold";       // Make text bold
-            levelAnnouncement.style.height = "auto";           // Example height
-            levelAnnouncement.style.width = "auto";            // Example width
-            levelAnnouncement.style.margin = "0 auto";         // Center the entire block
 
             // Clear any existing timeout to prevent overlapping
             if (levelAnnouncementTimeout) {
                 clearTimeout(levelAnnouncementTimeout);
             }
 
-            // Set a new timeout
+            // Set a new timeout for hiding the announcement
             levelAnnouncementTimeout = setTimeout(() => {
                 levelAnnouncement.style.display = "none";
                 levelAnnouncementTimeout = null; // Reset timeout ID
-            }, 2000);
+            }, totalDuration); // Display time = total animation time
         }
 
 
