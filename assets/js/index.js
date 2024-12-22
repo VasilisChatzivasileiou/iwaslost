@@ -263,7 +263,7 @@ const levelPaths = {
     "right",
     "down",
     "right",
-    "down",
+    "up",
   ],
   2: [
     "up",
