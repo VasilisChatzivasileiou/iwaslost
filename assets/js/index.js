@@ -1111,7 +1111,7 @@ function checkWin(bypass = false) {
     const nextLevelButton = document.getElementById("nextLevelButton");
     const menuButtonPopup = document.getElementById("menuButtonPopup");
 
-    if (currentLevel < 7) {
+    if (currentLevel < 8) {
       nextLevelButton.style.display = "block";
       menuButtonPopup.style.display = "none";
     } else {
@@ -1146,6 +1146,7 @@ const stupidLevels = [
   { src: "level5(2).png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
   { src: "level6(2).png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
   { src: "level7.png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
+  { src: "level8(1).png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
 ];
 
 const timerColors = {
@@ -1156,6 +1157,7 @@ const timerColors = {
   5: "#999999",
   6: "#999999",
   7: "#999999",
+  8: "#999999",
 };
 
 function preStartGame(level) {
