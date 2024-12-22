@@ -1343,7 +1343,21 @@ function addDirectionToTracker(direction) {
     `button[data-direction="${direction}"]`
   );
   if (selctedArrowBtn) {
-    const arrow = selctedArrowBtn.querySelector(".arrow");
+    const ogArrow = selctedArrowBtn.querySelector(".arrow");
+
+    // duplicating element
+    const arrow = ogArrow.cloneNode(true);
+    arrow.id = 'duplicatedArrow' + direction;
+
+    // appending duplicated arrow to og arrow parent node
+    ogArrow.parentNode.appendChild(arrow);
+
+    // keep transform when animating
+    const computedStyle = window.getComputedStyle(arrow);
+    const currentTransform = computedStyle.transform;
+
+    // Apply animation while preserving rotation
+    arrow.style.transform = currentTransform; // Reset rotation before animation
     arrow.classList.add("animate");
 
     // Remove the animation class after it finishes
@@ -1351,6 +1365,8 @@ function addDirectionToTracker(direction) {
       "animationend",
       () => {
         arrow.classList.remove("animate");
+        arrow.style.transform = currentTransform;
+        arrow.remove();
       },
       { once: true }
     );

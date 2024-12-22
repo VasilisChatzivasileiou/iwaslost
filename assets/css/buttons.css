@@ -3,23 +3,31 @@
 }
 
 .arrow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
+.arrow {
   background: url("../images/arrow.svg");
-  background-size: contain;
   background-repeat: no-repeat;
-  height: 2rem;
-  width: 4rem;
-  margin: auto;
+  background-position: center;
+  background-size: 3rem;
 }
 
 @keyframes moveUpFade {
   0% {
     opacity: 1;
+    top: 0;
   }
   100% {
     opacity: 0;
+    top: -12rem;
   }
 }
 
 .arrow.animate {
-  animation: moveUpFade 0.5s ease-out;
+  animation: moveUpFade 0.5s forwards;
 }
