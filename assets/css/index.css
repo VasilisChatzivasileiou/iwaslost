@@ -494,7 +494,7 @@ input[type="range"] {
 
 #menuElement {
   position: absolute;
-  top: 20%; /* Adjust to position above the title */
+  top: 17%; /* Adjust to position above the title */
   width: 300px;
   padding-left: 10px;
 
@@ -503,6 +503,7 @@ input[type="range"] {
 }
 /* Common button styles */
 #startGameButton,
+#achievementsButton,
 #optionsButton,
 #leaveButton {
   font-size: 25px;
@@ -520,6 +521,7 @@ input[type="range"] {
 
 /* Hover effect */
 #startGameButton:hover,
+#achievementsButton:hover,
 #optionsButton:hover,
 #leaveButton:hover {
   background-color: #cccccc; /* Darker background */
@@ -529,6 +531,7 @@ input[type="range"] {
 
 /* Active (click) effect */
 #startGameButton:active,
+#achievementsButton:active,
 #optionsButton:active,
 #leaveButton:active {
   transform: scale(0.95); /* Shrink slightly when clicked */
@@ -554,12 +557,13 @@ input[type="range"] {
 #buttonBackground {
   position: relative;
   width: 400px;
-  height: 110px;
+  height: 120px;
   z-index: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  transform-origin: top; /* Anchors the top of the background */
 }
 
 #levelSelection button {
