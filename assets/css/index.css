@@ -594,16 +594,26 @@ input[type="range"] {
   width: 100vw; /* Full width */
   height: 100vh; /* Full height */
   background-color: #222222; /* Fallback color */
-  background-image: linear-gradient(45deg, #252525 25%, transparent 25%),
-    linear-gradient(-45deg, #252525 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #252525 75%),
-    linear-gradient(-45deg, transparent 75%, #252525 75%);
-  background-size: 100px 100px;
-  background-position: 0 0, 0 50px, 50px -50px, -50px 0px;
+  background-image: url('../images/backgroundchecks.svg'); /* Relative path */
+  background-size: 400px 400px; /* Control size of each tile */
+  background-repeat: repeat; /* Enable tiling */
+  background-position: top left; /* Start repeating from top-left */
   color: #cccccc;
   font-size: 20px;
   text-align: center;
   overflow: hidden;
+
+  /* Animation */
+  animation: moveBackground 20s linear infinite;
+}
+
+@keyframes moveBackground {
+  0% {
+    background-position: top left; /* Start at the top-left corner */
+  }
+  100% {
+    background-position: 200px 200px; /* Moves towards top-right */
+  }
 }
 
 /* Button container styles */
