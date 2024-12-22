@@ -1021,6 +1021,48 @@ function updateMazeContainerColor() {
   mazeContainer.style.backgroundColor = containerColor;
 }
 
+function startCentralSpotEffect() {
+  const mazeContainer = document.querySelector(".maze-container");
+  const pseudoElement = mazeContainer.style;
+
+  function applyCentralSpotAnimation() {
+    const spotSize = Math.random() * 100 + 150; // Random size between 150px and 250px
+    const blurRadius = Math.random() * 30 + 10; // Random blur between 10px and 40px
+
+    // Update the pseudo-element's styles dynamically
+    pseudoElement.setProperty('--spot-width', `${spotSize}px`);
+    pseudoElement.setProperty('--spot-height', `${spotSize}px`);
+    pseudoElement.setProperty('--spot-blur', `${blurRadius}px`);
+
+    // Repeat with a random delay between 100ms and 400ms
+    setTimeout(applyCentralSpotAnimation, Math.random() * 300 + 100);
+  }
+
+  applyCentralSpotAnimation();
+}
+
+function startFlickeringEffect() {
+  const mazeContainer = document.querySelector(".maze-container");
+
+  function applyRandomShadow() {
+    const blurRadius = Math.random() * 50 + 20; // Random blur radius between 20px and 70px
+    const spreadRadius = Math.random() * 10 - 5; // Random spread radius between -5px and 5px
+    const opacity = Math.random() * 0.7 + 0.3; // Random opacity between 0.3 and 1
+    mazeContainer.style.boxShadow = `inset 0 0 ${blurRadius}px 0 rgba(0, 0, 0, ${opacity})`;
+
+    // Repeat with a random delay between 100ms and 400ms
+    setTimeout(applyRandomShadow, Math.random() * 300 + 100);
+  }
+
+  applyRandomShadow();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  startFlickeringEffect();
+  startCentralSpotEffect();
+});
+
+
 function updateCanvasBorder() {
   const mazeBorderColor = getComputedStyle(document.documentElement)
     .getPropertyValue("--border-color")
