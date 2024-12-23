@@ -629,6 +629,140 @@ input[type="range"] {
   animation: highlightEffect 0.1s ease-in-out;
 }
 
+/* Fullscreen modal styles */
+#achievementsModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #CCCCCC; /* Updated modal background */
+  color: #222222; /* Updated modal text color */
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  z-index: 9999;
+}
+
+#achievementsModal.active {
+  display: flex;
+}
+
+#achievementsModal h1 {
+  margin: 20px;
+  font-size: 3rem; /* Bigger title */
+  text-align: left;
+  color: #222222; /* Ensure title text matches updated modal color scheme */
+}
+
+#achievementsModal .modal-content {
+  text-align: center;
+  flex: 1;
+  padding: 20px;
+  font-size: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#achievementContainer {
+  display: flex;
+  align-items: center;
+  background-color: #222222; /* Updated container background */
+  padding: 20px;
+  margin: 10px;
+  border-radius: 8px;
+  width: 80%;
+  max-width: 600px;
+  color: #cccccc; /* Ensure text contrasts with dark container background */
+}
+
+.iconBox {
+  flex-shrink: 0;
+  width: 100px; /* Set the size of the SVG */
+  height: 100px;
+  margin-right: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconBox img {
+  width: 100%;
+  height: 100%;
+  background-image: url('../images/ach_icon.svg'); /* Path from CSS to images folder */
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block; /* Ensures it renders properly */
+}
+
+/* Achievement details */
+.achievementDetails {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  text-align: left; /* Align title and description to the left */
+}
+
+.achievementDetails .achievementTitle {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #cccccc; /* Match container text color */
+}
+
+.achievementDetails .achievementDescription {
+  font-size: 1rem;
+  margin-top: 5px;
+  color: #cccccc; /* Match container text color */
+}
+
+/* Progress bar */
+.progressContainer {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  background-color: #444444; /* Darker background for progress bar */
+  border-radius: 5px;
+  overflow: hidden;
+  height: 15px;
+}
+
+.progressFill {
+  height: 100%;
+  background-color: #00ff00; /* Green progress bar fill */
+  
+  transition: width 0.3s ease-in-out;
+}
+
+.progressPercentage {
+  margin-left: 10px;
+  margin-top: 5px;
+  font-size: 0.9rem;
+  color: #cccccc; /* Match container text color */
+}
+
+/* Achievement status */
+.achievementStatus {
+  margin-left: auto;
+  font-size: 1rem;
+  color: #ff5555; /* Red status text for "Locked" */
+}
+
+/* Close button styles */
+#achievementsModal .close-btn {
+  background: #ff5555;
+  color: white;
+  padding: 15px 25px;
+  border: none;
+  border-radius: 0px;
+  cursor: pointer;
+  margin: 20px;
+  align-self: flex-end;
+  font-size: 1rem;
+}
+
 @keyframes highlightEffect {
   0% {
     background-color: #cccccc;

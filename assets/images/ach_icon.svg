@@ -1,0 +1,10 @@
+<svg width="146" height="146" viewBox="0 0 146 146" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="101.758" y="8.39844" width="100" height="100" transform="rotate(69 101.758 8.39844)" fill="#222222" stroke="#CCCCCC" stroke-linejoin="round"/>
+<rect opacity="0.75" width="146" height="146" fill="#222222"/>
+<rect x="42" y="9.44531" width="100" height="100" transform="rotate(19 42 9.44531)" fill="#222222" stroke="#CCCCCC" stroke-linejoin="round"/>
+<rect opacity="0.5" width="146" height="146" fill="#222222"/>
+<rect x="73" y="2.28906" width="100" height="100" transform="rotate(45 73 2.28906)" fill="#222222" stroke="#CCCCCC" stroke-width="2" stroke-linejoin="round"/>
+<rect opacity="0.25" width="146" height="146" fill="#222222"/>
+<rect x="23" y="23" width="100" height="100" fill="#222222" stroke="#CCCCCC" stroke-width="2" stroke-linejoin="round"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M47 52V57H42H37V68V79H42H47V84V89H52H57V94V99H62.5H68V94V89H73H78V94V99H83.5H89V94V89H94H99V84V79H104H109V68V57H104H99V52V47L93.5 47H88V52V57H73H58V52V47H52.5H47V52ZM58 73V78H63H68V73V68H63H58V73ZM78 73V78H83H88V73V68H83H78V73Z" fill="#D1406E"/>
+</svg>

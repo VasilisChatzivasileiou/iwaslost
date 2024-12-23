@@ -14,6 +14,24 @@ const optionsButton = document.getElementById("optionsButton");
 const optionsWindow = document.getElementById("optionsWindow");
 const closeOptionsButton = document.getElementById("closeOptionsButton");
 
+const achievementsButton = document.getElementById('achievementsButton');
+const achievementsModal = document.getElementById('achievementsModal');
+const closeButton = achievementsModal.querySelector('.close-btn');
+
+achievementsButton.addEventListener('click', () => {
+  achievementsModal.classList.add('active');
+});
+
+closeButton.addEventListener('click', () => {
+  achievementsModal.classList.remove('active');
+});
+
+achievementsModal.addEventListener('click', (event) => {
+  if (event.target === achievementsModal) {
+      achievementsModal.classList.remove('active');
+  }
+});
+
 document.addEventListener("DOMContentLoaded", () => {
   const startScreen = document.getElementById("startScreen");
   const levelSelection = document.getElementById("levelSelection"); // Declare this variable
