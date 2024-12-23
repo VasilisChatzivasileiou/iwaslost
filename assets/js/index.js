@@ -18,7 +18,7 @@ const achievementsButton = document.getElementById('achievementsButton');
 const achievementsModal = document.getElementById('achievementsModal');
 const closeButton = achievementsModal.querySelector('.close-btn');
 
-const soundEffect = new Audio('blockhit1.mp3'); // Replace with your sound file path
+const soundEffect = new Audio('blockhit3.mp3'); // Replace with your sound file path
 
 achievementsButton.addEventListener('click', () => {
   achievementsModal.classList.add('active');
@@ -982,7 +982,7 @@ function startGame(mazeImageSrc, exitPosition, playerPosition) {
 
   // Ensure correct visibility of the "Next Level" button
   const nextLevelButton = document.getElementById("nextLevelButton");
-  nextLevelButton.style.display = currentLevel < 6 ? "block" : "none";
+  nextLevelButton.style.display = currentLevel < 8 ? "block" : "none";
 }
 
 function updateControlsButtonColors() {
