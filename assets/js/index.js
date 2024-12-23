@@ -42,11 +42,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const volumeSlider = document.getElementById("volumeSlider"); // Slider
   const volumeValueDisplay = document.getElementById("volumeValue"); // Display value
 
-  volumeValueDisplay.textContent = "25%";
+  volumeValueDisplay.textContent = "10%";
 
   // Music settings
   backgroundMusic.loop = true;
-  backgroundMusic.volume = 0.25;
+  backgroundMusic.volume = 0.1;
 
   startGameButton.addEventListener("click", () => {
     // Hide start screen
