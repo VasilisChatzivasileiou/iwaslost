@@ -18,6 +18,8 @@ const achievementsButton = document.getElementById('achievementsButton');
 const achievementsModal = document.getElementById('achievementsModal');
 const closeButton = achievementsModal.querySelector('.close-btn');
 
+const soundEffect = new Audio('blockhit1.mp3'); // Replace with your sound file path
+
 achievementsButton.addEventListener('click', () => {
   achievementsModal.classList.add('active');
 });
@@ -40,11 +42,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const volumeSlider = document.getElementById("volumeSlider"); // Slider
   const volumeValueDisplay = document.getElementById("volumeValue"); // Display value
 
-  volumeValueDisplay.textContent = "100%";
+  volumeValueDisplay.textContent = "25%";
 
   // Music settings
   backgroundMusic.loop = true;
-  backgroundMusic.volume = 1;
+  backgroundMusic.volume = 0.25;
 
   startGameButton.addEventListener("click", () => {
     // Hide start screen
@@ -741,6 +743,9 @@ function startAdvancedMoving(direction, cPlayer, queue) {
       cPlayer.x = Math.round(cPlayer.x / speed) * speed; // Align position to grid
       cPlayer.y = Math.round(cPlayer.y / speed) * speed;
       isMoving = false; // Unlock movement
+
+      soundEffect.currentTime = 0; // Reset sound playback
+      soundEffect.play(); // Play sound effect
 
       drawPlayer(cPlayer);
       processAdvancedNextMove(queue, cPlayer); // Process the next move in the queue
@@ -1501,6 +1506,9 @@ function startMoving() {
       player.x = Math.round(player.x / speed) * speed; // Align position to grid
       player.y = Math.round(player.y / speed) * speed;
       isMoving = false; // Unlock movement
+
+      soundEffect.currentTime = 0; // Reset sound playback
+      soundEffect.play(); // Play sound effect
 
       playerLastPositions.push({
         x: Math.round(player.x / speed) * speed,
