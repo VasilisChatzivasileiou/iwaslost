@@ -670,11 +670,12 @@ input[type="range"] {
   display: flex;
   align-items: center;
   background-color: #222222; /* Updated container background */
-  padding: 20px;
+  height: auto;
+  padding: 15px;
   margin: 10px;
   border-radius: 8px;
-  width: 80%;
-  max-width: 600px;
+  width: 100%;
+  max-width: 750px;
   color: #cccccc; /* Ensure text contrasts with dark container background */
 }
 
