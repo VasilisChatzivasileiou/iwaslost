@@ -18,21 +18,11 @@ const achievementsButton = document.getElementById('achievementsButton');
 const achievementsModal = document.getElementById('achievementsModal');
 const closeButton = achievementsModal.querySelector('.close-btn');
 
+const animationContainer = document.getElementById('animationContainer');
+
 const soundEffect = new Audio('blockhit3.mp3'); // Replace with your sound file path
 
-achievementsButton.addEventListener('click', () => {
-  achievementsModal.classList.add('active');
-});
 
-closeButton.addEventListener('click', () => {
-  achievementsModal.classList.remove('active');
-});
-
-achievementsModal.addEventListener('click', (event) => {
-  if (event.target === achievementsModal) {
-      achievementsModal.classList.remove('active');
-  }
-});
 
 document.addEventListener("DOMContentLoaded", () => {
   const startScreen = document.getElementById("startScreen");
@@ -68,6 +58,117 @@ document.addEventListener("DOMContentLoaded", () => {
     // Update volume display
     volumeValueDisplay.textContent = Math.round(volume * 100) + "%";
   });
+
+  let isAnimating = false; // Global flag to track if an animation is active
+  let lastYPositions = {}; // Object to store the last Y position for each SVG
+  const activeYPositions = []; // Array to track current spawn positions
+
+  achievementsButton.addEventListener('click', () => {
+    achievementsModal.classList.add('active');
+    startAchievementAnimation();
+  });
+
+  closeButton.addEventListener('click', () => {
+    achievementsModal.classList.remove('active');
+    clearAchievementAnimation();
+  });
+
+  // Function to create and animate the SVG
+  function createAchievementElement(svgConfig) {
+    const { src, className, speed, size, id } = svgConfig;
+    const modalHeight = achievementsModal.offsetHeight;
+    const containerWidth = animationContainer.offsetWidth;
+
+    let randomY;
+    do {
+        // Generate random Y position
+        randomY = Math.random() * 0.6 * modalHeight + 0.2 * modalHeight;
+    } while (
+        (lastYPositions[id] !== undefined && Math.abs(randomY - lastYPositions[id]) < 100) || // Check distance from last Y for this SVG
+        activeYPositions.some(pos => Math.abs(randomY - pos) < 100) // Check distance from all active positions
+    );
+
+    // Update positions
+    lastYPositions[id] = randomY;
+    activeYPositions.push(randomY);
+    console.log(`Creating new SVG (${src}) at random Y:`, randomY);
+
+    // Create the SVG element
+    const svgElement = document.createElement("img");
+    svgElement.src = src;
+    svgElement.className = className;
+    svgElement.style.width = size; // Set custom size
+    svgElement.style.height = "auto"; // Maintain aspect ratio
+
+    // Position SVG off-screen and set random Y
+    svgElement.style.position = "absolute";
+    svgElement.style.top = `${randomY}px`;
+    svgElement.style.left = `-${parseInt(size, 10) || 200}px`; // Start fully off-screen
+
+    animationContainer.appendChild(svgElement);
+
+    // Animate with JavaScript
+    const endPosition = containerWidth + parseInt(size, 10) || 200; // Fully off-screen to the right
+    svgElement.style.transition = `transform ${speed}s linear`;
+
+    setTimeout(() => {
+        svgElement.style.transform = `translateX(${endPosition}px)`;
+    }, 100);
+
+    // Cleanup and respawn after animation
+    svgElement.addEventListener("transitionend", () => {
+        console.log(`SVG (${src}) transition completed. Removing and respawning.`);
+        svgElement.remove();
+
+        // Remove Y position from activeYPositions when animation ends
+        const index = activeYPositions.indexOf(randomY);
+        if (index !== -1) activeYPositions.splice(index, 1);
+
+        createAchievementElement(svgConfig);
+    });
+  }
+
+  // Function to start the animation loop
+  function startAchievementAnimation() {
+    console.log("Starting the achievement animation loop.");
+
+    // Configurations for each SVG
+    const configs = [
+        { 
+            id: "achievement1", // Unique ID for tracking spawn positions
+            src: "assets/images/achievementelement1.svg", 
+            className: "moving-achievement", 
+            speed: 22, 
+            size: "200px" 
+        },
+        { 
+            id: "achievement2", 
+            src: "assets/images/achievementelement2.svg", 
+            className: "moving-achievement-small", 
+            speed: 28, // Slower
+            size: "100px" // Smaller
+        },
+        { 
+            id: "achievement3", 
+            src: "assets/images/achievementelement3.svg", 
+            className: "moving-achievement-tiny", 
+            speed: 32, // Slower than the second one
+            size: "80px" // Smaller than the second one
+        }
+    ];
+
+    // Start animations for each SVG
+    configs.forEach(config => createAchievementElement(config));
+  }
+
+  // Function to clear animations and log
+  function clearAchievementAnimation() {
+    console.log("Clearing all animations.");
+    animationContainer.innerHTML = ""; // Clear remaining elements
+    lastYPositions = {}; // Reset last Y positions for all SVGs
+    activeYPositions.length = 0; // Clear active Y positions
+  }
+  
 });
 
 let checkpointsTouched = { first: false, second: false };

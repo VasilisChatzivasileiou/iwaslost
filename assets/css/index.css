@@ -641,7 +641,7 @@ input[type="range"] {
   display: none;
   flex-direction: column;
   justify-content: space-between;
-  z-index: 9999;
+  z-index: 4;
 }
 
 #achievementsModal.active {
@@ -667,6 +667,8 @@ input[type="range"] {
 }
 
 #achievementContainer {
+  position: relative; /* Ensure it participates in stacking context */
+  z-index: 2; /* Higher than #animationContainer */
   display: flex;
   align-items: center;
   background-color: #222222; /* Updated container background */
@@ -768,7 +770,8 @@ input[type="range"] {
 
 /* Achievement status */
 .achievementStatus {
-  margin-left: auto;
+  margin-top: 36px;
+  margin-left: 12px;
   font-size: 1rem;
   color: #D1406E; /* Red status text for "Locked" */
 }
@@ -785,6 +788,40 @@ input[type="range"] {
   margin-right: 20px;
   align-self: flex-end;
   font-size: 1rem;
+}
+
+/* SVG animation styles */
+#animationContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1; /* Lower than #achievementContainer */
+}
+
+#achievementsModal.active #animationContainer {
+  display: block;
+}
+
+#achievementsModal #animationContainer {
+  display: none; /* Hide by default unless modal is active */
+}
+
+.moving-achievement {
+  position: absolute;
+  width: 150px;
+}
+
+@keyframes moveAcross {
+  0% {
+    transform: translateX(-100%); /* Start fully off-screen to the left */
+  }
+  100% {
+    transform: translateX(calc(100vw + 100px)); /* Move fully off-screen to the right */
+  }
 }
 
 @keyframes highlightEffect {

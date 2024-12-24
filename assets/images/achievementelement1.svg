@@ -1,0 +1,37 @@
+<svg width="160" height="52" viewBox="0 0 160 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M98 5V10H93H88V21V32H93H98V37V42H103H108V47V52H113.5H119V47V42H124H129V47V52H134.5H140V47V42H145L150 42V37V32H155H160V21V10H155H150V5V0L144.5 0L139 0V5V10L124 10H109V5V0L103.5 0L98 0V5ZM109 26V31H114L119 31V26V21L114 21H109V26ZM129 26V31H134H139V26V21H134H129V26Z" fill="#8D2323"/>
+<rect x="20" y="50" width="99" height="2" fill="#8D2323"/>
+<rect x="48" y="40" width="50" height="2" fill="#8D2323"/>
+<rect x="10" width="99" height="2" fill="#8D2323"/>
+<rect x="41" y="10" width="19" height="2" fill="#8D2323"/>
+<rect x="70" y="10" width="6" height="2" fill="#8D2323"/>
+<rect x="67" y="21" width="21" height="2" fill="#8D2323"/>
+<rect x="93" y="4" width="12" height="2" fill="#D1406E"/>
+<rect x="113" y="23" width="12" height="2" fill="#D1406E"/>
+<rect x="144" y="14" width="12" height="2" fill="#D1406E"/>
+<rect x="136" y="32" width="12" height="2" fill="#D1406E"/>
+<rect x="129" y="32" width="4" height="2" fill="#D1406E"/>
+<rect width="6" height="2" fill="#8D2323"/>
+<rect x="133" width="6" height="2" fill="#8D2323"/>
+<rect x="127" width="6" height="2" fill="#8D2323"/>
+<rect x="119" width="6" height="2" fill="#8D2323"/>
+<rect x="64" y="30" width="6" height="2" fill="#8D2323"/>
+<rect x="156" y="10" width="4" height="22" fill="#D1406E"/>
+<rect x="146" width="4" height="10" fill="#D1406E"/>
+<rect x="146" y="32" width="4" height="10" fill="#D1406E"/>
+<rect x="105" width="4" height="10" fill="#D1406E"/>
+<rect x="136" y="42" width="4" height="10" fill="#D1406E"/>
+<rect x="115" y="42" width="4" height="10" fill="#D1406E"/>
+<rect x="125" y="21" width="4" height="10" fill="#D1406E"/>
+<rect x="105" y="21" width="4" height="10" fill="#D1406E"/>
+<rect x="103" y="21" width="6" height="2" fill="#CCCCCC"/>
+<rect x="97" y="21" width="4" height="2" fill="#CCCCCC"/>
+<rect x="125" y="21" width="4" height="2" fill="#CCCCCC"/>
+<rect x="105" y="8" width="4" height="2" fill="#CCCCCC"/>
+<rect x="115" y="42" width="4" height="2" fill="#CCCCCC"/>
+<rect x="123" y="29" width="6" height="2" fill="#CCCCCC"/>
+<rect x="107" y="29" width="2" height="2" fill="#CCCCCC"/>
+<rect x="123" y="50" width="6" height="2" fill="#8D2323"/>
+<rect x="151" y="25" width="9" height="2" fill="#CCCCCC"/>
+<rect x="120" y="15" width="3" height="2" fill="#CCCCCC"/>
+</svg>
