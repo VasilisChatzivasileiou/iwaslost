@@ -36,6 +36,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const backgroundMusic = new Audio("./assets/audio/i careOST.mp3"); // Background music
   const volumeSlider = document.getElementById("volumeSlider"); // Slider
   const volumeValueDisplay = document.getElementById("volumeValue"); // Display value
+
+  const unlockablesButton = document.getElementById("unlockablesButton")
+  const unlockablesScreen = document.getElementById('fullscreenOverlay');
+  const unlockablesBackButton = document.getElementById('unlockablesBackButton');
   
   console.log("Game is starting. Checking for saved timers...");
   loadLevelCompletionTimes();
@@ -177,6 +181,14 @@ document.addEventListener("DOMContentLoaded", () => {
     activeYPositions.length = 0; // Clear active Y positions
   }
 
+});
+
+unlockablesButton.addEventListener('click', () => {
+  unlockablesScreen.style.display = 'flex';
+});
+
+unlockablesBackButton.addEventListener('click', () => {
+  unlockablesScreen.style.display = 'none';
 });
 
 let checkpointsTouched = { first: false, second: false };
@@ -1609,20 +1621,9 @@ function checkWin(bypass = false) {
     
         // Update the achievement status with the new text and button
         achievementStatus.innerHTML = `
-          Unlocked<br>Brain Palette<br>
-          <button id="equipButton" class="equip-btn">Equip</button>
+          Unlocked<br>Brain Palette
         `;
-    
         console.log("Achievement unlocked: The Brain");
-    
-        // Add the toggle functionality to the Equip button
-        const equipButton = document.getElementById("equipButton");
-        let isEquipped = false; // Track the equip state
-    
-        equipButton.addEventListener("click", () => {
-          isEquipped = !isEquipped;
-          equipButton.textContent = isEquipped ? "Unequip" : "Equip";
-        });
       }
     }
 
