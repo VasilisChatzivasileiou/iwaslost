@@ -1258,7 +1258,7 @@ function checkWin(bypass = false) {
     
         // Update the achievement status with the new text and button
         achievementStatus.innerHTML = `
-          Unlocked<br>Brain Palette
+          Unlocked<br>Brain Palette<br>
           <button id="equipButton" class="equip-btn">Equip</button>
         `;
     

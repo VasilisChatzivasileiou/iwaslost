@@ -732,7 +732,7 @@ input[type="range"] {
 
 .progressFill {
   height: 100%;
-  background-color: #00ff00; /* Green progress bar fill */
+  background-color: #D1406E; /* Green progress bar fill */
   width: 0%; /* Update this dynamically for progress */
   transition: width 0.3s ease-in-out;
 }
@@ -745,34 +745,37 @@ input[type="range"] {
 }
 
 .equip-btn {
-  margin-top: 10px;
-  padding: 8px 16px;
-  font-size: 14px;
-  background-color: #4caf50;
-  color: white;
+  margin-top: 5px;
+  padding: 5px 5px;
+  font-size: 17px;
+  background-color: #cccccc;
+  color: #222222;
   border: none;
-  border-radius: 4px;
+  border-radius: 0px;
   cursor: pointer;
+  font-family: "CustomFont";
 }
 
 .equip-btn:hover {
-  background-color: #45a049;
+  background-color: #222222;
+  color: #CCCCCC;
 }
 
 .equip-btn:active {
-  background-color: #3e8e41;
+  background-color: #222222;
+  color: #CCCCCC;
 }
 
 /* Achievement status */
 .achievementStatus {
   margin-left: auto;
   font-size: 1rem;
-  color: #ff5555; /* Red status text for "Locked" */
+  color: #D1406E; /* Red status text for "Locked" */
 }
 
 /* Close button styles */
 #achievementsModal .close-btn {
-  background: #ff5555;
+  background: #D1406E;
   color: white;
   padding: 15px 25px;
   border: none;
