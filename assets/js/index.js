@@ -1,9 +1,8 @@
 // References to DOM elements
 
 const isNode = typeof require !== "undefined"; // Check if running in Node.js/Electron
-
-const storage = isNode ? require('fs') : null;
-const saveFilePath = isNode ? require('path').join(__dirname, 'levelCompletionTimes.json') : null;
+const storage = isNode ? require("fs") : null;
+const saveFilePath = isNode ? require("path").join(__dirname, "levelCompletionTimes.json") : null;
 
 const levelSelection = document.getElementById("levelSelection");
 
@@ -437,18 +436,41 @@ document.getElementById("resetButton").addEventListener("click", () => {
 });
 
 document.getElementById("confirmReset").addEventListener("click", () => {
-  // Clear local storage and close the modal
-  localStorage.clear();
-  console.log("Local storage cleared.");
+  const isNode = typeof require !== "undefined"; // Check if running in Node.js/Electron
+  const storage = isNode ? require("fs") : null;
+  const saveFilePath = isNode
+    ? require("path").join(__dirname, "levelCompletionTimes.json")
+    : null;
+
+  if (isNode) {
+    // Clear save file in Node.js/Electron
+    if (storage.existsSync(saveFilePath)) {
+      try {
+        storage.unlinkSync(saveFilePath); // Delete the save file
+        console.log("Save file deleted successfully.");
+      } catch (err) {
+        console.error("Failed to delete save file:", err);
+      }
+    } else {
+      console.warn("No save file found to delete.");
+    }
+  } else {
+    // Clear localStorage in browser
+    localStorage.removeItem("levelCompletionTimes");
+    console.log("LocalStorage cleared.");
+  }
+
+  // Hide the modal
   document.getElementById("resetConfirmationModal").classList.add("hidden");
 
   // Show the reset notification
   const notification = document.getElementById("resetNotification");
+  notification.textContent = "All data has been reset."; // Ensure appropriate message
   notification.classList.remove("hidden");
 
   // Hide the notification after 2 seconds
   setTimeout(() => {
-      notification.classList.add("hidden");
+    notification.classList.add("hidden");
   }, 2000);
 });
 
@@ -461,21 +483,67 @@ document.getElementById("cancelReset").addEventListener("click", () => {
 function saveLevelCompletionTime(level, time) {
   console.log(`Attempting to save time for ${level}: ${time}`);
 
-  // Retrieve existing times or initialize an empty object
-  const savedTimes = JSON.parse(localStorage.getItem('levelCompletionTimes')) || {};
+  const isNode = typeof require !== "undefined"; // Check if running in Node.js/Electron
+  const storage = isNode ? require("fs") : null;
+  const saveFilePath = isNode
+    ? require("path").join(__dirname, "levelCompletionTimes.json")
+    : null;
+
+  let savedTimes = {};
+
+  if (isNode) {
+    // Node.js/Electron: Load existing times from the JSON file
+    if (storage.existsSync(saveFilePath)) {
+      try {
+        savedTimes = JSON.parse(storage.readFileSync(saveFilePath, "utf8"));
+      } catch (err) {
+        console.error("Failed to read save file:", err);
+        savedTimes = {};
+      }
+    }
+  } else {
+    // Browser: Load existing times from localStorage
+    savedTimes = JSON.parse(localStorage.getItem("levelCompletionTimes")) || {};
+  }
+
   const currentFastestTime = savedTimes[level];
 
   // Check if the new time is faster than the current saved time
   if (!currentFastestTime || isNewTimeFaster(currentFastestTime, time)) {
     savedTimes[level] = time; // Update with the new fastest time
-    localStorage.setItem('levelCompletionTimes', JSON.stringify(savedTimes));
-    console.log(`New fastest time saved for ${level}: ${time}`);
+
+    if (isNode) {
+      // Save to JSON file in Node.js/Electron
+      try {
+        storage.writeFileSync(saveFilePath, JSON.stringify(savedTimes, null, 2));
+        console.log(`New fastest time saved for ${level}: ${time} in file`);
+      } catch (err) {
+        console.error("Failed to save time to file:", err);
+      }
+    } else {
+      // Save to localStorage in browser
+      localStorage.setItem("levelCompletionTimes", JSON.stringify(savedTimes));
+      console.log(`New fastest time saved for ${level}: ${time} in localStorage`);
+    }
   } else {
     console.log(`Time not updated. Current fastest for ${level}: ${currentFastestTime}`);
   }
 
-  // Verify the save process
-  const storedTimes = JSON.parse(localStorage.getItem('levelCompletionTimes'));
+  // Verification step
+  let storedTimes;
+  if (isNode) {
+    // Verify saved time from file
+    try {
+      storedTimes = JSON.parse(storage.readFileSync(saveFilePath, "utf8"));
+    } catch (err) {
+      console.error("Failed to verify saved time from file:", err);
+      storedTimes = {};
+    }
+  } else {
+    // Verify saved time from localStorage
+    storedTimes = JSON.parse(localStorage.getItem("levelCompletionTimes"));
+  }
+
   if (storedTimes && storedTimes[level] === time) {
     console.log(`Timer successfully saved for ${level}: ${time}`);
   } else {
@@ -496,25 +564,52 @@ function isNewTimeFaster(currentTime, newTime) {
 
 // Load saved completion times
 function loadLevelCompletionTimes() {
-  const savedTimes = JSON.parse(localStorage.getItem('levelCompletionTimes')) || {};
-  if (Object.keys(savedTimes).length === 0) {
-      console.warn("No saved timers found in localStorage.");
-  } else {
-      console.log("Loading saved timers:", savedTimes);
-  }
+  const isNode = typeof require !== "undefined"; // Check if running in Node.js/Electron
+  const storage = isNode ? require("fs") : null;
+  const saveFilePath = isNode
+    ? require("path").join(__dirname, "levelCompletionTimes.json")
+    : null;
 
-  for (const [level, time] of Object.entries(savedTimes)) {
-      const elementId = `${level}Timer`; // Construct the ID
-      const timerElement = document.getElementById(elementId);
+  let savedTimes = {};
 
-      if (timerElement) {
-          timerElement.textContent = `Time: ${time}`;
-          timerElement.style.display = "block"; // Make sure it’s visible
-          console.log(`Loaded timer for ${level}: ${time}`);
-      } else {
-          console.error(`Timer element with ID '${elementId}' not found. Check your HTML.`);
+  if (isNode) {
+    // Load timers from the JSON file in Node.js/Electron
+    if (storage.existsSync(saveFilePath)) {
+      try {
+        savedTimes = JSON.parse(storage.readFileSync(saveFilePath, "utf8"));
+        console.log("Loaded saved timers from file:", savedTimes);
+      } catch (err) {
+        console.error("Failed to read save file:", err);
+        savedTimes = {};
       }
+    } else {
+      console.warn("No save file found. Starting with empty timers.");
+    }
+  } else {
+    // Load timers from localStorage in the browser
+    savedTimes = JSON.parse(localStorage.getItem("levelCompletionTimes")) || {};
+    if (Object.keys(savedTimes).length === 0) {
+      console.warn("No saved timers found in localStorage.");
+    } else {
+      console.log("Loaded saved timers from localStorage:", savedTimes);
+    }
   }
+
+  // Update the UI for loaded timers
+  for (const [level, time] of Object.entries(savedTimes)) {
+    const elementId = `${level}Timer`; // Construct the ID
+    const timerElement = document.getElementById(elementId);
+
+    if (timerElement) {
+      timerElement.textContent = `Time: ${time}`;
+      timerElement.style.display = "block"; // Make sure it’s visible
+      console.log(`Loaded timer for ${level}: ${time}`);
+    } else {
+      console.error(`Timer element with ID '${elementId}' not found. Check your HTML.`);
+    }
+  }
+
+  return savedTimes;
 }
 
 function displayLevelCompletionTime(level) {
