@@ -611,6 +611,10 @@ input[type="range"] {
   animation: moveBackground 20s linear infinite;
 }
 
+.hidden {
+  display: none;
+}
+
 @keyframes moveBackground {
   0% {
     background-position: top left; /* Start at the top-left corner */

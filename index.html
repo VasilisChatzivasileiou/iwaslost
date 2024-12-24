@@ -75,7 +75,6 @@
         <button class="close-btn">Close</button>
     </div>
     
-
     <div id="optionsWindow" class="hidden">
         <div id="optionsHeader" style="background: #444; color: white; display: flex; justify-content: space-between; padding: 10px;">
             <span>Options</span>
@@ -96,9 +95,34 @@
                 />
             </div>
             <p>Volume: <span id="volumeValue">25</span></p>
+
+            <button id="resetButton" style="background-color: red; color: white; padding: 10px 20px; font-size: 16px; cursor: pointer; border: none; margin-top: 20px;">
+                Reset Everything
+            </button>
         </div>
     </div>
 
+    <div id="resetConfirmationModal" class="hidden" style="
+        position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        background: #333; color: white; padding: 20px; border-radius: 10px; text-align: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); z-index: 1000; width: 300px;">
+        <p>Are you sure you want to reset everything?</p>
+        <div style="margin-top: 20px; display: flex; justify-content: space-evenly;">
+            <button id="confirmReset" style="background-color: red; color: white; padding: 10px 20px; border: none; cursor: pointer;">
+                Yes
+            </button>
+            <button id="cancelReset" style="background-color: gray; color: white; padding: 10px 20px; border: none; cursor: pointer;">
+                No
+            </button>
+        </div>
+    </div>
+
+    <div id="resetNotification" class="hidden" style="
+        position: fixed; top: 20%; left: 50%; transform: translate(-50%, 0);
+        background: #4CAF50; color: white; padding: 10px 20px; border-radius: 5px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); text-align: center; z-index: 1000;">
+        All data has been reset.
+    </div>
 
     <div id="levelAnnouncement">
         <span id="levelText">LEVEL 1</span>

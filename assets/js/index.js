@@ -1,4 +1,10 @@
 // References to DOM elements
+
+const isNode = typeof require !== "undefined"; // Check if running in Node.js/Electron
+
+const storage = isNode ? require('fs') : null;
+const saveFilePath = isNode ? require('path').join(__dirname, 'levelCompletionTimes.json') : null;
+
 const levelSelection = document.getElementById("levelSelection");
 
 const gameContainer = document.getElementById("gameContainer");
@@ -31,6 +37,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const backgroundMusic = new Audio("./assets/audio/i careOST.mp3"); // Background music
   const volumeSlider = document.getElementById("volumeSlider"); // Slider
   const volumeValueDisplay = document.getElementById("volumeValue"); // Display value
+  
+  console.log("Game is starting. Checking for saved timers...");
+  loadLevelCompletionTimes();
 
   volumeValueDisplay.textContent = "10%";
 
@@ -168,7 +177,7 @@ document.addEventListener("DOMContentLoaded", () => {
     lastYPositions = {}; // Reset last Y positions for all SVGs
     activeYPositions.length = 0; // Clear active Y positions
   }
-  
+
 });
 
 let checkpointsTouched = { first: false, second: false };
@@ -420,6 +429,114 @@ document.getElementById("mainMenuButton").addEventListener("click", () => {
   // Optional: Stop any level music or reset settings
   console.log("Returning to Main Menu...");
 });
+
+document.getElementById("resetButton").addEventListener("click", () => {
+  // Show the custom confirmation modal
+  const modal = document.getElementById("resetConfirmationModal");
+  modal.classList.remove("hidden");
+});
+
+document.getElementById("confirmReset").addEventListener("click", () => {
+  // Clear local storage and close the modal
+  localStorage.clear();
+  console.log("Local storage cleared.");
+  document.getElementById("resetConfirmationModal").classList.add("hidden");
+
+  // Show the reset notification
+  const notification = document.getElementById("resetNotification");
+  notification.classList.remove("hidden");
+
+  // Hide the notification after 2 seconds
+  setTimeout(() => {
+      notification.classList.add("hidden");
+  }, 2000);
+});
+
+document.getElementById("cancelReset").addEventListener("click", () => {
+  // Simply hide the modal without resetting anything
+  document.getElementById("resetConfirmationModal").classList.add("hidden");
+});
+
+// Save completion times
+function saveLevelCompletionTime(level, time) {
+  console.log(`Attempting to save time for ${level}: ${time}`);
+
+  // Retrieve existing times or initialize an empty object
+  const savedTimes = JSON.parse(localStorage.getItem('levelCompletionTimes')) || {};
+  const currentFastestTime = savedTimes[level];
+
+  // Check if the new time is faster than the current saved time
+  if (!currentFastestTime || isNewTimeFaster(currentFastestTime, time)) {
+    savedTimes[level] = time; // Update with the new fastest time
+    localStorage.setItem('levelCompletionTimes', JSON.stringify(savedTimes));
+    console.log(`New fastest time saved for ${level}: ${time}`);
+  } else {
+    console.log(`Time not updated. Current fastest for ${level}: ${currentFastestTime}`);
+  }
+
+  // Verify the save process
+  const storedTimes = JSON.parse(localStorage.getItem('levelCompletionTimes'));
+  if (storedTimes && storedTimes[level] === time) {
+    console.log(`Timer successfully saved for ${level}: ${time}`);
+  } else {
+    console.error(`Failed to save timer for ${level}.`);
+  }
+}
+
+// Helper function to compare times
+function isNewTimeFaster(currentTime, newTime) {
+  const [currentMinutes, currentSeconds] = currentTime.split(':').map(Number);
+  const [newMinutes, newSeconds] = newTime.split(':').map(Number);
+
+  const currentTotalSeconds = currentMinutes * 60 + currentSeconds;
+  const newTotalSeconds = newMinutes * 60 + newSeconds;
+
+  return newTotalSeconds < currentTotalSeconds;
+}
+
+// Load saved completion times
+function loadLevelCompletionTimes() {
+  const savedTimes = JSON.parse(localStorage.getItem('levelCompletionTimes')) || {};
+  if (Object.keys(savedTimes).length === 0) {
+      console.warn("No saved timers found in localStorage.");
+  } else {
+      console.log("Loading saved timers:", savedTimes);
+  }
+
+  for (const [level, time] of Object.entries(savedTimes)) {
+      const elementId = `${level}Timer`; // Construct the ID
+      const timerElement = document.getElementById(elementId);
+
+      if (timerElement) {
+          timerElement.textContent = `Time: ${time}`;
+          timerElement.style.display = "block"; // Make sure it’s visible
+          console.log(`Loaded timer for ${level}: ${time}`);
+      } else {
+          console.error(`Timer element with ID '${elementId}' not found. Check your HTML.`);
+      }
+  }
+}
+
+function displayLevelCompletionTime(level) {
+  const elapsedTime = getElapsedTime(); // Get elapsed time in milliseconds
+  const minutes = String(Math.floor(elapsedTime / 60000)).padStart(2, '0');
+  const seconds = String(Math.floor((elapsedTime % 60000) / 1000)).padStart(2, '0');
+  const formattedTime = `${minutes}:${seconds}`;
+
+  // Save to storage (only if it's the fastest)
+  saveLevelCompletionTime(level, formattedTime);
+
+  // Retrieve the fastest time to display
+  const savedTimes = JSON.parse(localStorage.getItem('levelCompletionTimes')) || {};
+  const fastestTime = savedTimes[level];
+
+  // Display in UI
+  const timerElement = document.getElementById(`level${level}Timer`);
+  if (timerElement) {
+    timerElement.textContent = `Time: ${fastestTime}`;
+    timerElement.style.display = "block";
+  }
+}
 
 let logoClickable = false; // Flag to control logo behavior
 
@@ -1341,6 +1458,13 @@ function checkWin(bypass = false) {
       .textContent.split(": ")[1];
     levelCompletionTimes[`level${currentLevel}`] = elapsedTime;
 
+    console.log(`Player completed Level ${currentLevel} with time: ${elapsedTime}`);
+
+    // Save the time to localStorage
+    saveLevelCompletionTime(`level${currentLevel}`, elapsedTime);
+
+    updateLevelCompletionTime();
+
     // Update the progress bar
     if (currentLevel === 8) {
       const progressFill = document.querySelector(".progressFill");
@@ -1404,12 +1528,14 @@ function updateLevelCompletionTime() {
   for (let level in levelCompletionTimes) {
     const button = document.getElementById(`${level}Button`);
     if (button) {
-      // Grab id for timer
       let timeLabel = document.getElementById(`${level}Timer`);
       // Update the time label content
-      timeLabel.textContent = `Time: ${levelCompletionTimes[level]}`;
-      // show timeLabel
+      const time = levelCompletionTimes[level];
+      timeLabel.textContent = `Time: ${time}`;
       timeLabel.style.display = "block";
+
+      // Ensure the time is saved to localStorage
+      saveLevelCompletionTime(level, time);
     }
   }
 }
