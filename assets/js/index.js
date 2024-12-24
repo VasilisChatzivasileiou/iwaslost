@@ -289,6 +289,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let currentFrame = 0;
   const frameDuration = 125; // Duration per frame in milliseconds (0.3 seconds)
+  let animationInterval; // To store the interval ID
 
   // Function to update the frame
   function updateFrame() {
@@ -296,14 +297,40 @@ document.addEventListener("DOMContentLoaded", () => {
     menuElement.src = frames[currentFrame];
   }
 
-  // Preload all frames to avoid flickering
-  frames.forEach((frame) => {
-    const img = new Image();
-    img.src = frame;
+  function startAnimation() {
+    if (!animationInterval) {
+      animationInterval = setInterval(updateFrame, frameDuration);
+      console.log("Animation started.");
+    }
+  }
+
+  // Function to stop the animation
+  function stopAnimation() {
+    if (animationInterval) {
+      clearInterval(animationInterval);
+      animationInterval = null;
+      console.log("Animation stopped.");
+    }
+  }
+
+  // Start animation when the main menu is visible
+  startScreen.addEventListener("mouseenter", () => {
+    startAnimation();
   });
 
-  // Start the frame animation
-  setInterval(updateFrame, frameDuration); // Frame animation
+  // Stop animation when leaving the main menu
+  startScreen.addEventListener("mouseleave", () => {
+    stopAnimation();
+  });
+
+  // Stop the animation when transitioning to the game
+  startGameButton.addEventListener("click", () => {
+    stopAnimation();
+    startScreen.style.display = "none"; // Hide the menu
+    console.log("Transitioning to game...");
+  });
+
+
 });
 
 let timerInterval;
