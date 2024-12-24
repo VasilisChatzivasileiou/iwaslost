@@ -803,7 +803,7 @@ input[type="range"] {
 }
 
 #unlockablesScreen {
-  display: none;
+  display: flex;
   position: fixed;
   top: 0;
   left: 0;
@@ -813,17 +813,43 @@ input[type="range"] {
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  flex-direction: column;
 }
 
-#unlockablesText {
-  font-size: 100px;
-  margin: 10px 0;
-  color: #D1406E;
-  text-align: center;
+#unlockablesTextContainer {
   position: absolute;
-  top: 7.5%;
-  width: 100%;
+  top: 13%; /* Adjusted to place closer to the center container */
+  width: 70%; /* Match the width of the center container */
+  height: 60px; /* Height for the scrolling text window */
+  overflow: hidden; /* Hide overflow */
+  background-color: #333333;
+  color: #D1406E;
+  border-radius: 0px;
+  display: flex;
+  align-items: center;
+}
+
+.scrollingWrapper {
+  display: flex;
+  flex-direction: row; /* Allow two texts to align horizontally */
+  white-space: nowrap;
+  animation: scrollText 120s linear infinite; /* Slower animation */
+}
+
+#unlockablesScrollingText,
+#unlockablesScrollingTextClone {
+  font-size: 35px;
+  display: inline-block;
+  margin-right: 100px; /* Add space between texts */
+}
+
+
+@keyframes scrollText {
+  0% {
+    transform: translateX(28%); /* Start the first scroll centered */
+  }
+  100% {
+    transform: translateX(-100%); /* Move the text completely out */
+  }
 }
 
 #unlockablesCenterContainer {
@@ -832,8 +858,8 @@ input[type="range"] {
   justify-content: center;
   align-items: center;
   position: relative;
-  height: 60%;
-  width: 70%;
+  width: 70%; /* Adjust as needed */
+  height: 60%; /* Adjust as needed */
 }
 
 #unlockablesCenterWindow {
