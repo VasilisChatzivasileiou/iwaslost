@@ -313,6 +313,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // Set the initial frame
+  menuElement.src = frames[20]; // Load the first frame immediately
+  console.log("Initial frame set.");
+
   // Start animation when the main menu is visible
   startScreen.addEventListener("mouseenter", () => {
     startAnimation();
