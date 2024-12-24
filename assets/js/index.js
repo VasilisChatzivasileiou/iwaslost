@@ -70,6 +70,53 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+let checkpoint = null;
+
+function initializeCheckpoint() {
+  if (currentLevel === 8) {
+    checkpoint = {
+      x: 220,
+      y: 320,
+      size: 20,
+    };
+
+    // Ensure the checkpoint does not overlap a wall
+    if (isCollision(checkpoint.x, checkpoint.y, checkpoint)) {
+      console.error("Checkpoint position is invalid, it overlaps a wall!");
+      checkpoint = null; // Disable checkpoint if invalid
+    }
+  } else {
+    checkpoint = null; // No checkpoint for other levels
+  }
+}
+
+// Draw the checkpoint on the canvas
+function drawCheckpoint() {
+  if (checkpoint) {
+      ctx.fillStyle = "rgba(0, 255, 0, 0.7)"; // Green with transparency
+      ctx.fillRect(checkpoint.x, checkpoint.y, checkpoint.size, checkpoint.size);
+  }
+}
+
+// Check if the player has reached the checkpoint
+function checkCheckpointCollision() {
+  if (!checkpoint) return; // Skip if no checkpoint exists
+
+  console.log("Checking for checkpoint collision...");
+  console.log(`Player: x=${player.x}, y=${player.y}, size=${player.size}`);
+  console.log(`Checkpoint: x=${checkpoint.x}, y=${checkpoint.y}, size=${checkpoint.size}`);
+
+  if (
+    player.x < checkpoint.x + checkpoint.size &&
+    player.x + player.size > checkpoint.x &&
+    player.y < checkpoint.y + checkpoint.size &&
+    player.y + player.size > checkpoint.y
+  ) {
+    console.log("Checkpoint reached!");
+    checkpoint = null; // Disable checkpoint after passing through
+  }
+}
+
 const levelCompletionTimes = {};
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -939,6 +986,35 @@ function showLevelAnnouncement(level) {
 }
 
 function startGame(mazeImageSrc, exitPosition, playerPosition) {
+
+  mazeImage.src = mazeImageSrc;
+
+  // Wait for the maze image to load before continuing
+  mazeImage.onload = () => {
+    console.log(`Maze image loaded: ${mazeImageSrc}`);
+
+    // Extract the maze data
+    extractMazeData();
+
+    // Update the player and exit positions
+    exit.x = exitPosition.x;
+    exit.y = exitPosition.y;
+    player.startX = playerPosition.x;
+    player.startY = playerPosition.y;
+
+    // Initialize checkpoint only after mazeData is ready
+    if (currentLevel === 8) {
+      initializeCheckpoint(); // Ensure the checkpoint is valid
+      console.log("Checkpoint initialized for level 8:", checkpoint);
+    }
+
+    // Restart the game for the new level
+    restartGame();
+
+    // Redraw the player and checkpoint
+    drawPlayer();
+    drawCheckpoint();
+  };
   // Change body background color based on the level
   updateBodyBackgroundColor();
 
@@ -979,6 +1055,7 @@ function startGame(mazeImageSrc, exitPosition, playerPosition) {
 
   // Update the tracker container style for the current level
   updateTrackerContainerStyle();
+
 
   // Ensure correct visibility of the "Next Level" button
   const nextLevelButton = document.getElementById("nextLevelButton");
@@ -1285,6 +1362,8 @@ function processNextMove() {
 
   startMoving(); // Start moving the player
 
+  checkCheckpointCollision(); // Check checkpoint
+
   // Update lastDirection after starting the move
   lastDirection = direction;
 }
@@ -1334,19 +1413,26 @@ function extractMazeData() {
   const scaledWidth = canvas.width / scale;
   const scaledHeight = canvas.height / scale;
 
+  // Create an offscreen canvas for processing
   const offscreenCanvas = document.createElement("canvas");
   offscreenCanvas.width = scaledWidth;
   offscreenCanvas.height = scaledHeight;
   const offscreenCtx = offscreenCanvas.getContext("2d");
+
+  // Draw the current maze image onto the offscreen canvas
   offscreenCtx.drawImage(mazeImage, 0, 0, scaledWidth, scaledHeight);
 
+  // Extract image data for collision detection
   const imageData = offscreenCtx.getImageData(0, 0, scaledWidth, scaledHeight);
   mazeData = imageData.data;
+
+  console.log("Maze data extracted for:", mazeImage.src);
 }
 
 function drawPlayer(cPlayer) {
   recolorMaze();
   drawExit();
+  drawCheckpoint(); // Draw checkpoint
   // draw hint
   if (cPlayer) {
     ctx.fillStyle = "rgba(255, 255, 0, 0.5)";
@@ -1506,7 +1592,7 @@ function startMoving() {
       player.x = Math.round(player.x / speed) * speed; // Align position to grid
       player.y = Math.round(player.y / speed) * speed;
       isMoving = false; // Unlock movement
-
+      
       soundEffect.currentTime = 0; // Reset sound playback
       soundEffect.play(); // Play sound effect
 
@@ -1519,6 +1605,7 @@ function startMoving() {
       lastDirection = currentDirection;
 
       drawPlayer();
+      checkCheckpointCollision(); // Add collision check here
       checkWin();
       processNextMove(); // Process the next move in the queue
     } else {
@@ -1526,6 +1613,7 @@ function startMoving() {
       player.x = newX;
       player.y = newY;
       drawPlayer();
+      checkCheckpointCollision(); // Add collision check here
       checkWin();
     }
   }, 10);
