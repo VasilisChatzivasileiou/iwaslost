@@ -70,51 +70,73 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-let checkpoint = null;
+let checkpointsTouched = { first: false, second: false };
 
-function initializeCheckpoint() {
+let checkpoints = []; // Change to an array to hold multiple checkpoints
+
+function initializeCheckpoints() {
+  checkpoints = []; // Clear checkpoints initially
+
   if (currentLevel === 8) {
-    checkpoint = {
-      x: 220,
-      y: 320,
+    // Define two checkpoints
+    const checkpoint1 = {
+      x: 300,
+      y: 0,
       size: 20,
     };
 
-    // Ensure the checkpoint does not overlap a wall
-    if (isCollision(checkpoint.x, checkpoint.y, checkpoint)) {
-      console.error("Checkpoint position is invalid, it overlaps a wall!");
-      checkpoint = null; // Disable checkpoint if invalid
+    const checkpoint2 = {
+      x: 60,
+      y: 0,
+      size: 20,
+    };
+
+    // Validate the positions of the checkpoints
+    if (!isCollision(checkpoint1.x, checkpoint1.y, checkpoint1)) {
+      checkpoints.push(checkpoint1); // Add if valid
+    } else {
+      console.error("Checkpoint 1 position is invalid, it overlaps a wall!");
     }
-  } else {
-    checkpoint = null; // No checkpoint for other levels
+
+    if (!isCollision(checkpoint2.x, checkpoint2.y, checkpoint2)) {
+      checkpoints.push(checkpoint2); // Add if valid
+    } else {
+      console.error("Checkpoint 2 position is invalid, it overlaps a wall!");
+    }
   }
 }
 
-// Draw the checkpoint on the canvas
-function drawCheckpoint() {
-  if (checkpoint) {
-      ctx.fillStyle = "rgba(0, 255, 0, 0.7)"; // Green with transparency
-      ctx.fillRect(checkpoint.x, checkpoint.y, checkpoint.size, checkpoint.size);
-  }
+// Draw the checkpoints on the canvas
+function drawCheckpoints() {
+  if (checkpoints.length === 0) return;
+
+  checkpoints.forEach((checkpoint) => {
+    ctx.fillStyle = "rgba(0, 255, 0, 0.7)"; // Green with transparency
+    ctx.fillRect(checkpoint.x, checkpoint.y, checkpoint.size, checkpoint.size);
+  });
 }
 
-// Check if the player has reached the checkpoint
+// Check if the player has reached any checkpoint
 function checkCheckpointCollision() {
-  if (!checkpoint) return; // Skip if no checkpoint exists
+  if (!checkpoints || checkpoints.length === 0) return;
 
-  console.log("Checking for checkpoint collision...");
-  console.log(`Player: x=${player.x}, y=${player.y}, size=${player.size}`);
-  console.log(`Checkpoint: x=${checkpoint.x}, y=${checkpoint.y}, size=${checkpoint.size}`);
+  checkpoints.forEach((checkpoint, index) => {
+    if (
+      player.x < checkpoint.x + checkpoint.size &&
+      player.x + player.size > checkpoint.x &&
+      player.y < checkpoint.y + checkpoint.size &&
+      player.y + player.size > checkpoint.y
+    ) {
+      console.log(`Checkpoint ${index + 1} reached!`);
+      
+      // Mark checkpoint as touched
+      if (index === 0) checkpointsTouched.first = true;
+      if (index === 1) checkpointsTouched.second = true;
 
-  if (
-    player.x < checkpoint.x + checkpoint.size &&
-    player.x + player.size > checkpoint.x &&
-    player.y < checkpoint.y + checkpoint.size &&
-    player.y + player.size > checkpoint.y
-  ) {
-    console.log("Checkpoint reached!");
-    checkpoint = null; // Disable checkpoint after passing through
-  }
+      // Disable checkpoint after touching
+      checkpoint.disabled = true;
+    }
+  });
 }
 
 const levelCompletionTimes = {};
@@ -986,6 +1008,8 @@ function showLevelAnnouncement(level) {
 }
 
 function startGame(mazeImageSrc, exitPosition, playerPosition) {
+  // Clear existing checkpoints at the start of a new level
+  clearCheckpoints();
 
   mazeImage.src = mazeImageSrc;
 
@@ -1004,17 +1028,23 @@ function startGame(mazeImageSrc, exitPosition, playerPosition) {
 
     // Initialize checkpoint only after mazeData is ready
     if (currentLevel === 8) {
-      initializeCheckpoint(); // Ensure the checkpoint is valid
-      console.log("Checkpoint initialized for level 8:", checkpoint);
+      initializeCheckpoints(); // Ensure the checkpoint is valid
+      console.log("Checkpoint initialized for level 8:", checkpoints);
     }
+
+    // Log all checkpoints
+    checkpoints.forEach((checkpoint, index) => {
+      console.log(`Checkpoint ${index + 1}:`, checkpoint);
+    });
 
     // Restart the game for the new level
     restartGame();
 
     // Redraw the player and checkpoint
     drawPlayer();
-    drawCheckpoint();
+    drawCheckpoints();
   };
+
   // Change body background color based on the level
   updateBodyBackgroundColor();
 
@@ -1056,10 +1086,20 @@ function startGame(mazeImageSrc, exitPosition, playerPosition) {
   // Update the tracker container style for the current level
   updateTrackerContainerStyle();
 
-
   // Ensure correct visibility of the "Next Level" button
   const nextLevelButton = document.getElementById("nextLevelButton");
   nextLevelButton.style.display = currentLevel < 8 ? "block" : "none";
+}
+
+function clearCheckpoints() {
+  // Clear the checkpoints array
+  checkpoints = [];
+
+  // Clear the canvas area where checkpoints are drawn
+  const ctx = mazeCanvas.getContext("2d");
+  ctx.clearRect(0, 0, mazeCanvas.width, mazeCanvas.height);
+
+  console.log("Checkpoints cleared.");
 }
 
 function updateControlsButtonColors() {
@@ -1199,6 +1239,41 @@ function checkWin(bypass = false) {
       .getElementById("timerDisplay")
       .textContent.split(": ")[1];
     levelCompletionTimes[`level${currentLevel}`] = elapsedTime;
+
+    // Update the progress bar
+    if (currentLevel === 8) {
+      const progressFill = document.querySelector(".progressFill");
+      const progressPercentage = document.querySelector(".progressPercentage");
+
+      let progress = 0;
+      if (checkpointsTouched.first) progress += 50; // 50% for the first checkpoint
+      if (checkpointsTouched.second) progress += 50; // 50% for the second checkpoint
+
+      progressFill.style.width = `${progress}%`;
+      progressPercentage.textContent = `${progress}%`;
+
+      // Unlock the achievement if both checkpoints are touched
+      if (progress === 100) {
+        const achievementStatus = document.querySelector(".achievementStatus");
+    
+        // Update the achievement status with the new text and button
+        achievementStatus.innerHTML = `
+          Unlocked<br>Brain Palette
+          <button id="equipButton" class="equip-btn">Equip</button>
+        `;
+    
+        console.log("Achievement unlocked: The Brain");
+    
+        // Add the toggle functionality to the Equip button
+        const equipButton = document.getElementById("equipButton");
+        let isEquipped = false; // Track the equip state
+    
+        equipButton.addEventListener("click", () => {
+          isEquipped = !isEquipped;
+          equipButton.textContent = isEquipped ? "Unequip" : "Equip";
+        });
+      }
+    }
 
     // Display the win popup
     winPopup.style.display = "block";
@@ -1432,7 +1507,7 @@ function extractMazeData() {
 function drawPlayer(cPlayer) {
   recolorMaze();
   drawExit();
-  drawCheckpoint(); // Draw checkpoint
+  drawCheckpoints(); // Draw checkpoint
   // draw hint
   if (cPlayer) {
     ctx.fillStyle = "rgba(255, 255, 0, 0.5)";
