@@ -44,6 +44,8 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log("Game is starting. Checking for saved timers...");
   loadLevelCompletionTimes();
 
+  loadAchievementProgress();
+
   volumeValueDisplay.textContent = "10%";
 
   // Music settings
@@ -182,6 +184,79 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 });
+
+let achievementProgress = {
+  theBrain: {
+    title: "The Brain",
+    description: "Win level 8 using both possible paths",
+    status: "Locked", // "Locked" or "Unlocked"
+    progress: 0 // Progress percentage
+  }
+};
+
+function saveAchievementProgress() {
+  if (typeof require !== "undefined") {
+    const fs = require("fs");
+    const path = require("path");
+    const savePath = path.join(__dirname, "achievementProgress.json");
+
+    try {
+      fs.writeFileSync(savePath, JSON.stringify(achievementProgress, null, 2));
+      console.log("Achievement progress saved to file.");
+    } catch (err) {
+      console.error("Failed to save achievement progress:", err);
+    }
+  } else {
+    localStorage.setItem("achievementProgress", JSON.stringify(achievementProgress));
+    console.log("Achievement progress saved to localStorage.");
+  }
+}
+
+function loadAchievementProgress() {
+  let savedProgress = {};
+
+  if (typeof require !== "undefined") {
+    const fs = require("fs");
+    const path = require("path");
+    const savePath = path.join(__dirname, "achievementProgress.json");
+
+    if (fs.existsSync(savePath)) {
+      try {
+        savedProgress = JSON.parse(fs.readFileSync(savePath, "utf8"));
+        console.log("Achievement progress loaded from file:", savedProgress);
+      } catch (err) {
+        console.error("Failed to load achievement progress from file:", err);
+      }
+    }
+  } else {
+    savedProgress = JSON.parse(localStorage.getItem("achievementProgress")) || {};
+    console.log("Achievement progress loaded from localStorage:", savedProgress);
+  }
+
+  // Merge loaded data with the default structure
+  achievementProgress = { ...achievementProgress, ...savedProgress };
+
+  // Update the UI
+  updateAchievementUI();
+}
+
+function updateAchievementUI() {
+  const progressFill = document.querySelector(".progressFill");
+  const progressPercentage = document.querySelector(".progressPercentage");
+  const achievementStatus = document.querySelector(".achievementStatus");
+
+  const { progress, status } = achievementProgress.theBrain;
+
+  progressFill.style.width = `${progress}%`;
+  progressPercentage.textContent = `${progress}%`;
+  achievementStatus.textContent = status === "Unlocked" ? "Unlocked" : "Locked";
+
+  if (status === "Unlocked") {
+    achievementStatus.innerHTML = `
+      Unlocked<br>Brain Palette
+    `;
+  }
+}
 
 unlockablesButton.addEventListener('click', () => {
   unlockablesScreen.style.display = 'flex';
@@ -1603,29 +1678,34 @@ function checkWin(bypass = false) {
 
     updateLevelCompletionTime();
 
-    // Update the progress bar
-    if (currentLevel === 8) {
-      const progressFill = document.querySelector(".progressFill");
-      const progressPercentage = document.querySelector(".progressPercentage");
+  // Update the progress bar
+  if (currentLevel === 8) {
+    const progressFill = document.querySelector(".progressFill");
+    const progressPercentage = document.querySelector(".progressPercentage");
 
-      let progress = 0;
-      if (checkpointsTouched.first) progress += 50; // 50% for the first checkpoint
-      if (checkpointsTouched.second) progress += 50; // 50% for the second checkpoint
+    let progress = 0;
+    if (checkpointsTouched.first) progress += 50; // 50% for the first checkpoint
+    if (checkpointsTouched.second) progress += 50; // 50% for the second checkpoint
 
-      progressFill.style.width = `${progress}%`;
-      progressPercentage.textContent = `${progress}%`;
+    progressFill.style.width = `${progress}%`;
+    progressPercentage.textContent = `${progress}%`;
 
-      // Unlock the achievement if both checkpoints are touched
-      if (progress === 100) {
-        const achievementStatus = document.querySelector(".achievementStatus");
-    
-        // Update the achievement status with the new text and button
-        achievementStatus.innerHTML = `
-          Unlocked<br>Brain Palette
-        `;
-        console.log("Achievement unlocked: The Brain");
-      }
+    // Unlock the achievement if both checkpoints are touched
+    if (progress === 100) {
+      const achievementStatus = document.querySelector(".achievementStatus");
+      
+      // Update the achievement status with the new text and button
+      achievementStatus.innerHTML = `
+        Unlocked<br>Brain Palette
+      `;
+      console.log("Achievement unlocked: The Brain");
+
+      // Save achievement progress
+      achievementProgress.theBrain.status = "Unlocked";
+      achievementProgress.theBrain.progress = 100;
+      saveAchievementProgress();
     }
+  }
 
     // Display the win popup
     winPopup.style.display = "block";
