@@ -1749,7 +1749,7 @@ function startGame(mazeImageSrc, exitPosition, playerPosition) {
 
   // Ensure correct visibility of the "Next Level" button
   const nextLevelButton = document.getElementById("nextLevelButton");
-  nextLevelButton.style.display = currentLevel < 8 ? "block" : "none";
+  nextLevelButton.style.display = currentLevel < 9 ? "block" : "none";
 }
 
 function clearCheckpoints() {
@@ -1986,6 +1986,7 @@ const stupidLevels = [
   { src: "level6(2).png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
   { src: "level7.png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
   { src: "level8(1).png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
+  { src: "level9.png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
 ];
 
 const timerColors = {
@@ -1997,6 +1998,7 @@ const timerColors = {
   6: "#999999",
   7: "#999999",
   8: "#999999",
+  9: "#999999",
 };
 
 function preStartGame(level) {
