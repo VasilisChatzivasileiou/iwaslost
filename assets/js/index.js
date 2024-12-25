@@ -768,6 +768,9 @@ document.getElementById("confirmReset").addEventListener("click", () => {
     console.log("LocalStorage cleared for level completion times and achievement progress.");
   }
 
+  // Reset colors to default
+  applyGameColors(false);
+
   // Hide the modal
   document.getElementById("resetConfirmationModal").classList.add("hidden");
 
