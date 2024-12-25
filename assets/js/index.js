@@ -2014,6 +2014,12 @@ function showLevelSelector() {
   document.getElementById("gameContainer").style.display = "none";
   menuButton.style.display = "none"; // Hide the Menu button
   hintButton.style.display = "none"; // Hide the Hint button when in menu
+
+  const tipText = document.getElementById("levelSelectionTip");
+    if (tipText) {
+        tipText.style.display = "block";
+    }
+    
 }
 
 function startLevel(level) {

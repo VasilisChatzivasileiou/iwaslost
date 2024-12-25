@@ -894,6 +894,16 @@ input[type="range"] {
   color: #222222;
 }
 
+#levelSelectionTip {
+  position: absolute;
+  bottom: 9%;
+  width: 100%;
+  text-align: center;
+  color: #CCCCCC;
+  font-size: 20px;
+  font-family: "CustomFont", Arial, sans-serif;
+}
+
 
 @keyframes moveAcross {
   0% {
