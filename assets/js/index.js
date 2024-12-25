@@ -510,9 +510,9 @@ function updateUnlockablesUI() {
 
     // Equip Button (right)
     const equipButton = document.createElement("button");
-    equipButton.textContent = isEquipped ? "Unequip" : "Equip";
+    equipButton.textContent = isEquipped ? "unequip" : "equip";
     equipButton.style.fontFamily = "CustomFont";
-    equipButton.style.width = "100px"; // Adjust width to make the button shorter
+    equipButton.style.width = isEquipped ? "145px" : "100px";
     equipButton.style.marginLeft = "10px"; // Bring the button closer to the icon
     equipButton.style.marginRight = "100px";
     equipButton.style.padding = "0px 0px"; // Adjust padding for larger height
@@ -525,7 +525,8 @@ function updateUnlockablesUI() {
 
     equipButton.addEventListener("click", () => {
       isEquipped = !isEquipped;
-      equipButton.textContent = isEquipped ? "Unequip" : "Equip";
+      equipButton.textContent = isEquipped ? "unequip" : "equip";
+      equipButton.style.width = isEquipped ? "145px" : "100px";
       localStorage.setItem("isBrainPaletteEquipped", isEquipped);
     
       console.log("Toggling equip state:", isEquipped); // Debug log
@@ -728,7 +729,7 @@ document.getElementById("resetButton").addEventListener("click", () => {
 });
 
 document.getElementById("confirmReset").addEventListener("click", () => {
-  const isNode = typeof require !== "undefined"; // Check if running in Node.js/Electron
+  const isNode = typeof require !== "undefined";
   const storage = isNode ? require("fs") : null;
   const saveFilePath = isNode
     ? require("path").join(__dirname, "levelCompletionTimes.json")
@@ -738,57 +739,74 @@ document.getElementById("confirmReset").addEventListener("click", () => {
     : null;
 
   if (isNode) {
-    // Clear level completion times file in Node.js/Electron
-    if (storage.existsSync(saveFilePath)) {
-      try {
-        storage.unlinkSync(saveFilePath); // Delete the save file
-        console.log("Level completion times file deleted successfully.");
-      } catch (err) {
-        console.error("Failed to delete level completion times file:", err);
-      }
-    } else {
-      console.warn("No level completion times file found to delete.");
-    }
-
-    // Clear achievement progress file in Node.js/Electron
-    if (storage.existsSync(achievementFilePath)) {
-      try {
-        storage.unlinkSync(achievementFilePath); // Delete the achievement file
-        console.log("Achievement progress file deleted successfully.");
-      } catch (err) {
-        console.error("Failed to delete achievement progress file:", err);
-      }
-    } else {
-      console.warn("No achievement progress file found to delete.");
-    }
+    // Clear files in Node.js/Electron
+    if (storage.existsSync(saveFilePath)) storage.unlinkSync(saveFilePath);
+    if (storage.existsSync(achievementFilePath)) storage.unlinkSync(achievementFilePath);
   } else {
-    // Clear level completion times and achievement progress in localStorage
+    // Clear localStorage
     localStorage.removeItem("levelCompletionTimes");
     localStorage.removeItem("achievementProgress");
-    console.log("LocalStorage cleared for level completion times and achievement progress.");
+    localStorage.removeItem("isBrainPaletteEquipped"); // Clear palette state
   }
 
   // Reset colors to default
-  applyGameColors(false);
+  resetColorsToDefault();
 
-  // Hide the modal
+  // Reset unlockable state and UI
+  resetUnlockables();
+
+  // Hide modal and show notification
   document.getElementById("resetConfirmationModal").classList.add("hidden");
-
-  // Show the reset notification
   const notification = document.getElementById("resetNotification");
-  notification.textContent = "All data has been reset."; // Ensure appropriate message
+  notification.textContent = "All data has been reset.";
   notification.classList.remove("hidden");
 
-  // Hide the notification after 2 seconds
+  // Hide notification after 2 seconds
   setTimeout(() => {
     notification.classList.add("hidden");
   }, 2000);
 });
 
+
 document.getElementById("cancelReset").addEventListener("click", () => {
   // Simply hide the modal without resetting anything
   document.getElementById("resetConfirmationModal").classList.add("hidden");
 });
+
+function resetColorsToDefault() {
+  const levelAnnouncement = document.getElementById("levelAnnouncement");
+  const levelText = document.getElementById("levelText");
+
+  // Default colors
+  const defaultBackgroundColor = "#222222";
+  const defaultTextBackgroundColor = "#222222";
+  const defaultTextColor = "#999999";
+
+  // Reset announcement and text background colors
+  levelAnnouncement.style.backgroundColor = defaultBackgroundColor;
+  levelText.style.backgroundColor = defaultTextBackgroundColor;
+
+  // Reset text and spans to default colors
+  levelText.style.color = defaultTextColor;
+  const letters = levelText.querySelectorAll("span");
+  letters.forEach((span) => {
+    span.style.color = defaultTextColor; // Reset all span colors
+  });
+
+  console.log("UI elements reset to default colors.");
+}
+
+function resetUnlockables() {
+  // Reinitialize unlockables state
+  localStorage.setItem("isBrainPaletteEquipped", "false");
+
+  // Ensure colors are reverted
+  applyGameColors(false);
+
+  // Refresh UI if needed
+  const unlockablesCenterWindow = document.getElementById("unlockablesCenterWindow");
+  unlockablesCenterWindow.innerHTML = "No unlockables available.";
+}
 
 // Save completion times
 function saveLevelCompletionTime(level, time) {
