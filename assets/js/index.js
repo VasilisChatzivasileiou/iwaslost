@@ -4,6 +4,8 @@ const isNode = typeof require !== "undefined"; // Check if running in Node.js/El
 const storage = isNode ? require("fs") : null;
 const saveFilePath = isNode ? require("path").join(__dirname, "levelCompletionTimes.json") : null;
 
+const inGameResetButton = document.getElementById("inGameResetButton");
+
 const levelSelection = document.getElementById("levelSelection");
 
 const gameContainer = document.getElementById("gameContainer");
@@ -2042,7 +2044,7 @@ const moveCountMessage = document.getElementById("moveCountMessage");
 const mazeImage = new Image();
 mazeImage.src = "level1.png";
 
-resetButton.addEventListener("click", restartGame);
+inGameResetButton.addEventListener("click", restartGame);
 
 const scale = 2;
 const player = {
@@ -2403,6 +2405,9 @@ document.querySelectorAll(".controls button").forEach((button) => {
 });
 
 function restartGame() {
+
+  console.log("Restarting game...");
+
   // Stop any ongoing movement
   clearInterval(movingInterval);
   movingInterval = null; // Reset interval reference
@@ -2432,6 +2437,10 @@ function restartGame() {
 
   // Redraw the maze and player
   drawPlayer();
+
+  startTimer();
+
+  initializeCheckpoints();
 }
 
 function executeMoves() {
