@@ -453,12 +453,9 @@ function updateUnlockablesUI() {
     unlockable.style.minHeight = "120px"; // Further increase height
 
     // Title (left)
-    const title = document.createElement("span");
-    title.innerHTML = `“the brain”<br>palette`; // Add line break in text
-    title.style.marginLeft = "100px";
-    title.style.color = "#222222"
-    title.style.backgroundColor = "#cccccc";
-    title.style.width = "160px"; // Limit the width
+    const title = document.createElement("div");
+    title.style.marginLeft = "70px";
+    title.style.width = "268px"; // Limit the width
     title.style.fontSize = "29px"; // Adjust font size
     title.style.fontWeight = "bold";
     title.style.lineHeight = "1.2"; // Adjust line height for proper spacing
@@ -466,7 +463,38 @@ function updateUnlockablesUI() {
     title.style.display = "flex";
     title.style.flexDirection = "column"; // Ensure multi-line text is treated as a column
     title.style.justifyContent = "center"; // Vertically align text
+    title.style.gap = "10px"; // Add spacing between lines
+
+    // "The Brain" text with custom background
+    const brainText = document.createElement("span");
+    brainText.textContent = "“the brain”";
+    brainText.style.fontSize = "40px";
+    brainText.style.fontStyle = "italic";
+    brainText.style.fontWeight = "bold"; // Bold text
+    brainText.style.fontFamily = "MS Mincho";
+    brainText.style.backgroundColor = "#cccccc";
+    brainText.style.color = "#D1406E";
+    brainText.style.padding = "0px"; // Padding inside the text box
+    brainText.style.borderRadius = "0px"; // Optional rounded corners
+    brainText.style.display = "inline-block"; // Ensure proper box rendering
+
+    // "Palette" text with custom background
+    const paletteText = document.createElement("span");
+    paletteText.style.width = "100px";
+    paletteText.style.marginLeft = "35px";
+    paletteText.textContent = "palette";
+    paletteText.style.backgroundColor = "#cccccc";
+    paletteText.style.color = "#222222";
+    paletteText.style.padding = "0px"; // Padding inside the text box
+    paletteText.style.borderRadius = "0px"; // Optional rounded corners
+    paletteText.style.display = "inline-block"; // Ensure proper box rendering
+
+    // Append the styled text elements to the title container
+    title.appendChild(brainText);
+    title.appendChild(paletteText);
+
     unlockable.appendChild(title);
+
 
     // Icon (middle)
     const icon = document.createElement("img");
@@ -654,23 +682,39 @@ document.getElementById("confirmReset").addEventListener("click", () => {
   const saveFilePath = isNode
     ? require("path").join(__dirname, "levelCompletionTimes.json")
     : null;
+  const achievementFilePath = isNode
+    ? require("path").join(__dirname, "achievementProgress.json")
+    : null;
 
   if (isNode) {
-    // Clear save file in Node.js/Electron
+    // Clear level completion times file in Node.js/Electron
     if (storage.existsSync(saveFilePath)) {
       try {
         storage.unlinkSync(saveFilePath); // Delete the save file
-        console.log("Save file deleted successfully.");
+        console.log("Level completion times file deleted successfully.");
       } catch (err) {
-        console.error("Failed to delete save file:", err);
+        console.error("Failed to delete level completion times file:", err);
       }
     } else {
-      console.warn("No save file found to delete.");
+      console.warn("No level completion times file found to delete.");
+    }
+
+    // Clear achievement progress file in Node.js/Electron
+    if (storage.existsSync(achievementFilePath)) {
+      try {
+        storage.unlinkSync(achievementFilePath); // Delete the achievement file
+        console.log("Achievement progress file deleted successfully.");
+      } catch (err) {
+        console.error("Failed to delete achievement progress file:", err);
+      }
+    } else {
+      console.warn("No achievement progress file found to delete.");
     }
   } else {
-    // Clear localStorage in browser
+    // Clear level completion times and achievement progress in localStorage
     localStorage.removeItem("levelCompletionTimes");
-    console.log("LocalStorage cleared.");
+    localStorage.removeItem("achievementProgress");
+    console.log("LocalStorage cleared for level completion times and achievement progress.");
   }
 
   // Hide the modal

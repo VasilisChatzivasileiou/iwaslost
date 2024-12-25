@@ -3,6 +3,11 @@
   src: url("../fonts/IDTFIdentifier-0.1-Bold.otf") format("opentype");
 }
 
+@font-face {
+  font-family: "MS Mincho";
+  src: url("assets/fonts/ms-mincho.ttf") format("truetype");
+}
+
 html,
 body {
   width: 100vw;
@@ -821,7 +826,7 @@ input[type="range"] {
   width: 70%; /* Match the width of the center container */
   height: 60px; /* Height for the scrolling text window */
   overflow: hidden; /* Hide overflow */
-  background-color: #333333;
+  background-color: #222222;
   color: #D1406E;
   border-radius: 0px;
   display: flex;
@@ -893,6 +898,7 @@ input[type="range"] {
   background-color: #999999;
   color: #222222;
 }
+
 
 @keyframes moveAcross {
   0% {
