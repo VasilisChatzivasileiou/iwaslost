@@ -563,15 +563,39 @@ function applyGameColors(isEquipped) {
   const levelAnnouncement = document.getElementById("levelAnnouncement");
   const levelText = document.getElementById("levelText");
 
-  if (isEquipped) {
-    // Change colors to equipped state
-    levelAnnouncement.style.backgroundColor = "#222222";
-    levelText.style.backgroundColor = "#7E2D47";
-  } else {
-    // Revert to default colors
-    levelAnnouncement.style.backgroundColor = "#222222";
-    levelText.style.backgroundColor = "#222222";
-  }
+  // Define the colors
+  const baseColor = isEquipped ? "#FF6A99" : "#999999";
+  const highlightColor = isEquipped ? "#FFADC7" : "#CCCCCC";
+  const announcementBgColor = isEquipped ? "#222222" : "#222222";
+  const textBgColor = isEquipped ? "#7E2D47" : "#222222";
+
+  // Update announcement and text background colors
+  levelAnnouncement.style.backgroundColor = announcementBgColor;
+  levelText.style.backgroundColor = textBgColor;
+
+  // Get all spans in levelText
+  const letters = levelText.querySelectorAll("span");
+  letters.forEach((span) => {
+    span.style.color = baseColor; // Set base color
+  });
+
+  // Sequentially highlight letters
+  const totalDuration = 2000; // Total animation duration
+  const highlightDuration = 100; // Highlight duration per letter
+  const delayBeforeHighlight = 300; // Delay before starting
+  const interval = Math.min(
+    (totalDuration - delayBeforeHighlight - highlightDuration) / Math.max(letters.length - 1, 1),
+    highlightDuration
+  );
+
+  letters.forEach((span, index) => {
+    setTimeout(() => {
+      span.style.color = highlightColor; // Highlight the letter
+      setTimeout(() => {
+        span.style.color = baseColor; // Revert to base color
+      }, highlightDuration); // Wait before reverting
+    }, delayBeforeHighlight + index * interval);
+  });
 }
 
 let timerInterval;
@@ -1545,12 +1569,10 @@ function showErrorPopup() {
   }, 1000);
 }
 
-function showLevelAnnouncement(level) {
+function showLevelAnnouncement(level, baseColor = "#999999", highlightColor = "#CCCCCC") {
   const root = document.documentElement;
-
-  // Set base and highlight colors
-  const baseColor = "#999999";
-  const highlightColor = "#CCCCCC";
+  const levelAnnouncement = document.getElementById("levelAnnouncement");
+  const levelText = document.getElementById("levelText");
 
   // Apply the background color
   const backgroundColor = getComputedStyle(root)
@@ -1568,8 +1590,7 @@ function showLevelAnnouncement(level) {
   // Calculate the interval between highlights so all fit within the total duration
   const highlightSequenceDuration = totalDuration - delayBeforeHighlight;
   const interval = Math.min(
-    (highlightSequenceDuration - highlightDuration) /
-      (levelTextContent.length - 1),
+    (highlightSequenceDuration - highlightDuration) / Math.max(levelTextContent.length - 1, 1),
     highlightDuration
   );
 
