@@ -428,10 +428,13 @@ function updateUnlockablesUI() {
   const unlockablesCenterWindow = document.getElementById("unlockablesCenterWindow");
 
   // Clear existing unlockables
-  unlockablesCenterWindow.innerHTML = "";
+  //unlockablesCenterWindow.innerHTML = "";
 
   // Check if "The Brain" achievement is unlocked
   if (achievementProgress.theBrain.status === "Unlocked") {
+
+    unlockablesCenterWindow.innerHTML = "";
+
     // Disable flex layout of the center window
     unlockablesCenterWindow.style.display = "block"; // Switch to block layout for stacking
 
