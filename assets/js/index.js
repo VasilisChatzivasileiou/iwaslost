@@ -36,6 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const backgroundMusic = new Audio("./assets/audio/i careOST.mp3"); // Background music
   const volumeSlider = document.getElementById("volumeSlider"); // Slider
   const volumeValueDisplay = document.getElementById("volumeValue"); // Display value
+  console.log(document.getElementById("levelAnnouncement")); // Log the element
 
   const unlockablesButton = document.getElementById("unlockablesButton")
   const unlockablesScreen = document.getElementById('fullscreenOverlay');
@@ -430,6 +431,9 @@ function updateUnlockablesUI() {
   // Clear existing unlockables
   //unlockablesCenterWindow.innerHTML = "";
 
+  // Ensure "isEquipped" is initialized only once
+  let isEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
+
   // Check if "The Brain" achievement is unlocked
   if (achievementProgress.theBrain.status === "Unlocked") {
 
@@ -495,7 +499,6 @@ function updateUnlockablesUI() {
 
     unlockable.appendChild(title);
 
-
     // Icon (middle)
     const icon = document.createElement("img");
     icon.src = "assets/images/brainpalette.svg"; // Path to the unlockable icon
@@ -507,7 +510,7 @@ function updateUnlockablesUI() {
 
     // Equip Button (right)
     const equipButton = document.createElement("button");
-    equipButton.textContent = "equip";
+    equipButton.textContent = isEquipped ? "Unequip" : "Equip";
     equipButton.style.fontFamily = "CustomFont";
     equipButton.style.width = "100px"; // Adjust width to make the button shorter
     equipButton.style.marginLeft = "10px"; // Bring the button closer to the icon
@@ -519,10 +522,16 @@ function updateUnlockablesUI() {
     equipButton.style.border = "none";
     equipButton.style.borderRadius = "0px";
     equipButton.style.cursor = "pointer";
+
     equipButton.addEventListener("click", () => {
-      console.log("Brain Palette equipped!");
-      // Add logic for equipping the item
+      isEquipped = !isEquipped;
+      equipButton.textContent = isEquipped ? "Unequip" : "Equip";
+      localStorage.setItem("isBrainPaletteEquipped", isEquipped);
+    
+      console.log("Toggling equip state:", isEquipped); // Debug log
+      applyGameColors(isEquipped); // Call the function
     });
+
     equipButton.addEventListener("mouseover", () => {
       equipButton.style.backgroundColor = "#222222";
       equipButton.style.color = "#CCCCCC";
@@ -531,10 +540,13 @@ function updateUnlockablesUI() {
       equipButton.style.backgroundColor = "#cccccc";
       equipButton.style.color = "#222222";
     });
+
     unlockable.appendChild(equipButton);
 
     // Append the unlockable to the center window
     unlockablesCenterWindow.appendChild(unlockable);
+
+    applyGameColors(isEquipped);
   } else {
     // Re-enable flex layout if there are no unlockables
     unlockablesCenterWindow.style.display = "flex"; // Re-enable flex layout for normal behavior
@@ -546,6 +558,21 @@ unlockablesButton.addEventListener("click", () => {
   updateUnlockablesUI();
   unlockablesScreen.style.display = "flex";
 });
+
+function applyGameColors(isEquipped) {
+  const levelAnnouncement = document.getElementById("levelAnnouncement");
+  const levelText = document.getElementById("levelText");
+
+  if (isEquipped) {
+    // Change colors to equipped state
+    levelAnnouncement.style.backgroundColor = "#222222";
+    levelText.style.backgroundColor = "#7E2D47";
+  } else {
+    // Revert to default colors
+    levelAnnouncement.style.backgroundColor = "#222222";
+    levelText.style.backgroundColor = "#222222";
+  }
+}
 
 let timerInterval;
 let startTime;
@@ -1624,6 +1651,9 @@ function startGame(mazeImageSrc, exitPosition, playerPosition) {
   levelSelection.style.display = "none";
   // Show the level announcement
   showLevelAnnouncement(currentLevel);
+
+  const isEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
+  applyGameColors(isEquipped); // Call the function to apply colors
 
   // Show the game container
   gameContainer.style.display = "block";
