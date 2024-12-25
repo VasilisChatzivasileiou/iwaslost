@@ -310,7 +310,7 @@ function drawCheckpoints() {
   if (checkpoints.length === 0) return;
 
   checkpoints.forEach((checkpoint) => {
-    ctx.fillStyle = "rgba(0, 255, 0, 0.7)"; // Green with transparency
+    ctx.fillStyle = "rgba(0, 255, 0, 0.0)"; // Green with transparency
     ctx.fillRect(checkpoint.x, checkpoint.y, checkpoint.size, checkpoint.size);
   });
 }
@@ -565,16 +565,33 @@ unlockablesButton.addEventListener("click", () => {
 function applyGameColors(isEquipped) {
   const levelAnnouncement = document.getElementById("levelAnnouncement");
   const levelText = document.getElementById("levelText");
+  const mazeContainer = document.querySelector(".maze-container");
+
+  if (!mazeContainer) {
+    console.error("Maze container not found!");
+    return;
+  }
 
   // Define the colors
   const baseColor = isEquipped ? "#FF6A99" : "#999999";
   const highlightColor = isEquipped ? "#FFADC7" : "#CCCCCC";
   const announcementBgColor = isEquipped ? "#222222" : "#222222";
   const textBgColor = isEquipped ? "#7E2D47" : "#222222";
+  const mazeColor = isEquipped ? "#F96D99" : "#999999"; // Maze container color
 
   // Update announcement and text background colors
   levelAnnouncement.style.backgroundColor = announcementBgColor;
   levelText.style.backgroundColor = textBgColor;
+
+  // Debugging current maze container color
+  console.log("Previous Maze Color:", getComputedStyle(mazeContainer).backgroundColor);
+
+  // Force update of maze container background color
+  mazeContainer.style.backgroundColor = "";
+  setTimeout(() => {
+      mazeContainer.style.backgroundColor = mazeColor;
+      console.log("Updated Maze Color:", mazeColor);
+  }, 50);
 
   // Get all spans in levelText
   const letters = levelText.querySelectorAll("span");
@@ -2019,7 +2036,7 @@ function showLevelSelector() {
     if (tipText) {
         tipText.style.display = "block";
     }
-    
+
 }
 
 function startLevel(level) {
