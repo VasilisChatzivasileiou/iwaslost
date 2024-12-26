@@ -1335,6 +1335,9 @@ const levelPaths = {
     "right",
     "up",
   ],
+  7:[
+    
+  ]
 };
 
 const hintUsed = {};
