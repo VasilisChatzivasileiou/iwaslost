@@ -116,22 +116,23 @@
             </div>
             <p>Volume: <span id="volumeValue">25</span></p>
 
-            <button id="resetButton" style="background-color: red; color: white; padding: 10px 20px; font-size: 16px; cursor: pointer; border: none; margin-top: 20px;">
-                Reset Everything
+            <button id="resetButton" style="background-color: #D1406E; color: white; padding: 10px 20px; font-family: 'CustomFont'; font-size: 20px; cursor: pointer; border: none; margin-top: 20px;">
+                erase everything
             </button>
         </div>
     </div>
 
     <div id="resetConfirmationModal" class="hidden" style="
+        font-size: 25px;
         position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-        background: #333; color: white; padding: 20px; border-radius: 10px; text-align: center;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); z-index: 1000; width: 300px;">
-        <p>Are you sure you want to reset everything?</p>
+        background: #CCCCCC; color: #222222; padding: 20px; border-radius: 0px; text-align: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0); z-index: 1000; width: 300px;">
+        <p>are you sure you wanna erase everything??</p>
         <div style="margin-top: 20px; display: flex; justify-content: space-evenly;">
-            <button id="confirmReset" style="background-color: red; color: white; padding: 10px 20px; border: none; cursor: pointer;">
+            <button id="confirmReset" style="background-color: #D1406E; color: white; font-family: 'CustomFont'; padding: 10px 20px; border: none; cursor: pointer;">
                 Yes
             </button>
-            <button id="cancelReset" style="background-color: gray; color: white; padding: 10px 20px; border: none; cursor: pointer;">
+            <button id="cancelReset" style="background-color: #222222; color: white; font-family: 'CustomFont'; padding: 10px 20px; border: none; cursor: pointer;">
                 No
             </button>
         </div>
