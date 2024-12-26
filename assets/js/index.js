@@ -583,6 +583,8 @@ function applyGameColors(isEquipped) {
   levelAnnouncement.style.backgroundColor = announcementBgColor;
   levelText.style.backgroundColor = textBgColor;
 
+  mazeContainer.style.backgroundColor = mazeColor;
+
   // Debugging current maze container color
   console.log("Previous Maze Color:", getComputedStyle(mazeContainer).backgroundColor);
 
@@ -2116,6 +2118,9 @@ function processNextMove() {
 }
 
 function recolorMaze() {
+
+  const isEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
+
   const offscreenCanvas = document.createElement("canvas");
   offscreenCanvas.width = mazeImage.width;
   offscreenCanvas.height = mazeImage.height;
@@ -2131,7 +2136,7 @@ function recolorMaze() {
   const data = imageData.data;
 
   // Use a single color for all levels
-  const newColor = { r: 34, g: 34, b: 34 }; // Replace this with your desired color
+  const newColor = isEquipped ? { r: 138, g: 49, b: 78 } : { r: 34, g: 34, b: 34 };
 
   for (let i = 0; i < data.length; i += 4) {
     // If the pixel is black and non-transparent
