@@ -970,7 +970,7 @@ input[type="range"] {
 
   #hintButton {
     position: absolute;
-    top: 254.5px; /* Adjust vertical position */
+    top: 209.5px; /* Adjust vertical position */
     left: -143px; /* Place the button to the left of the maze */
     transform: translateY(0); /* Fine-tune alignment if needed */
   }
