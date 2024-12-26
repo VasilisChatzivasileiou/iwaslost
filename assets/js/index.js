@@ -188,6 +188,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 
+document.getElementById('achievementsButton').addEventListener('click', () => {
+  // Retrieve path completion data from localStorage
+  const pathOneCompleted = localStorage.getItem('pathOneCompleted') === 'true';
+  const pathTwoCompleted = localStorage.getItem('pathTwoCompleted') === 'true';
+
+  // Calculate progress and determine status
+  let progress = 0;
+  if (pathOneCompleted) progress += 50;
+  if (pathTwoCompleted) progress += 50;
+
+  const status = progress === 100 ? "Unlocked" : "Locked";
+
+  // Update the achievement progress object
+  achievementProgress.theBrain = {
+    progress,
+    status
+  };
+
+  // Call the existing `updateAchievementUI` to update the UI
+  updateAchievementUI();
+});
+
 let achievementProgress = {
   theBrain: {
     title: "The Brain",
@@ -274,25 +296,17 @@ let checkpointsTouched = { first: false, second: false };
 let checkpoints = []; // Change to an array to hold multiple checkpoints
 
 function initializeCheckpoints() {
-  checkpoints = []; // Clear checkpoints initially
+    checkpoints = [];
+    checkpointsTouched = { first: false, second: false }; // Reset state
 
-  if (currentLevel === 8) {
-    // Existing Level 8 checkpoints
-    const checkpoint1 = { x: 300, y: 0, size: 20 };
-    const checkpoint2 = { x: 60, y: 0, size: 20 };
-
-    if (!isCollision(checkpoint1.x, checkpoint1.y, checkpoint1)) checkpoints.push(checkpoint1);
-    if (!isCollision(checkpoint2.x, checkpoint2.y, checkpoint2)) checkpoints.push(checkpoint2);
-  } else if (currentLevel === 9) {
-    // New Level 9 checkpoint
-    const level9Checkpoint = { x: 120, y: 320, size: 20, solid: false };
-
-    if (!isCollision(level9Checkpoint.x, level9Checkpoint.y, level9Checkpoint)) {
-      checkpoints.push(level9Checkpoint);
-    } else {
-      console.error("Level 9 checkpoint position overlaps a wall!");
+    if (currentLevel === 8) {
+        const checkpoint1 = { x: 300, y: 0, size: 20, touched: false, solid: false };
+        const checkpoint2 = { x: 60, y: 0, size: 20, touched: false, solid: false };
+        checkpoints.push(checkpoint1, checkpoint2);
+    } else if (currentLevel === 9) {
+        const level9Checkpoint = { x: 120, y: 320, size: 20, touched: false, solid: false };
+        checkpoints.push(level9Checkpoint);
     }
-  }
 }
 
 // Draw the checkpoints on the canvas
@@ -313,11 +327,10 @@ function drawCheckpoints() {
   });
 }
 
-// Check if the player has reached any checkpoint
 function checkCheckpointCollision() {
   if (!checkpoints || checkpoints.length === 0) return;
 
-  checkpoints.forEach((checkpoint) => {
+  checkpoints.forEach((checkpoint, index) => {
     const isPlayerOnCheckpoint =
       player.x < checkpoint.x + checkpoint.size &&
       player.x + player.size > checkpoint.x &&
@@ -325,21 +338,59 @@ function checkCheckpointCollision() {
       player.y + player.size > checkpoint.y;
 
     if (isPlayerOnCheckpoint) {
-      // Mark the checkpoint as touched
+      // Player is on the checkpoint
       if (!checkpoint.touched) {
-        checkpoint.touched = true; // Player touched the checkpoint
-        console.log(`Checkpoint touched at (${checkpoint.x}, ${checkpoint.y})`);
+        checkpoint.touched = true;
+
+        // Handle Level 8-specific logic
+        if (currentLevel === 8) {
+          if (index === 0) {
+            localStorage.setItem('pathOneCompleted', true);
+          }
+          if (index === 1) {
+            localStorage.setItem('pathTwoCompleted', true);
+          }
+
+          // Calculate progress
+          const pathOneCompleted = localStorage.getItem('pathOneCompleted') === 'true';
+          const pathTwoCompleted = localStorage.getItem('pathTwoCompleted') === 'true';
+
+          let progress = 0;
+          if (pathOneCompleted) progress += 50;
+          if (pathTwoCompleted) progress += 50;
+
+          // Update UI
+          const progressFill = document.querySelector(".progressFill");
+          const progressPercentage = document.querySelector(".progressPercentage");
+          progressFill.style.width = `${progress}%`;
+          progressPercentage.textContent = `${progress}%`;
+
+          // Unlock achievement if fully completed
+          const achievementStatus = document.querySelector(".achievementStatus");
+          if (progress === 100) {
+            achievementStatus.innerHTML = `Unlocked<br>Brain Palette`;
+            console.log("Achievement unlocked: The Brain");
+
+            achievementProgress.theBrain.status = "Unlocked";
+            achievementProgress.theBrain.progress = 100;
+            saveAchievementProgress();
+          } else {
+            achievementStatus.textContent = "Locked";
+          }
+
+          console.log(`Level 8 Progress updated: ${progress}%`);
+        }
       }
-    } else if (checkpoint.touched && !checkpoint.solid) {
-      // If the player has left the checkpoint after touching it, make it solid
-      checkpoint.solid = true;
-      console.log(
-        `Checkpoint at (${checkpoint.x}, ${checkpoint.y}) is now solid!`
-      );
+    } else {
+      // Player has left the checkpoint
+      if (currentLevel === 9 && checkpoint.touched && !checkpoint.solid) {
+        checkpoint.solid = true;
+        console.log(`Checkpoint at (${checkpoint.x}, ${checkpoint.y}) is now solid!`);
+      }
     }
   });
 
-  // Redraw to reflect changes
+  // Redraw checkpoints to reflect any updates
   drawCheckpoints();
 }
 
@@ -796,6 +847,9 @@ document.getElementById("confirmReset").addEventListener("click", () => {
     ? require("path").join(__dirname, "achievementProgress.json")
     : null;
 
+  // Clear achievements and unlockables
+  resetAchievementsAndUnlockables();
+
   if (isNode) {
     // Clear files in Node.js/Electron
     if (storage.existsSync(saveFilePath)) storage.unlinkSync(saveFilePath);
@@ -804,6 +858,8 @@ document.getElementById("confirmReset").addEventListener("click", () => {
     // Clear localStorage
     localStorage.removeItem("levelCompletionTimes");
     localStorage.removeItem("achievementProgress");
+    localStorage.removeItem("pathOneCompleted");
+    localStorage.removeItem("pathTwoCompleted");
     localStorage.removeItem("isBrainPaletteEquipped"); // Clear palette state
   }
 
@@ -824,6 +880,40 @@ document.getElementById("confirmReset").addEventListener("click", () => {
     notification.classList.add("hidden");
   }, 2000);
 });
+
+function resetAchievementsAndUnlockables() {
+  // Reset in-memory achievement progress
+  achievementProgress = {
+    theBrain: {
+      title: "The Brain",
+      description: "Win level 8 using both possible paths",
+      status: "Locked", // Reset to locked
+      progress: 0 // Reset progress
+    }
+  };
+
+  // Save updated achievements to localStorage or file
+  saveAchievementProgress();
+
+  // Update UI
+  updateAchievementUI();
+
+  // Reset unlockables UI
+  resetUnlockables();
+}
+
+function resetUnlockables() {
+  // Clear unlockables data
+  localStorage.setItem("isBrainPaletteEquipped", "false");
+
+  // Update the UI to show no unlockables
+  const unlockablesCenterWindow = document.getElementById("unlockablesCenterWindow");
+  unlockablesCenterWindow.innerHTML = "No unlockables available.";
+
+  // Reset styles to default
+  unlockablesCenterWindow.style.display = "flex";
+  applyGameColors(false); // Revert game colors to default
+}
 
 
 document.getElementById("cancelReset").addEventListener("click", () => {
@@ -1927,77 +2017,63 @@ function goToNextLevel() {
 
 function checkWin(bypass = false) {
   if (
-    (player.x < exit.x + exit.size &&
-      player.x + player.size > exit.x &&
-      player.y < exit.y + exit.size &&
-      player.y + player.size > exit.y) ||
-    bypass
+      (player.x < exit.x + exit.size &&
+          player.x + player.size > exit.x &&
+          player.y < exit.y + exit.size &&
+          player.y + player.size > exit.y) ||
+      bypass
   ) {
-    clearInterval(timerInterval);
+      clearInterval(timerInterval);
 
-    // Extract the elapsed time from the timer display
-    const elapsedTime = document
-      .getElementById("timerDisplay")
-      .textContent.split(": ")[1];
-    levelCompletionTimes[`level${currentLevel}`] = elapsedTime;
+      const elapsedTime = document
+          .getElementById("timerDisplay")
+          .textContent.split(": ")[1];
+      levelCompletionTimes[`level${currentLevel}`] = elapsedTime;
 
-    console.log(`Player completed Level ${currentLevel} with time: ${elapsedTime}`);
+      saveLevelCompletionTime(`level${currentLevel}`, elapsedTime);
+      updateLevelCompletionTime();
 
-    // Save the time to localStorage
-    saveLevelCompletionTime(`level${currentLevel}`, elapsedTime);
+      if (currentLevel === 8) {
+          // Check Level 8 progress and unlock achievement
+          const progressFill = document.querySelector(".progressFill");
+          const progressPercentage = document.querySelector(".progressPercentage");
 
-    updateLevelCompletionTime();
+          let progress = 0;
+          if (checkpointsTouched.first) progress += 50;
+          if (checkpointsTouched.second) progress += 50;
 
-  // Update the progress bar
-  if (currentLevel === 8) {
-    const progressFill = document.querySelector(".progressFill");
-    const progressPercentage = document.querySelector(".progressPercentage");
+          progressFill.style.width = `${progress}%`;
+          progressPercentage.textContent = `${progress}%`;
 
-    let progress = 0;
-    if (checkpointsTouched.first) progress += 50; // 50% for the first checkpoint
-    if (checkpointsTouched.second) progress += 50; // 50% for the second checkpoint
+          if (progress === 100) {
+              const achievementStatus = document.querySelector(".achievementStatus");
+              achievementStatus.innerHTML = `Unlocked<br>Brain Palette`;
+              console.log("Achievement unlocked: The Brain");
 
-    progressFill.style.width = `${progress}%`;
-    progressPercentage.textContent = `${progress}%`;
+              achievementProgress.theBrain.status = "Unlocked";
+              achievementProgress.theBrain.progress = 100;
+              saveAchievementProgress();
+          }
+      }
 
-    // Unlock the achievement if both checkpoints are touched
-    if (progress === 100) {
-      const achievementStatus = document.querySelector(".achievementStatus");
-      
-      // Update the achievement status with the new text and button
-      achievementStatus.innerHTML = `
-        Unlocked<br>Brain Palette
-      `;
-      console.log("Achievement unlocked: The Brain");
+      // Display the win popup
+      winPopup.style.display = "block";
 
-      // Save achievement progress
-      achievementProgress.theBrain.status = "Unlocked";
-      achievementProgress.theBrain.progress = 100;
-      saveAchievementProgress();
-    }
-  }
+      moveCountMessage.innerHTML = `You won and it took you ${moveCount} moves.<br>
+          your time was ${elapsedTime}.<br>..loser`;
 
-    // Display the win popup
-    winPopup.style.display = "block";
+      const nextLevelButton = document.getElementById("nextLevelButton");
+      const menuButtonPopup = document.getElementById("menuButtonPopup");
 
-    // Update the move count message with elapsed time
-    moveCountMessage.innerHTML = `You won and it took you ${moveCount} moves.<br>
-                your time was ${elapsedTime}.<br>..loser`;
+      if (currentLevel < 8) {
+          nextLevelButton.style.display = "block";
+          menuButtonPopup.style.display = "none";
+      } else {
+          nextLevelButton.style.display = "none";
+          menuButtonPopup.style.display = "block";
+      }
 
-    // Show or hide the next level button based on the current level
-    const nextLevelButton = document.getElementById("nextLevelButton");
-    const menuButtonPopup = document.getElementById("menuButtonPopup");
-
-    if (currentLevel < 8) {
-      nextLevelButton.style.display = "block";
-      menuButtonPopup.style.display = "none";
-    } else {
-      nextLevelButton.style.display = "none";
-      menuButtonPopup.style.display = "block";
-    }
-
-    // Update level selector with completion time
-    updateLevelCompletionTime();
+      updateLevelCompletionTime();
   }
 }
 
