@@ -248,10 +248,10 @@ canvas {
 }
 
 .controls button {
-  width: 80px;
+  width: 100px;
   height: 80px;
-  background-color: #222222;
-  color: #999999;
+  background-color: var(--button-bg-color, #222222);
+  color: var(--button-color, #999999);
   font-size: 25px;
   font-weight: bold;
   border: none;
@@ -260,8 +260,8 @@ canvas {
 }
 
 .controls button:hover {
-  background-color: #999999;
-  color: #222222;
+  background-color: var(--button-hover-bg-color, #999999);
+  color: var(--button-hover-color, #222222);
 }
 
 .reset-button {

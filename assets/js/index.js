@@ -537,6 +537,7 @@ function updateUnlockablesUI() {
       updateTrackerContainerStyle();        // Update tracker container style
       updateTrackerItemStyles();            // Update tracker item styles
       updateTrackerHighlightEffect();       // Update highlight effect styles
+      updateControlButtonStyles();          // Update control button styles
     });
 
     equipButton.addEventListener("mouseover", () => {
@@ -570,9 +571,12 @@ function applyGameColors(isEquipped) {
   const levelAnnouncement = document.getElementById("levelAnnouncement");
   const levelText = document.getElementById("levelText");
   const mazeContainer = document.querySelector(".maze-container");
+  const timerDisplay = document.getElementById("timerDisplay");
+  const trackerContainer = document.querySelector(".tracker-container");
+  const controls = document.querySelector(".controls");
 
-  if (!mazeContainer) {
-    console.error("Maze container not found!");
+  if (!mazeContainer || !trackerContainer || !controls || !timerDisplay) {
+    console.error("One or more elements not found!");
     return;
   }
 
@@ -582,11 +586,20 @@ function applyGameColors(isEquipped) {
   const announcementBgColor = isEquipped ? "#222222" : "#222222";
   const textBgColor = isEquipped ? "#7E2D47" : "#222222";
   const mazeColor = isEquipped ? "#F96D99" : "#999999"; // Maze container color
+  const timerColor = isEquipped ? "#FF6A99" : "#CCCCCC"; // Timer display color
+  const trackerBgColor = isEquipped ? "#8A314E" : "#222222"; // Tracker background
+  const trackerTextColor = isEquipped ? "#FF6A99" : "#CCCCCC"; // Tracker text color
+  const trackerBorderColor = isEquipped ? "#FF6A99" : "#CCCCCC"; // Tracker border color
+  const buttonBgColor = isEquipped ? "#8A314E" : "#222222"; // Control button background
+  const buttonTextColor = isEquipped ? "#F96D99" : "#999999"; // Control button text
+  const buttonHoverBgColor = isEquipped ? "#F96D99" : "#999999"; // Hover background
+  const buttonHoverTextColor = isEquipped ? "#8A314E" : "#222222"; // Hover text color
 
   // Update announcement and text background colors
   levelAnnouncement.style.backgroundColor = announcementBgColor;
   levelText.style.backgroundColor = textBgColor;
 
+  // Update maze container background color
   mazeContainer.style.backgroundColor = mazeColor;
 
   // Debugging current maze container color
@@ -595,9 +608,24 @@ function applyGameColors(isEquipped) {
   // Force update of maze container background color
   mazeContainer.style.backgroundColor = "";
   setTimeout(() => {
-      mazeContainer.style.backgroundColor = mazeColor;
-      console.log("Updated Maze Color:", mazeColor);
+    mazeContainer.style.backgroundColor = mazeColor;
+    console.log("Updated Maze Color:", mazeColor);
   }, 50);
+
+  // Update timer display color
+  timerDisplay.style.color = timerColor;
+
+  // Update tracker container styles
+  trackerContainer.style.backgroundColor = trackerBgColor;
+  trackerContainer.style.color = trackerTextColor;
+  trackerContainer.style.border = `2px solid ${trackerBorderColor}`;
+  trackerContainer.style.setProperty("--highlight-bg-color", highlightColor); // For animation
+
+  // Update control button styles using CSS variables
+  controls.style.setProperty("--button-bg-color", buttonBgColor);
+  controls.style.setProperty("--button-color", buttonTextColor);
+  controls.style.setProperty("--button-hover-bg-color", buttonHoverBgColor);
+  controls.style.setProperty("--button-hover-color", buttonHoverTextColor);
 
   // Get all spans in levelText
   const letters = levelText.querySelectorAll("span");
@@ -2017,9 +2045,8 @@ function preStartGame(level) {
   document.getElementById("timerDisplay").textContent = "Time: 00:00";
   startTimer();
 
-  const timerDisplay = document.getElementById("timerDisplay");
-  timerDisplay.style.color = timerColors[level] || "#CCCCCC"; // Default to gray if no color is set
-
+  const isEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
+  timerDisplay.style.color = isEquipped ? "#FF6A99" : (timerColors[level] || "#CCCCCC"); // Use equipped color or default
   startGame(getStupidLevel.src, getStupidLevel.s, getStupidLevel.f);
 }
 
