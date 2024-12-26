@@ -156,54 +156,74 @@
     <div id="hintLabel" class="hint-label" hidden>Hint Wasted</div>
 
     <div id="levelSelection" style="display: none; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background-color: #222222;">
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; row-gap: 40px; margin-bottom: 20px;">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; row-gap: 40px; margin-bottom: 0px;">
             <div style="position: relative;">
-                <button id="level1Button" onclick="preStartGame(1)">Level 01</button>
+                <button id="level1Button" onclick="preStartGame(1)">
+                    <img src="assets/images/button1.png" onmouseover="this.src='assets/images/number1pushed.png'" onmouseout="this.src='assets/images/button1.png'" style="width: 100px; image-rendering: pixelated;" />
+                </button>
                 <span id="level1Timer" style="position: absolute; top: -2rem; left: 0;color: rgb(204, 204, 204);display: none;text-align: center;width: 100%"></span>
             </div>
             <div style="position: relative;">
-                <button id="level2Button" onclick="preStartGame(2)">Level 02</button>
+                <button id="level2Button" onclick="preStartGame(2)">
+                    <img src="assets/images/button2.png" style="width: 100px; image-rendering: pixelated;" />
+                </button>
                 <span id="level2Timer" style="position: absolute; top: -2rem; left: 0;color: rgb(204, 204, 204);display: none;text-align: center;width: 100%"></span>
             </div>
 
             <div style="position: relative;">
-                <button id="level3Button" onclick="preStartGame(3)">Level 03</button>
+                <button id="level3Button" onclick="preStartGame(3)">
+                    <img src="assets/images/button3.png" style="width: 100px; image-rendering: pixelated;" />
+                </button>
                 <span id="level3Timer" style="position: absolute; top: -2rem; left: 0;color: rgb(204, 204, 204);display: none;text-align: center;width: 100%"></span>
             </div>
 
             <div style="position: relative;">
-                <button id="level4Button" onclick="preStartGame(4)">Level 04</button>
+                <button id="level4Button" onclick="preStartGame(4)">
+                    <img src="assets/images/button4.png" style="width: 100px; image-rendering: pixelated;" />
+                </button>
                 <span id="level4Timer" style="position: absolute; top: -2rem; left: 0;color: rgb(204, 204, 204);display: none;text-align: center;width: 100%"></span>
             </div>
 
             <div style="position: relative;">
-                <button id="level5Button" onclick="preStartGame(5)">Level 05</button>
+                <button id="level5Button" onclick="preStartGame(5)">
+                    <img src="assets/images/button5.png" style="width: 100px; image-rendering: pixelated;" />
+                </button>
                 <span id="level5Timer" style="position: absolute; top: -2rem; left: 0;color: rgb(204, 204, 204);display: none;text-align: center;width: 100%"></span>
             </div>
 
             <div style="position: relative;">
-                <button id="level6Button" onclick="preStartGame(6)">Level 06</button>
+                <button id="level6Button" onclick="preStartGame(6)">
+                    <img src="assets/images/button6.png" style="width: 100px; image-rendering: pixelated;" />
+                </button>
                 <span id="level6Timer" style="position: absolute; top: -2rem; left: 0;color: rgb(204, 204, 204);display: none;text-align: center;width: 100%"></span>
             </div>
 
             <div style="position: relative;">
-                <button id="level7Button" onclick="preStartGame(7)">Level 07</button>
+                <button id="level7Button" onclick="preStartGame(7)">
+                    <img src="assets/images/button7.png" style="width: 100px; image-rendering: pixelated;" />
+                </button>
                 <span id="level7Timer" style="position: absolute; top: -2rem; left: 0;color: rgb(204, 204, 204);display: none;text-align: center;width: 100%"></span>
             </div>
 
             <div style="position: relative;">
-                <button id="level8Button" onclick="preStartGame(8)">Level 08</button>
-                <span id="level8Timer" style="position: absolute; top: -2rem; left: 0;color: rgb(204, 204, 204);display: none;text-align: center;width: 100%"></span>
+                <button id="level8Button" onclick="preStartGame(8)">
+                    <img src="assets/images/button8.png" style="width: 100px; image-rendering: pixelated;" />
+                </button>
+                <span id="assets/images/level8Timer" style="position: absolute; top: -2rem; left: 0;color: rgb(204, 204, 204);display: none;text-align: center;width: 100%"></span>
             </div>
 
             <div style="position: relative;">
-                <button id="level9Button" onclick="preStartGame(9)">Level 09</button>
+                <button id="level9Button" onclick="preStartGame(9)">
+                    <img src="assets/images/button9.png" style="width: 100px; image-rendering: pixelated;" />
+                </button>
                 <span id="level9Timer" style="position: absolute; top: -2rem; left: 0;color: rgb(204, 204, 204);display: none;text-align: center;width: 100%"></span>
             </div>
 
         </div>
 
-        <button id="mainMenuButton">Main Menu</button>
+        <button id="mainMenuButton">
+            <img src="assets/images/mainmenubutton.png" style="width: 100px; image-rendering: pixelated;" />
+        </button>
 
         <div id="levelSelectionTip">
             pro tip: in order to move you gotta press them arrows n then "confirm" ... dummy

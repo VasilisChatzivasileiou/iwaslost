@@ -578,16 +578,18 @@ input[type="range"] {
   transition: transform 0.2s ease, background-color 0.2s ease; /* Smooth transition */
   font-family: "CustomFont", sans-serif;
   font-size: 20px;
-  padding: 15px;
+  padding: 0px;
   cursor: pointer;
-  background-color: #999999;
+  background-color: rgba(0, 0, 0, 0);;
+  border: none;
   color: #222222;
 }
 
-#levelSelection button:hover {
+
+/* #levelSelection button:hover {
   transform: scale(1.1); /* Slightly enlarge the button */
-  background-color: #cccccc; /* Change background color */
-}
+  /* background-color: #cccccc; /* Change background color */
+/* } */
 
 :root {
   --exit-color: #cccccc; /* Example of changing level 1's exit color */
