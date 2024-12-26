@@ -533,6 +533,10 @@ function updateUnlockablesUI() {
     
       console.log("Toggling equip state:", isEquipped); // Debug log
       applyGameColors(isEquipped); // Call the function
+      updateCanvasBorder();        // Update canvas border
+      updateTrackerContainerStyle();        // Update tracker container style
+      updateTrackerItemStyles();            // Update tracker item styles
+      updateTrackerHighlightEffect();       // Update highlight effect styles
     });
 
     equipButton.addEventListener("mouseover", () => {
@@ -1789,23 +1793,27 @@ function updateControlsButtonColors() {
 }
 
 function updateTrackerContainerStyle() {
+  const isEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
   const trackerContainer = document.querySelector(".tracker-container");
 
-  // Use CSS variables to define styles
-  const background = getComputedStyle(document.documentElement)
-    .getPropertyValue("--background-color")
-    .trim();
-  const color = getComputedStyle(document.documentElement)
-    .getPropertyValue("--text-color")
-    .trim();
-  const border = `2px solid ${getComputedStyle(document.documentElement)
-    .getPropertyValue("--border-color")
-    .trim()}`;
+  // Define colors based on equip state
+  const normalEntryColor = isEquipped ? "#FF6A99" : "#999999";
+  const highlightEntryColor = isEquipped ? "#FFADC7" : "#CCCCCC";
+
+  const backgroundColor = isEquipped ? "#8A314E" : "#222222";
+  const textColor = isEquipped ? "#FF6A99" : "#CCCCCC";
+  const borderColor = isEquipped ? "#FF6A99" : "#CCCCCC";
+  const highlightBgColor = isEquipped ? "#FFADC7" : "#CCCCCC";
 
   // Apply the styles
-  trackerContainer.style.backgroundColor = background;
-  trackerContainer.style.color = color;
-  trackerContainer.style.border = border;
+  trackerContainer.style.backgroundColor = backgroundColor;
+  trackerContainer.style.color = textColor;
+  trackerContainer.style.border = `2px solid ${borderColor}`;
+
+  trackerContainer.style.setProperty("--normal-entry-color", normalEntryColor);
+  trackerContainer.style.setProperty("--highlight-entry-color", highlightEntryColor);
+
+  trackerContainer.style.setProperty("--highlight-bg-color", highlightBgColor);
 }
 
 function updateBodyBackgroundColor() {
@@ -1867,12 +1875,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 function updateCanvasBorder() {
-  const mazeBorderColor = getComputedStyle(document.documentElement)
-    .getPropertyValue("--border-color")
-    .trim();
-  document.querySelector(
-    "canvas"
-  ).style.border = `1px solid ${mazeBorderColor}`;
+  const isEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
+  const mazeBorderColor = isEquipped ? "#8A314E" : "#222222"; // Choose color based on equip state
+  document.querySelector("canvas").style.border = `1px solid ${mazeBorderColor}`;
 }
 
 function goToNextLevel() {

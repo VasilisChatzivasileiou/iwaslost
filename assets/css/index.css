@@ -222,11 +222,11 @@ canvas {
   font-size: 16px;
   margin-bottom: 5px;
   text-align: left;
-  color: #999999; /* Default text color */
+  color: var(--normal-entry-color, #FF6A99); /* Default text color */
 }
 
 .tracker-container li.highlight-entry {
-  color: #cccccc; /* New entry color */
+  color: var(--highlight-entry-color, #FFADC7); /* Highlighted entry color */
   font-weight: bold; /* Optional: make the highlighted entry bold */
   font-size: 19px;
 }
@@ -914,13 +914,13 @@ input[type="range"] {
   }
 }
 
-@keyframes highlightEffect {
+@keyframes highlightEffect { 
   0% {
-    background-color: #cccccc;
+    background-color: var(--highlight-bg-color, #FFADC7); /* Highlight start color */
     opacity: 1;
   }
   100% {
-    background-color: #cccccc;
+    background-color: var(--highlight-bg-color, #FFADC7); /* Highlight end color */
     opacity: 0;
   }
 }
