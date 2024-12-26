@@ -1336,7 +1336,8 @@ const levelPaths = {
     "up",
   ],
   7:[
-    
+    "up","left","up","left","down","left","up","left","up","right","up","right","up","right","down","right","down","right","up","left",
+    "up","right","up","left","down","right","up","left","up"
   ]
 };
 
