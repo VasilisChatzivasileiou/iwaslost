@@ -277,30 +277,20 @@ function initializeCheckpoints() {
   checkpoints = []; // Clear checkpoints initially
 
   if (currentLevel === 8) {
-    // Define two checkpoints
-    const checkpoint1 = {
-      x: 300,
-      y: 0,
-      size: 20,
-    };
+    // Existing Level 8 checkpoints
+    const checkpoint1 = { x: 300, y: 0, size: 20 };
+    const checkpoint2 = { x: 60, y: 0, size: 20 };
 
-    const checkpoint2 = {
-      x: 60,
-      y: 0,
-      size: 20,
-    };
+    if (!isCollision(checkpoint1.x, checkpoint1.y, checkpoint1)) checkpoints.push(checkpoint1);
+    if (!isCollision(checkpoint2.x, checkpoint2.y, checkpoint2)) checkpoints.push(checkpoint2);
+  } else if (currentLevel === 9) {
+    // New Level 9 checkpoint
+    const level9Checkpoint = { x: 120, y: 320, size: 20, solid: false };
 
-    // Validate the positions of the checkpoints
-    if (!isCollision(checkpoint1.x, checkpoint1.y, checkpoint1)) {
-      checkpoints.push(checkpoint1); // Add if valid
+    if (!isCollision(level9Checkpoint.x, level9Checkpoint.y, level9Checkpoint)) {
+      checkpoints.push(level9Checkpoint);
     } else {
-      console.error("Checkpoint 1 position is invalid, it overlaps a wall!");
-    }
-
-    if (!isCollision(checkpoint2.x, checkpoint2.y, checkpoint2)) {
-      checkpoints.push(checkpoint2); // Add if valid
-    } else {
-      console.error("Checkpoint 2 position is invalid, it overlaps a wall!");
+      console.error("Level 9 checkpoint position overlaps a wall!");
     }
   }
 }
@@ -309,8 +299,16 @@ function initializeCheckpoints() {
 function drawCheckpoints() {
   if (checkpoints.length === 0) return;
 
+  const isEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
+
   checkpoints.forEach((checkpoint) => {
-    ctx.fillStyle = "rgba(0, 255, 0, 0.0)"; // Green with transparency
+    if (currentLevel === 9 && checkpoint.solid) {
+      // Solid checkpoint
+      ctx.fillStyle = isEquipped ? "#8A314E" : "#222222"; // Equipped or default color
+    } else {
+      // Non-solid checkpoint
+      ctx.fillStyle = isEquipped ? "#F96D99" : "#999999"; // Equipped or default color
+    }
     ctx.fillRect(checkpoint.x, checkpoint.y, checkpoint.size, checkpoint.size);
   });
 }
@@ -319,23 +317,30 @@ function drawCheckpoints() {
 function checkCheckpointCollision() {
   if (!checkpoints || checkpoints.length === 0) return;
 
-  checkpoints.forEach((checkpoint, index) => {
-    if (
+  checkpoints.forEach((checkpoint) => {
+    const isPlayerOnCheckpoint =
       player.x < checkpoint.x + checkpoint.size &&
       player.x + player.size > checkpoint.x &&
       player.y < checkpoint.y + checkpoint.size &&
-      player.y + player.size > checkpoint.y
-    ) {
-      console.log(`Checkpoint ${index + 1} reached!`);
-      
-      // Mark checkpoint as touched
-      if (index === 0) checkpointsTouched.first = true;
-      if (index === 1) checkpointsTouched.second = true;
+      player.y + player.size > checkpoint.y;
 
-      // Disable checkpoint after touching
-      checkpoint.disabled = true;
+    if (isPlayerOnCheckpoint) {
+      // Mark the checkpoint as touched
+      if (!checkpoint.touched) {
+        checkpoint.touched = true; // Player touched the checkpoint
+        console.log(`Checkpoint touched at (${checkpoint.x}, ${checkpoint.y})`);
+      }
+    } else if (checkpoint.touched && !checkpoint.solid) {
+      // If the player has left the checkpoint after touching it, make it solid
+      checkpoint.solid = true;
+      console.log(
+        `Checkpoint at (${checkpoint.x}, ${checkpoint.y}) is now solid!`
+      );
     }
   });
+
+  // Redraw to reflect changes
+  drawCheckpoints();
 }
 
 const levelCompletionTimes = {};
@@ -2258,6 +2263,7 @@ function isCollision(newX, newY, pPlayer) {
 
   const scaledWidth = canvas.width / scale;
 
+  // Check for wall collisions
   for (const corner of corners) {
     const index = (corner.y * scaledWidth + corner.x) * 4 + 3;
     console.log(
@@ -2265,10 +2271,27 @@ function isCollision(newX, newY, pPlayer) {
       mazeData[index]
     ); // Debugging
     if (mazeData[index] !== 0) {
-      return true;
+      return true; // Collision with wall
     }
   }
-  return false;
+
+  // Check for solid checkpoint collisions
+  for (const checkpoint of checkpoints) {
+    if (
+      checkpoint.solid && // Only consider solid checkpoints
+      newX < checkpoint.x + checkpoint.size &&
+      newX + cPlayer.size > checkpoint.x &&
+      newY < checkpoint.y + checkpoint.size &&
+      newY + cPlayer.size > checkpoint.y
+    ) {
+      console.log(
+        `Collision with solid checkpoint at (${checkpoint.x}, ${checkpoint.y})`
+      );
+      return true; // Collision with solid checkpoint
+    }
+  }
+
+  return false; // No collision
 }
 
 function addDirectionToTracker(direction) {
