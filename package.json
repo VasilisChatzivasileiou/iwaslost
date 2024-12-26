@@ -1,0 +1,16 @@
+{
+  "name": "iwaslost",
+  "version": "0.1.1",
+  "main": "preload.js",
+  "repository": "https://github.com/VasilisChatzivasileiou/iwaslost",
+  "keywords": ["game", "mazes"],
+  "author": "Vasilis Chatzivasileiou",
+  "license": "ISC",
+  "description": "Pilot an overeager robot through confounding mazes",
+  "scripts": {
+    "start": "http-server"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
