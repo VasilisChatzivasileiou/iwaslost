@@ -1342,6 +1342,9 @@ const levelPaths = {
   8:[
     "up","left","up","left","up","left","down","right","up","right","down","right","up","right","up","right","down","left","up","left","down",
     "left","up","left","down","right","up","right","up","left","up","left","up","right","down","right","up"
+  ],
+  9:[
+    
   ]
 };
 
@@ -2131,7 +2134,7 @@ function preStartGame(level) {
 
   const getStupidLevel = stupidLevels[level - 1];
 
-  document.getElementById("timerDisplay").textContent = "Time: 00:00";
+  document.getElementById("timerDisplay").textContent = "time: 00:00";
   startTimer();
 
   const isEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
