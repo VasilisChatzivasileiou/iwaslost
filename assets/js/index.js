@@ -397,90 +397,10 @@ function checkCheckpointCollision() {
 const levelCompletionTimes = {};
 
 document.addEventListener("DOMContentLoaded", () => {
-  const menuElement = document.getElementById("menuElement");
-
-  // Array of frame URLs
-  const frames = [
-    "assets/frames/menuelementframe1.png",
-    "assets/frames/menuelementframe2.png",
-    "assets/frames/menuelementframe3.png",
-    "assets/frames/menuelementframe4.png",
-    "assets/frames/menuelementframe5.png",
-    "assets/frames/menuelementframe6.png",
-    "assets/frames/menuelementframe7.png",
-    "assets/frames/menuelementframe8.png",
-    "assets/frames/menuelementframe9.png",
-    "assets/frames/menuelementframe10.png",
-    "assets/frames/menuelementframe11.png",
-    "assets/frames/menuelementframe12.png",
-    "assets/frames/menuelementframe13.png",
-    "assets/frames/menuelementframe14.png",
-    "assets/frames/menuelementframe15.png",
-    "assets/frames/menuelementframe16.png",
-    "assets/frames/menuelementframe17.png",
-    "assets/frames/menuelementframe18.png",
-    "assets/frames/menuelementframe19.png",
-    "assets/frames/menuelementframe20.png",
-    "assets/frames/menuelementframe21.png",
-    "assets/frames/menuelementframe22.png",
-    "assets/frames/menuelementframe23.png",
-    "assets/frames/menuelementframe24.png",
-    "assets/frames/menuelementframe25.png",
-    "assets/frames/menuelementframe26.png",
-    "assets/frames/menuelementframe27.png",
-    "assets/frames/menuelementframe28.png",
-    "assets/frames/menuelementframe29.png",
-    // Add more frames as needed
-  ];
-
-  let currentFrame = 0;
-  const frameDuration = 125; // Duration per frame in milliseconds (0.3 seconds)
-  let animationInterval; // To store the interval ID
-
-  // Function to update the frame
-  function updateFrame() {
-    currentFrame = (currentFrame + 1) % frames.length; // Loop back to the first frame
-    menuElement.src = frames[currentFrame];
-  }
-
-  function startAnimation() {
-    if (!animationInterval) {
-      animationInterval = setInterval(updateFrame, frameDuration);
-      console.log("Animation started.");
-    }
-  }
-
-  // Function to stop the animation
-  function stopAnimation() {
-    if (animationInterval) {
-      clearInterval(animationInterval);
-      animationInterval = null;
-      console.log("Animation stopped.");
-    }
-  }
-
-  // Set the initial frame
-  menuElement.src = frames[20]; // Load the first frame immediately
-  console.log("Initial frame set.");
-
-  // Start animation when the main menu is visible
-  startScreen.addEventListener("mouseenter", () => {
-    startAnimation();
-  });
-
-  // Stop animation when leaving the main menu
-  startScreen.addEventListener("mouseleave", () => {
-    stopAnimation();
-  });
-
-  // Stop the animation when transitioning to the game
   startGameButton.addEventListener("click", () => {
-    stopAnimation();
     startScreen.style.display = "none"; // Hide the menu
     console.log("Transitioning to game...");
   });
-
-
 });
 
 function updateUnlockablesUI() {
