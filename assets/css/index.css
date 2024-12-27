@@ -31,7 +31,7 @@ body {
 }
 
 .confirm-button {
-  width: auto;
+  width: 100px;
   height: 50px;
   background-color: #222222; /* Different color for distinction */
   color: #999999;
@@ -327,7 +327,7 @@ canvas {
 .buttons-container {
   display: flex;
   justify-content: center;
-  gap: 10px;
+  gap: 5px;
 }
 
 #levelAnnouncement {

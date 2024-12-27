@@ -640,7 +640,7 @@ function startTimer() {
     const seconds = String(elapsedTime % 60).padStart(2, "0");
     document.getElementById(
       "timerDisplay"
-    ).textContent = `Time: ${minutes}:${seconds}`;
+    ).textContent = `time: ${minutes}:${seconds}`;
   }, 1000);
 }
 
