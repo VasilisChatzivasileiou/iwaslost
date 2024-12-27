@@ -1344,7 +1344,7 @@ const levelPaths = {
     "left","up","left","down","right","up","right","up","left","up","left","up","right","down","right","up"
   ],
   9:[
-    
+
   ]
 };
 
@@ -1806,8 +1806,9 @@ function showLevelAnnouncement(level, baseColor = "#999999", highlightColor = "#
 }
 
 function startGame(mazeImageSrc, exitPosition, playerPosition) {
-  // Clear existing checkpoints at the start of a new level
+  // Clear existing checkpoints and level-specific intervals
   clearCheckpoints();
+  clearLevel7Block(); // Clear the block movement interval if it exists
 
   mazeImage.src = mazeImageSrc;
 
@@ -1817,15 +1818,16 @@ function startGame(mazeImageSrc, exitPosition, playerPosition) {
 
     // Extract the maze data
     extractMazeData();
-
     // Update the player and exit positions
     exit.x = exitPosition.x;
     exit.y = exitPosition.y;
     player.startX = playerPosition.x;
     player.startY = playerPosition.y;
 
-    // Initialize checkpoint only after mazeData is ready
-    if (currentLevel === 8) {
+    // Level-specific initialization
+    if (currentLevel === 7) {
+      initializeLevel7Block(); // Initialize the moving block for level 7
+    } else if (currentLevel === 8) {
       initializeCheckpoints(); // Ensure the checkpoint is valid
       console.log("Checkpoint initialized for level 8:", checkpoints);
     }
@@ -1835,12 +1837,11 @@ function startGame(mazeImageSrc, exitPosition, playerPosition) {
       console.log(`Checkpoint ${index + 1}:`, checkpoint);
     });
 
-    // Restart the game for the new level
-    restartGame();
-
     // Redraw the player and checkpoint
     drawPlayer();
     drawCheckpoints();
+    drawLevel7Block(ctx); // Ensure the block is drawn after loading
+    if (currentLevel === 7) drawLevel7Block(canvas.getContext("2d"));
   };
 
   // Change body background color based on the level
@@ -1890,6 +1891,81 @@ function startGame(mazeImageSrc, exitPosition, playerPosition) {
   // Ensure correct visibility of the "Next Level" button
   const nextLevelButton = document.getElementById("nextLevelButton");
   nextLevelButton.style.display = currentLevel < 9 ? "block" : "none";
+}
+
+let level7Block = null;
+let level7BlockInterval = null;
+let isMovingUp = false; // Direction toggle for block movement
+
+function initializeLevel7Block() {
+  if (currentLevel !== 7) return;
+
+  // Define the moving block
+  level7Block = { x: 0, y: 120, width: 20, height: 20, speed: 1 }; // Add speed for smooth movement
+
+  // Start block movement
+  level7BlockInterval = setInterval(() => {
+    if (level7Block) {
+      // Move the block smoothly within the range
+      if (isMovingUp) {
+        level7Block.y -= level7Block.speed;
+        if (level7Block.y <= 120) isMovingUp = false; // Reverse direction
+      } else {
+        level7Block.y += level7Block.speed;
+        if (level7Block.y >= 260) isMovingUp = true; // Reverse direction
+      }
+
+      // Redraw the maze, player, and block
+      recolorMaze(); // Redraw maze
+      drawPlayer(); // Redraw player
+      drawLevel7Block(canvas.getContext("2d")); // Redraw block
+    }
+  }, 16); // Smooth updates at ~60 FPS
+}
+
+function drawLevel7Block(ctx) {
+  if (!level7Block || currentLevel !== 7) return;
+
+  ctx.fillStyle = "#222222";
+  ctx.fillRect(level7Block.x, level7Block.y, level7Block.width, level7Block.height);
+}
+
+function checkLevel7BlockCollision(player) {
+  if (!level7Block || currentLevel !== 7) return;
+
+  const collision =
+    player.x < level7Block.x + level7Block.width &&
+    player.x + player.width > level7Block.x &&
+    player.y < level7Block.y + level7Block.height &&
+    player.y + player.height > level7Block.y;
+
+  if (collision) {
+    console.log("Player collided with the moving block!");
+    soundEffect.play(); // Play sound effect
+  }
+}
+
+function checkLevel7BlockCollision() {
+  if (!level7Block || currentLevel !== 7) return;
+
+  const collision =
+    player.x < level7Block.x + level7Block.width &&
+    player.x + player.size > level7Block.x &&
+    player.y < level7Block.y + level7Block.height &&
+    player.y + player.size > level7Block.y;
+
+  if (collision) {
+    console.log("Player collided with the moving block!");
+    soundEffect.play(); // Play a sound effect
+  }
+}
+
+function clearLevel7Block() {
+  if (level7BlockInterval) {
+    clearInterval(level7BlockInterval); // Stop block movement
+    level7BlockInterval = null;
+  }
+  level7Block = null; // Remove block reference
 }
 
 function clearCheckpoints() {
@@ -2111,7 +2187,7 @@ const stupidLevels = [
   { src: "level4(1).png", s: { x: 180, y: 0 }, f: { x: 180, y: 320 } },
   { src: "level5(2).png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
   { src: "level6(2).png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
-  { src: "level7.png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
+  { src: "level7test.png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
   { src: "level8(1).png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
   { src: "level9.png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
 ];
