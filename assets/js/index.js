@@ -2569,7 +2569,7 @@ function startMoving() {
       break;
   }
 
-  movingInterval = setInterval(() => {
+  const doTheMove = () => {
     const newX = player.x + dx;
     const newY = player.y + dy;
 
@@ -2580,12 +2580,10 @@ function startMoving() {
       newY + player.size > canvas.height ||
       isCollision(newX, newY)
     ) {
-      clearInterval(movingInterval); // Stop movement on collision
-      movingInterval = null; // Reset interval reference
       player.x = Math.round(player.x / speed) * speed; // Align position to grid
       player.y = Math.round(player.y / speed) * speed;
       isMoving = false; // Unlock movement
-      
+
       soundEffect.currentTime = 0; // Reset sound playback
       soundEffect.play(); // Play sound effect
 
@@ -2608,8 +2606,12 @@ function startMoving() {
       drawPlayer();
       checkCheckpointCollision(); // Add collision check here
       checkWin();
+
+      requestAnimationFrame(doTheMove);
     }
-  }, 10);
+  };
+
+  requestAnimationFrame(doTheMove);
 }
 
 // Define an array of audio files
