@@ -1901,7 +1901,7 @@ function initializeLevel7Block() {
   if (currentLevel !== 7) return;
 
   // Define the moving block
-  level7Block = { x: 0, y: 120, width: 20, height: 20, speed: 1 }; // Add speed for smooth movement
+  level7Block = { x: 20, y: 140, width: 20, height: 20, speed: 1 }; // Add speed for smooth movement
 
   // Start block movement
   level7BlockInterval = setInterval(() => {
@@ -1909,10 +1909,10 @@ function initializeLevel7Block() {
       // Move the block smoothly within the range
       if (isMovingUp) {
         level7Block.y -= level7Block.speed;
-        if (level7Block.y <= 120) isMovingUp = false; // Reverse direction
+        if (level7Block.y <= 140) isMovingUp = false; // Reverse direction
       } else {
         level7Block.y += level7Block.speed;
-        if (level7Block.y >= 260) isMovingUp = true; // Reverse direction
+        if (level7Block.y >= 240) isMovingUp = true; // Reverse direction
       }
 
       // Redraw the maze, player, and block
