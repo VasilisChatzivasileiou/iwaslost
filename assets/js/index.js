@@ -1823,10 +1823,10 @@ function initializeLevel7Blocks() {
 
   // Define three moving blocks with unique horizontal ranges
   level7Blocks = [
-    { x: 20, y: 140, width: 20, height: 20, speed: 2, startX: 20, endX: 40, startY: 140, endY: 140 },
-    { x: 40, y: 140, width: 20, height: 20, speed: 2, startX: 40, endX: 60, startY: 140, endY: 140 },
+    { x: 20, y: 140, width: 120, height: 20, speed: 2, startX: 20, endX: 40, startY: 140, endY: 140 },
     { x: 20, y: 160, width: 20, height: 20, speed: 2, startX: 20, endX: 40, startY: 160, endY: 160 },
-    { x: 20, y: 180, width: 20, height: 20, speed: 2, startX: 20, endX: 40, startY: 180, endY: 180 },
+    { x: 20, y: 180, width: 60, height: 20, speed: 2, startX: 20, endX: 40, startY: 180, endY: 180 },
+    { x: 20, y: 200, width: 20, height: 60, speed: 2, startX: 20, endX: 40, startY: 200, endY: 200 },
   ];
 
   stopLevel7Blocks = false; // Ensure the loop runs
@@ -1857,48 +1857,68 @@ async function moveLevel7BlocksWithDelay() {
 }
 
 async function smoothMoveBlocks(isMovingToStart) {
-  const steps = 60; // Number of steps for smooth movement (~60 FPS)
-  const stepDuration = 500 / steps; // Duration of each step
+    const steps = 60; // Number of steps for smooth movement (~60 FPS)
+    const stepDuration = 500 / steps; // Duration of each step
 
-  for (let i = 0; i < steps; i++) {
-    if (stopLevel7Blocks) return; // Exit if the level changes
+    for (let i = 0; i < steps; i++) {
+        if (stopLevel7Blocks) return; // Exit if the level changes
 
-    level7Blocks.forEach((block, index) => {
-      // Determine the target position dynamically
-      const targetX = isMovingToStart ? block.startX : block.endX;
-      const targetY = isMovingToStart ? block.startY : block.endY;
+        level7Blocks.forEach((block) => {
+            // Determine the target position dynamically
+            const targetX = isMovingToStart ? block.startX : block.endX;
+            const targetY = isMovingToStart ? block.startY : block.endY;
 
-      const remainingDistanceX = targetX - block.x;
-      const remainingDistanceY = targetY - block.y;
+            const remainingDistanceX = targetX - block.x;
+            const remainingDistanceY = targetY - block.y;
 
-      // Smoothly distribute the remaining distance
-      const distanceX = remainingDistanceX / (steps - i);
-      const distanceY = remainingDistanceY / (steps - i);
+            // Smoothly distribute the remaining distance
+            const distanceX = remainingDistanceX / (steps - i);
+            const distanceY = remainingDistanceY / (steps - i);
 
-      // Update block position
-      block.x += distanceX;
-      block.y += distanceY;
+            // Update block position
+            block.x += distanceX;
+            block.y += distanceY;
 
-      // Check for collisions and handle pushing the player
-      checkLevel7BlocksCollision(player);
+            // Push player if a collision occurs
+            if (isCollidingWithPlayer(block, player)) {
+                const newPlayerX = player.x + distanceX;
+                const newPlayerY = player.y + distanceY;
 
-      console.log(
-        `Block ${index + 1}: x=${block.x.toFixed(2)}, y=${block.y.toFixed(2)}`
-      ); // Log block positions
+                // Check if the new player position collides with a wall
+                if (isCollision(newPlayerX, newPlayerY, player)) {
+                    console.log("you died");
+                    stopLevel7Blocks = true; // Optional: stop movement if player dies
+                    return; // Exit the movement loop
+                }
+
+                // Move the player if no collision
+                player.x = newPlayerX;
+                player.y = newPlayerY;
+            }
+        });
+
+        // Redraw maze, blocks, and player
+        recolorMaze();
+        drawLevel7Blocks(ctx);
+        drawPlayer();
+
+        await new Promise((resolve) => setTimeout(resolve, stepDuration));
+    }
+
+    // Snap blocks to their target positions to avoid rounding errors
+    level7Blocks.forEach((block) => {
+        block.x = isMovingToStart ? block.startX : block.endX;
+        block.y = isMovingToStart ? block.startY : block.endY;
     });
+}
 
-    recolorMaze();
-    drawLevel7Blocks(canvas.getContext("2d")); // Draw blocks
-    drawPlayer(); // Draw player last for layering
-
-    await new Promise((resolve) => setTimeout(resolve, stepDuration));
-  }
-
-  // Snap blocks to their target positions to avoid rounding errors
-  level7Blocks.forEach((block) => {
-    block.x = isMovingToStart ? block.startX : block.endX;
-    block.y = isMovingToStart ? block.startY : block.endY;
-  });
+function isCollidingWithPlayer(block, player) {
+  return (
+      player.x < block.x + block.width &&
+      player.x + player.size > block.x &&
+      player.y < block.y + block.height &&
+      player.y + player.size > block.y
+  );
 }
 
 function drawLevel7Blocks(ctx) {
@@ -1920,35 +1940,26 @@ function checkLevel7BlocksCollision(player) {
   if (!level7Blocks.length || currentLevel !== 7) return;
 
   level7Blocks.forEach((block) => {
-    const collision =
-      player.x < block.x + block.width &&
-      player.x + player.width > block.x &&
-      player.y < block.y + block.height &&
-      player.y + player.height > block.y;
+      const collision =
+          player.x < block.x + block.width &&
+          player.x + player.width > block.x &&
+          player.y < block.y + block.height &&
+          player.y + player.height > block.y;
 
-    if (collision) {
-      console.log("Player collided with a block!");
-      pushPlayerWithBlock(player, block); // Push the player
-    }
+      if (collision) {
+          console.log("Player collided with a block!");
+          pushPlayerWithBlock(player, block); // Push the player
+      }
   });
 }
 
-function pushPlayerWithBlock(player, block) {
-  // Calculate the block's movement direction
-  const blockMovementX = block.x - (block.previousX || block.x);
-  const blockMovementY = block.y - (block.previousY || block.y);
+function pushPlayerWithBlock(player, block, dx, dy) {
+  // Push the player by the same distance as the block
+  player.x += dx;
+  player.y += dy;
 
-  // Update player's position if a collision occurs
-  player.x += blockMovementX;
-  player.y += blockMovementY;
-
-  // Update the block's previous position for the next frame
-  block.previousX = block.x;
-  block.previousY = block.y;
-
-  // Ensure the player stays within bounds (optional)
-  player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
-  player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
+  console.log(`Pushing player by dx=${dx}, dy=${dy}`);
+  drawPlayer(); // Redraw the player in the new position
 }
 
 function handlePlayerCollisionWithBlock() {
@@ -2402,67 +2413,65 @@ function drawExit() {
 
 function isCollision(newX, newY, pPlayer) {
   let cPlayer = player;
-
   if (pPlayer) {
-    cPlayer = pPlayer;
+      cPlayer = pPlayer;
   }
 
   const mazeX = Math.floor(newX / scale);
   const mazeY = Math.floor(newY / scale);
 
   const corners = [
-    { x: mazeX, y: mazeY },
-    { x: mazeX + cPlayer.size / scale - 1, y: mazeY },
-    { x: mazeX, y: mazeY + cPlayer.size / scale - 1 },
-    {
-      x: mazeX + cPlayer.size / scale - 1,
-      y: mazeY + cPlayer.size / scale - 1,
-    },
+      { x: mazeX, y: mazeY },
+      { x: mazeX + cPlayer.size / scale - 1, y: mazeY },
+      { x: mazeX, y: mazeY + cPlayer.size / scale - 1 },
+      {
+          x: mazeX + cPlayer.size / scale - 1,
+          y: mazeY + cPlayer.size / scale - 1,
+      },
   ];
 
   const scaledWidth = canvas.width / scale;
 
   // Check for wall collisions
   for (const corner of corners) {
-    const index = (corner.y * scaledWidth + corner.x) * 4 + 3;
-    if (mazeData[index] !== 0) {
-      console.log(
-        `Collision detected at (${corner.x}, ${corner.y})`
-      );
-      return true; // Collision with wall
-    }
+      const index = (corner.y * scaledWidth + corner.x) * 4 + 3;
+      if (mazeData[index] !== 0) {
+          console.log(
+              `Collision detected at (${corner.x}, ${corner.y})`
+          );
+          return true; // Collision with wall
+      }
   }
 
   // Check for solid checkpoint collisions
   for (const checkpoint of checkpoints) {
-    if (
-      checkpoint.solid && // Only consider solid checkpoints
-      newX < checkpoint.x + checkpoint.size &&
-      newX + cPlayer.size > checkpoint.x &&
-      newY < checkpoint.y + checkpoint.size &&
-      newY + cPlayer.size > checkpoint.y
-    ) {
-      console.log(
-        `Collision with solid checkpoint at (${checkpoint.x}, ${checkpoint.y})`
-      );
-      return true; // Collision with solid checkpoint
-    }
+      if (
+          checkpoint.solid && // Only consider solid checkpoints
+          newX < checkpoint.x + checkpoint.size &&
+          newX + cPlayer.size > checkpoint.x &&
+          newY < checkpoint.y + checkpoint.size &&
+          newY + cPlayer.size > checkpoint.y
+      ) {
+          console.log(
+              `Collision with solid checkpoint at (${checkpoint.x}, ${checkpoint.y})`
+          );
+          return true; // Collision with solid checkpoint
+      }
   }
 
-  // Check for collisions with stationary Level 7 blocks
+  // Check for collisions with Level 7 blocks (moving or stationary)
   if (currentLevel === 7) {
-    for (const block of level7Blocks) {
-      if (
-        block.stationary && // Only consider stationary blocks
-        newX < block.x + block.width &&
-        newX + cPlayer.size > block.x &&
-        newY < block.y + block.height &&
-        newY + cPlayer.size > block.y
-      ) {
-        console.log(`Collision with stationary block at (${block.x}, ${block.y})`);
-        return true; // Collision with stationary block
+      for (const block of level7Blocks) {
+          if (
+              newX < block.x + block.width &&
+              newX + cPlayer.size > block.x &&
+              newY < block.y + block.height &&
+              newY + cPlayer.size > block.y
+          ) {
+              console.log(`Collision with block at (${block.x}, ${block.y})`);
+              return true; // Collision with a block
+          }
       }
-    }
   }
 
   return false; // No collision
