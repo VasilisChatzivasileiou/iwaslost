@@ -1840,11 +1840,17 @@ async function moveLevel7BlocksWithDelay() {
     // Smoothly move the blocks over 2 seconds
     await smoothMoveBlocks(isMovingUp);
 
+    // Set blocks to stationary
+    level7Blocks.forEach((block) => (block.stationary = true));
+
     // Pause for 2 seconds
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Toggle the direction
     isMovingUp = !isMovingUp;
+
+    // Set blocks to moving
+    level7Blocks.forEach((block) => (block.stationary = false));
   }
 }
 
@@ -1885,6 +1891,20 @@ function drawLevel7Blocks(ctx) {
   });
 }
 
+function drawLevel7Blocks(ctx) {
+  if (!level7Blocks.length || currentLevel !== 7) return;
+
+  ctx.fillStyle = "#222222";
+  level7Blocks.forEach((block) => {
+    ctx.fillRect(block.x, block.y, block.width, block.height);
+  });
+}
+
+function clearLevel7Blocks() {
+  stopLevel7Blocks = true; // Stop the loop
+  level7Blocks = []; // Remove block references
+}
+
 function checkLevel7BlocksCollision(player) {
   if (!level7Blocks.length || currentLevel !== 7) return;
 
@@ -1895,15 +1915,18 @@ function checkLevel7BlocksCollision(player) {
       player.y < block.y + block.height &&
       player.y + player.height > block.y;
 
-    if (collision) {
-      console.log("Player collided with a moving block!");
+    if (collision && block.stationary) {
+      console.log("Player collided with a stationary block!");
+      // Handle collision (e.g., stop player movement)
+      handlePlayerCollisionWithBlock();
     }
   });
 }
 
-function clearLevel7Blocks() {
-  stopLevel7Blocks = true; // Stop the loop
-  level7Blocks = []; // Remove block references
+function handlePlayerCollisionWithBlock() {
+  // Add logic to reset player position or stop movement
+  player.x -= player.velocityX; // Example: Stop horizontal movement
+  player.y -= player.velocityY; // Example: Stop vertical movement
 }
 
 function clearCheckpoints() {
@@ -2326,6 +2349,7 @@ function drawPlayer(cPlayer) {
 
   if (currentLevel === 7) {
     drawLevel7Blocks(canvas.getContext("2d")); // Ensure the block is redrawn
+    checkLevel7BlocksCollision(player);
   }
 
   // draw hint
@@ -2372,11 +2396,10 @@ function isCollision(newX, newY, pPlayer) {
   // Check for wall collisions
   for (const corner of corners) {
     const index = (corner.y * scaledWidth + corner.x) * 4 + 3;
-    console.log(
-      `Checking collision at (${corner.x}, ${corner.y}):`,
-      mazeData[index]
-    ); // Debugging
     if (mazeData[index] !== 0) {
+      console.log(
+        `Collision detected at (${corner.x}, ${corner.y})`
+      );
       return true; // Collision with wall
     }
   }
@@ -2394,6 +2417,22 @@ function isCollision(newX, newY, pPlayer) {
         `Collision with solid checkpoint at (${checkpoint.x}, ${checkpoint.y})`
       );
       return true; // Collision with solid checkpoint
+    }
+  }
+
+  // Check for collisions with stationary Level 7 blocks
+  if (currentLevel === 7) {
+    for (const block of level7Blocks) {
+      if (
+        block.stationary && // Only consider stationary blocks
+        newX < block.x + block.width &&
+        newX + cPlayer.size > block.x &&
+        newY < block.y + block.height &&
+        newY + cPlayer.size > block.y
+      ) {
+        console.log(`Collision with stationary block at (${block.x}, ${block.y})`);
+        return true; // Collision with stationary block
+      }
     }
   }
 
@@ -2517,6 +2556,7 @@ function startMoving() {
 
       drawPlayer();
       checkCheckpointCollision(); // Add collision check here
+      if (currentLevel === 7) checkLevel7BlocksCollision(player); // Add Level 7 block collision check
       checkWin();
       processNextMove(); // Process the next move in the queue
     } else {
@@ -2525,6 +2565,7 @@ function startMoving() {
       player.y = newY;
       drawPlayer();
       checkCheckpointCollision(); // Add collision check here
+      if (currentLevel === 7) checkLevel7BlocksCollision(player); // Add Level 7 block collision check
       checkWin();
 
       requestAnimationFrame(doTheMove);
