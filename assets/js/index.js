@@ -1826,6 +1826,7 @@ function initializeLevel7Blocks() {
     { x: 20, y: 140, width: 20, height: 20, speed: 2, startX: 20, endX: 40, startY: 140, endY: 140 },
     { x: 40, y: 140, width: 20, height: 20, speed: 2, startX: 40, endX: 60, startY: 140, endY: 140 },
     { x: 20, y: 160, width: 20, height: 20, speed: 2, startX: 20, endX: 40, startY: 160, endY: 160 },
+    { x: 20, y: 180, width: 20, height: 20, speed: 2, startX: 20, endX: 40, startY: 180, endY: 180 },
   ];
 
   stopLevel7Blocks = false; // Ensure the loop runs
@@ -1878,6 +1879,9 @@ async function smoothMoveBlocks(isMovingToStart) {
       block.x += distanceX;
       block.y += distanceY;
 
+      // Check for collisions and handle pushing the player
+      checkLevel7BlocksCollision(player);
+
       console.log(
         `Block ${index + 1}: x=${block.x.toFixed(2)}, y=${block.y.toFixed(2)}`
       ); // Log block positions
@@ -1922,12 +1926,29 @@ function checkLevel7BlocksCollision(player) {
       player.y < block.y + block.height &&
       player.y + player.height > block.y;
 
-    if (collision && block.stationary) {
-      console.log("Player collided with a stationary block!");
-      // Handle collision (e.g., stop player movement)
-      handlePlayerCollisionWithBlock();
+    if (collision) {
+      console.log("Player collided with a block!");
+      pushPlayerWithBlock(player, block); // Push the player
     }
   });
+}
+
+function pushPlayerWithBlock(player, block) {
+  // Calculate the block's movement direction
+  const blockMovementX = block.x - (block.previousX || block.x);
+  const blockMovementY = block.y - (block.previousY || block.y);
+
+  // Update player's position if a collision occurs
+  player.x += blockMovementX;
+  player.y += blockMovementY;
+
+  // Update the block's previous position for the next frame
+  block.previousX = block.x;
+  block.previousY = block.y;
+
+  // Ensure the player stays within bounds (optional)
+  player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
+  player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
 }
 
 function handlePlayerCollisionWithBlock() {
@@ -2355,9 +2376,9 @@ function drawPlayer(cPlayer) {
   drawExit();
   drawCheckpoints();
 
-  // Redraw Level 7 blocks only if currentLevel is 7
+  // Draw Level 7 blocks if applicable
   if (currentLevel === 7) {
-    drawLevel7Blocks(ctx); // Ensure blocks are drawn once
+    drawLevel7Blocks(ctx);
   }
 
   // Draw hint if a comparison player is provided
@@ -2367,7 +2388,7 @@ function drawPlayer(cPlayer) {
   }
 
   // Draw the main player
-  ctx.fillStyle = player.color; // Use the player's color
+  ctx.fillStyle = player.color;
   ctx.fillRect(player.x, player.y, player.size, player.size);
 }
 function drawExit() {
