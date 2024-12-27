@@ -1821,10 +1821,11 @@ let stopLevel7Blocks = false; // Flag to stop the loop
 function initializeLevel7Blocks() {
   if (currentLevel !== 7) return;
 
-  // Define two moving blocks
+  // Define three moving blocks with unique horizontal ranges
   level7Blocks = [
-    { x: 20, y: 140, width: 20, height: 20, speed: 2 },
-    { x: 40, y: 140, width: 20, height: 20, speed: 2 },
+    { x: 20, y: 140, width: 20, height: 20, speed: 2, startX: 20, endX: 40, startY: 140, endY: 140 },
+    { x: 40, y: 140, width: 20, height: 20, speed: 2, startX: 40, endX: 60, startY: 140, endY: 140 },
+    { x: 20, y: 160, width: 20, height: 20, speed: 2, startX: 20, endX: 40, startY: 160, endY: 160 },
   ];
 
   stopLevel7Blocks = false; // Ensure the loop runs
@@ -1854,31 +1855,45 @@ async function moveLevel7BlocksWithDelay() {
   }
 }
 
-async function smoothMoveBlocks(isMovingUp) {
-  const targetY = isMovingUp ? 140 : 240;
+async function smoothMoveBlocks(isMovingToStart) {
   const steps = 60; // Number of steps for smooth movement (~60 FPS)
-  const stepDuration = 2000 / steps; // Duration of each step
+  const stepDuration = 500 / steps; // Duration of each step
 
   for (let i = 0; i < steps; i++) {
     if (stopLevel7Blocks) return; // Exit if the level changes
 
     level7Blocks.forEach((block, index) => {
-      const remainingDistance = targetY - block.y;
-      const distance = remainingDistance / (steps - i); // Smoothly distribute remaining distance
-      block.y += distance;
-      console.log(`Block ${index + 1}: x=${block.x}, y=${block.y.toFixed(2)}`); // Log block positions
+      // Determine the target position dynamically
+      const targetX = isMovingToStart ? block.startX : block.endX;
+      const targetY = isMovingToStart ? block.startY : block.endY;
+
+      const remainingDistanceX = targetX - block.x;
+      const remainingDistanceY = targetY - block.y;
+
+      // Smoothly distribute the remaining distance
+      const distanceX = remainingDistanceX / (steps - i);
+      const distanceY = remainingDistanceY / (steps - i);
+
+      // Update block position
+      block.x += distanceX;
+      block.y += distanceY;
+
+      console.log(
+        `Block ${index + 1}: x=${block.x.toFixed(2)}, y=${block.y.toFixed(2)}`
+      ); // Log block positions
     });
 
     recolorMaze();
-    drawPlayer();
-    drawLevel7Blocks(canvas.getContext("2d"));
+    drawLevel7Blocks(canvas.getContext("2d")); // Draw blocks
+    drawPlayer(); // Draw player last for layering
 
     await new Promise((resolve) => setTimeout(resolve, stepDuration));
   }
 
-  // Snap blocks to the target position to avoid rounding errors
+  // Snap blocks to their target positions to avoid rounding errors
   level7Blocks.forEach((block) => {
-    block.y = targetY;
+    block.x = isMovingToStart ? block.startX : block.endX;
+    block.y = isMovingToStart ? block.startY : block.endY;
   });
 }
 
@@ -1891,14 +1906,6 @@ function drawLevel7Blocks(ctx) {
   });
 }
 
-function drawLevel7Blocks(ctx) {
-  if (!level7Blocks.length || currentLevel !== 7) return;
-
-  ctx.fillStyle = "#222222";
-  level7Blocks.forEach((block) => {
-    ctx.fillRect(block.x, block.y, block.width, block.height);
-  });
-}
 
 function clearLevel7Blocks() {
   stopLevel7Blocks = true; // Stop the loop
@@ -2343,25 +2350,26 @@ function extractMazeData() {
 }
 
 function drawPlayer(cPlayer) {
+  // Recolor maze and redraw fixed elements
   recolorMaze();
   drawExit();
-  drawCheckpoints(); // Draw checkpoint
+  drawCheckpoints();
 
+  // Redraw Level 7 blocks only if currentLevel is 7
   if (currentLevel === 7) {
-    drawLevel7Blocks(canvas.getContext("2d")); // Ensure the block is redrawn
-    checkLevel7BlocksCollision(player);
+    drawLevel7Blocks(ctx); // Ensure blocks are drawn once
   }
 
-  // draw hint
+  // Draw hint if a comparison player is provided
   if (cPlayer) {
     ctx.fillStyle = "rgba(255, 255, 0, 0.5)";
     ctx.fillRect(cPlayer.x, cPlayer.y, cPlayer.size, cPlayer.size);
   }
-  // and draw player
+
+  // Draw the main player
   ctx.fillStyle = player.color; // Use the player's color
   ctx.fillRect(player.x, player.y, player.size, player.size);
 }
-
 function drawExit() {
   // Retrieve the exit color from the CSS variable
   const exitColor = getComputedStyle(document.documentElement)
