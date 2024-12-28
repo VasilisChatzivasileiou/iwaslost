@@ -1832,16 +1832,12 @@ function startGame(mazeImageSrc, exitPosition, playerPosition) {
   const nextLevelButton = document.getElementById("nextLevelButton");
   nextLevelButton.style.display = currentLevel < 9 ? "block" : "none";
 }
-
 let level7Blocks = []; // Array to hold multiple blocks
-let level7BlockInterval = null;
 let level7RunId = 0; // Track current run ID to stop stale movements
-let isMovingUp = false; // Direction toggle for block movement
 let stopLevel7Blocks = false; // Flag to stop the loop
 
 function initializeLevel7Blocks() {
   if (currentLevel !== 7) return;
-
   console.log("Initializing Level 7 blocks...");
 
   // Clear any previous state
@@ -1865,17 +1861,6 @@ function initializeLevel7Blocks() {
     }
   }, 2000);
 }
-
-// Helper to track timeouts
-function trackedSetTimeout(callback, delay) {
-  const timeout = setTimeout(() => {
-    activeTimeouts = activeTimeouts.filter((t) => t !== timeout); // Remove after execution
-    callback();
-  }, delay);
-  activeTimeouts.push(timeout);
-  return timeout;
-}
-
 async function moveLevel7BlocksWithDelay() {
   if (!level7Blocks.length || stopLevel7Blocks) return;
 
@@ -1893,7 +1878,6 @@ async function moveLevel7BlocksWithDelay() {
     isMovingUp = !isMovingUp;
   }
 }
-
 async function smoothMoveBlocks(isMovingToStart) {
   const steps = 60; // Number of steps for smooth movement (~60 FPS)
   const stepDuration = 500 / steps; // Duration of each step
@@ -2003,7 +1987,6 @@ function checkLevel7BlocksCollision(player) {
       }
   });
 }
-
 function pushPlayerWithBlock(player, block, dx, dy) {
   // Push the player by the same distance as the block
   player.x += dx;
@@ -2012,13 +1995,6 @@ function pushPlayerWithBlock(player, block, dx, dy) {
   console.log(`Pushing player by dx=${dx}, dy=${dy}`);
   drawPlayer(); // Redraw the player in the new position
 }
-
-function handlePlayerCollisionWithBlock() {
-  // Add logic to reset player position or stop movement
-  player.x -= player.velocityX; // Example: Stop horizontal movement
-  player.y -= player.velocityY; // Example: Stop vertical movement
-}
-
 // Function to show the death screen
 function showDeathScreen() {
   // Create the modal overlay
