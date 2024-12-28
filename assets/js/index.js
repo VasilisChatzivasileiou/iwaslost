@@ -2122,12 +2122,10 @@ function updateTrackerContainerStyle() {
   // Define colors based on equip state
   const normalEntryColor = isEquipped ? "#FF6A99" : "#999999";
   const highlightEntryColor = isEquipped ? "#FFADC7" : "#CCCCCC";
-
   const backgroundColor = isEquipped ? "#8A314E" : "#222222";
   const textColor = isEquipped ? "#FF6A99" : "#CCCCCC";
-  const borderColor = isEquipped ? "#FF6A99" : "#CCCCCC";
+  const borderColor = isEquipped ? "#FF6A99" : "#999999";
   const highlightBgColor = isEquipped ? "#FFADC7" : "#CCCCCC";
-
   // Apply the styles
   trackerContainer.style.backgroundColor = backgroundColor;
   trackerContainer.style.color = textColor;
