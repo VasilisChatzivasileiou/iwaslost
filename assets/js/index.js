@@ -1286,7 +1286,10 @@ const levelPaths = {
     "left","up","left","down","right","up","right","up","left","up","left","up","right","down","right","up"
   ],
   9:[
-
+    "up","right","up","left","down","right","up","right","up","left","down","right","down","left","up","left","down","left","up","left","up","right",
+    "down","left","up","left","up","left","up","left","up","right","up","left","up","right","up","left","down","right","down","right","up","right",
+    "down","right","up","right","down","left","up","right","up","right","up","left","up","left","down","right","up","right","down","right","down","right",
+    "down","left","up","right","down","left","up","left","up","right","down","right","up"
   ]
 };
 
@@ -2262,18 +2265,16 @@ function checkWin(bypass = false) {
       const nextLevelButton = document.getElementById("nextLevelButton");
       const menuButtonPopup = document.getElementById("menuButtonPopup");
 
-      if (currentLevel < 8) {
+      if (currentLevel < 9) {
           nextLevelButton.style.display = "block";
           menuButtonPopup.style.display = "none";
       } else {
           nextLevelButton.style.display = "none";
           menuButtonPopup.style.display = "block";
       }
-
       updateLevelCompletionTime();
   }
 }
-
 function updateLevelCompletionTime() {
   for (let level in levelCompletionTimes) {
     const button = document.getElementById(`${level}Button`);
@@ -2283,7 +2284,6 @@ function updateLevelCompletionTime() {
       const time = levelCompletionTimes[level];
       timeLabel.textContent = `Time: ${time}`;
       timeLabel.style.display = "block";
-
       // Ensure the time is saved to localStorage
       saveLevelCompletionTime(level, time);
     }
