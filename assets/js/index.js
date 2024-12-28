@@ -1749,8 +1749,6 @@ function showLevelAnnouncement(level, baseColor = "#999999", highlightColor = "#
 let level7BlockTimeout = null;
 let isLevel7Initialized = false; // New flag to track initialization
 
-let level7RunId = 0; // Unique ID to track the current run
-
 function startGame(mazeImageSrc, exitPosition, playerPosition) {
   // Clear existing checkpoints and level-specific intervals
   clearCheckpoints();
@@ -1837,6 +1835,7 @@ function startGame(mazeImageSrc, exitPosition, playerPosition) {
 
 let level7Blocks = []; // Array to hold multiple blocks
 let level7BlockInterval = null;
+let level7RunId = 0; // Track current run ID to stop stale movements
 let isMovingUp = false; // Direction toggle for block movement
 let stopLevel7Blocks = false; // Flag to stop the loop
 
@@ -1857,6 +1856,7 @@ function initializeLevel7Blocks() {
   ];
 
   stopLevel7Blocks = false;
+  level7RunId++; // Increment run ID to invalidate previous movements
 
   // Start the movement loop after a delay
   setTimeout(() => {
@@ -1879,7 +1879,7 @@ function trackedSetTimeout(callback, delay) {
 async function moveLevel7BlocksWithDelay() {
   if (!level7Blocks.length || stopLevel7Blocks) return;
 
-  const currentRunId = ++level7RunId; // Increment runId for each new run
+  const currentRunId = level7RunId; // Capture current run ID
   let isMovingUp = false;
 
   while (!stopLevel7Blocks && currentLevel === 7 && currentRunId === level7RunId) {
@@ -1887,15 +1887,9 @@ async function moveLevel7BlocksWithDelay() {
     if (stopLevel7Blocks || currentRunId !== level7RunId) break;
 
     // Pause for 2 seconds
-    await new Promise((resolve) => {
-      if (stopLevel7Blocks || currentRunId !== level7RunId) {
-        resolve();
-        return;
-      }
-      setTimeout(resolve, 2000);
-    });
-
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     if (stopLevel7Blocks || currentRunId !== level7RunId) break;
+
     isMovingUp = !isMovingUp;
   }
 }
@@ -1930,6 +1924,7 @@ async function smoothMoveBlocks(isMovingToStart) {
 
               if (isCollision(newPlayerX, newPlayerY, player)) {
                   console.log("you died");
+                  handlePlayerDeath()
                   stopLevel7Blocks = true; // Stop movement
                   return; // Exit the movement loop
               }
@@ -2022,6 +2017,89 @@ function handlePlayerCollisionWithBlock() {
   // Add logic to reset player position or stop movement
   player.x -= player.velocityX; // Example: Stop horizontal movement
   player.y -= player.velocityY; // Example: Stop vertical movement
+}
+
+// Function to show the death screen
+function showDeathScreen() {
+  // Create the modal overlay
+  const modalOverlay = document.createElement("div");
+  modalOverlay.id = "deathScreenOverlay";
+  modalOverlay.style.position = "fixed";
+  modalOverlay.style.top = "0";
+  modalOverlay.style.left = "0";
+  modalOverlay.style.width = "100%";
+  modalOverlay.style.height = "100%";
+  modalOverlay.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+  modalOverlay.style.display = "flex";
+  modalOverlay.style.justifyContent = "center";
+  modalOverlay.style.alignItems = "center";
+  modalOverlay.style.zIndex = "1000";
+  // Create the modal content
+  const modalContent = document.createElement("div");
+  modalContent.style.backgroundColor = "#222";
+  modalContent.style.borderRadius = "0px";
+  modalContent.style.padding = "30px";
+  modalContent.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
+  modalContent.style.textAlign = "center";
+  modalContent.style.color = "#fff";
+  modalContent.style.maxWidth = "400px";
+  modalContent.style.width = "80%";
+
+  // Add death message
+  const deathMessage = document.createElement("h2");
+  deathMessage.textContent = "You Lost!";
+  deathMessage.style.marginBottom = "20px";
+  deathMessage.style.fontSize = "2rem";
+  deathMessage.style.color = "#FF6A99"; // Accent color
+  modalContent.appendChild(deathMessage);
+
+  // Add Restart Button
+  const restartButton = document.createElement("button");
+  restartButton.style.fontFamily = "CustomFont";
+  restartButton.textContent = "Restart";
+  restartButton.style.margin = "10px";
+  restartButton.style.padding = "10px 20px";
+  restartButton.style.fontSize = "1rem";
+  restartButton.style.backgroundColor = "#8A314E";
+  restartButton.style.color = "#fff";
+  restartButton.style.border = "none";
+  restartButton.style.borderRadius = "0px";
+  restartButton.style.cursor = "pointer";
+  restartButton.addEventListener("click", () => {
+    document.body.removeChild(modalOverlay); // Close the modal
+    restartGame(); // Call your existing restart function
+  });
+  modalContent.appendChild(restartButton);
+
+  // Add Main Menu Button
+  const menuButton = document.createElement("button");
+  menuButton.style.fontFamily = "CustomFont";
+  menuButton.textContent = "Main Menu";
+  menuButton.style.margin = "10px";
+  menuButton.style.padding = "10px 20px";
+  menuButton.style.fontSize = "1rem";
+  menuButton.style.backgroundColor = "#222";
+  menuButton.style.color = "#FF6A99"; // Accent color
+  menuButton.style.border = "2px solid #8A314E";
+  menuButton.style.borderRadius = "0px";
+  menuButton.style.cursor = "pointer";
+  menuButton.addEventListener("click", () => {
+    document.body.removeChild(modalOverlay); // Close the modal
+    showLevelSelector(); // Call your existing menu function
+  });
+  modalContent.appendChild(menuButton);
+
+  // Append modal content to overlay
+  modalOverlay.appendChild(modalContent);
+
+  // Append overlay to the body
+  document.body.appendChild(modalOverlay);
+}
+
+// Replace the console log with the death screen call
+function handlePlayerDeath() {
+  console.log("You died"); // Remove this line
+  showDeathScreen(); // Show the death screen
 }
 
 function clearCheckpoints() {
@@ -2243,7 +2321,7 @@ const stupidLevels = [
   { src: "level4(1).png", s: { x: 180, y: 0 }, f: { x: 180, y: 320 } },
   { src: "level5(2).png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
   { src: "level6(2).png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
-  { src: "level7test.png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
+  { src: "level7test1.png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
   { src: "level8(1).png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
   { src: "level9.png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
 ];
