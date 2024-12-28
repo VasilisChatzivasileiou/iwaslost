@@ -1836,51 +1836,45 @@ function startGame(mazeImageSrc, exitPosition, playerPosition) {
   nextLevelButton.style.display = currentLevel < 9 ? "block" : "none";
 }
 let level7Blocks = []; // Array to hold multiple blocks
+const defLevel7Blocks = [
+  { x: 20, y: 140, width: 120, height: 20, speed: 2, startX: 20, endX: 40, startY: 140, endY: 140 },
+  { x: 20, y: 160, width: 20, height: 20, speed: 2, startX: 20, endX: 40, startY: 160, endY: 160 },
+  { x: 20, y: 180, width: 60, height: 20, speed: 2, startX: 20, endX: 40, startY: 180, endY: 180 },
+  { x: 20, y: 200, width: 20, height: 60, speed: 2, startX: 20, endX: 40, startY: 200, endY: 200 },
+];
 let level7RunId = 0; // Track current run ID to stop stale movements
 let stopLevel7Blocks = false; // Flag to stop the loop
+let currentMoveLevel7BlocksMode = true;
 
 function initializeLevel7Blocks() {
   if (currentLevel !== 7) return;
   console.log("Initializing Level 7 blocks...");
 
-  // Clear any previous state
-  clearLevel7Blocks();
-
   // Define initial positions and parameters
-  level7Blocks = [
-    { x: 20, y: 140, width: 120, height: 20, speed: 2, startX: 20, endX: 40, startY: 140, endY: 140 },
-    { x: 20, y: 160, width: 20, height: 20, speed: 2, startX: 20, endX: 40, startY: 160, endY: 160 },
-    { x: 20, y: 180, width: 60, height: 20, speed: 2, startX: 20, endX: 40, startY: 180, endY: 180 },
-    { x: 20, y: 200, width: 20, height: 60, speed: 2, startX: 20, endX: 40, startY: 200, endY: 200 },
-  ];
+  level7Blocks = [...defLevel7Blocks];
 
   stopLevel7Blocks = false;
   level7RunId++; // Increment run ID to invalidate previous movements
 
   // Start the movement loop after a delay
-  setTimeout(() => {
-    if (!stopLevel7Blocks) {
-      moveLevel7BlocksWithDelay();
-    }
-  }, 2000);
+  moveLevel7BlocksWithDelay();
 }
+
 async function moveLevel7BlocksWithDelay() {
   if (!level7Blocks.length || stopLevel7Blocks) return;
 
   const currentRunId = level7RunId; // Capture current run ID
-  let isMovingUp = false;
 
-  while (!stopLevel7Blocks && currentLevel === 7 && currentRunId === level7RunId) {
-    await smoothMoveBlocks(isMovingUp);
-    if (stopLevel7Blocks || currentRunId !== level7RunId) break;
+  await smoothMoveBlocks(currentMoveLevel7BlocksMode);
 
-    // Pause for 2 seconds
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    if (stopLevel7Blocks || currentRunId !== level7RunId) break;
+  await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    isMovingUp = !isMovingUp;
-  }
+  if (stopLevel7Blocks || currentRunId !== level7RunId) return;
+  currentMoveLevel7BlocksMode = !currentMoveLevel7BlocksMode;
+  // calls itself
+  moveLevel7BlocksWithDelay();
 }
+
 async function smoothMoveBlocks(isMovingToStart) {
   const steps = 60; // Number of steps for smooth movement (~60 FPS)
   const stepDuration = 500 / steps; // Duration of each step
@@ -1924,17 +1918,18 @@ async function smoothMoveBlocks(isMovingToStart) {
 
       // Redraw the maze, blocks, and player
       recolorMaze();
-      drawLevel7Blocks(ctx);
       drawPlayer();
 
       await new Promise((resolve) => setTimeout(resolve, stepDuration));
   }
 
+  if (stopLevel7Blocks) return; // Exit immediately if movement stops
+
   // Snap blocks to their target positions to avoid rounding errors
   level7Blocks.forEach((block) => {
-      block.x = isMovingToStart ? block.startX : block.endX;
-      block.y = isMovingToStart ? block.startY : block.endY;
-  });
+    block.x = isMovingToStart ? block.startX : block.endX;
+    block.y = isMovingToStart ? block.startY : block.endY;
+});
 }
 
 function isCollidingWithPlayer(block, player) {
@@ -1970,8 +1965,6 @@ function clearLevel7Blocks() {
     block.x = block.startX;
     block.y = block.startY;
   });
-
-  console.log("Level 7 blocks cleared and reset.");
 }
 
 function checkLevel7BlocksCollision(player) {
@@ -2783,9 +2776,8 @@ document.querySelectorAll(".controls button").forEach((button) => {
     console.log(`Move ${direction} added to the queue.`);
   });
 });
-function restartGame() {
+async function restartGame() {
   console.log("Restarting game...");
-  clearLevel7Blocks();
 
   // Stop all active timers and asynchronous loops
   clearAllTimers();
@@ -2814,11 +2806,6 @@ function restartGame() {
   // Hide win popup
   winPopup.style.display = "none";
 
-  // Level-specific resets
-  if (currentLevel === 7) {
-    initializeLevel7Blocks(); // Reinitialize blocks
-  }
-
   // Redraw the maze and player
   recolorMaze();
   drawPlayer();
@@ -2826,6 +2813,12 @@ function restartGame() {
   // Restart timers and checkpoints
   startTimer();
   initializeCheckpoints();
+
+  if (currentLevel === 7) {
+    level7Blocks = [];
+    stopLevel7Blocks = true;
+    initializeLevel7Blocks(true); // Reinitialize blocks
+  }
 }
 function executeMoves() {
   if (isExecutingMoves || moveQueue.length === 0) return; // Prevent overlap
