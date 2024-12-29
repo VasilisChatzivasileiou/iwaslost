@@ -747,14 +747,14 @@ input[type="range"] {
   height: 100%;
   background-color: #D1406E; /* Green progress bar fill */
   width: 0%; /* Update this dynamically for progress */
-  transition: width 0.3s ease-in-out;
+  transition: width 0.1s ease-in-out;
 }
 
 .progressFill.theTail {
-  background-color: #FFA500; /* Tail-specific color */
+  background-color: #D1406E; /* Tail-specific color */
   height: 100%;
   width: 0%;
-  transition: width 0.3s ease-in-out;
+  transition: width 0.1s ease-in-out;
 }
 
 .progressPercentage {

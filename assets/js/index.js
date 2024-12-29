@@ -1,5 +1,4 @@
 // References to DOM elements
-
 const isNode = typeof require !== "undefined"; // Check if running in Node.js/Electron
 const storage = isNode ? require("fs") : null;
 const saveFilePath = isNode ? require("path").join(__dirname, "levelCompletionTimes.json") : null;
@@ -81,14 +80,41 @@ document.addEventListener("DOMContentLoaded", () => {
   const activeYPositions = []; // Array to track current spawn positions
 
   achievementsButton.addEventListener('click', () => {
+    console.log("Loading progress before opening modal...");
+    loadAchievementProgress(); // Ensure state is loaded
+    resetAchievementUI();
     achievementsModal.classList.add('active');
     startAchievementAnimation();
+
+    setTimeout(() => {
+        updateAchievementUIAnimated();
+    }, 500);
   });
 
   closeButton.addEventListener('click', () => {
     achievementsModal.classList.remove('active');
     clearAchievementAnimation();
   });
+
+  function resetAchievementUI() {
+    // Reset "The Brain" UI
+    const brainProgressFill = document.querySelector(".progressFill.theBrain");
+    const brainProgressPercentage = document.querySelector(".progressPercentage.theBrain");
+    const brainAchievementStatus = document.querySelector(".achievementStatus.theBrain");
+
+    brainProgressFill.style.width = "0%";
+    brainProgressPercentage.textContent = "0%";
+    brainAchievementStatus.textContent = "Locked";
+
+    // Reset "The Tail" UI
+    const tailProgressFill = document.querySelector(".progressFill.theTail");
+    const tailProgressPercentage = document.querySelector(".progressPercentage.theTail");
+    const tailAchievementStatus = document.querySelector(".achievementStatus.theTail");
+
+    tailProgressFill.style.width = "0%";
+    tailProgressPercentage.textContent = "0%";
+    tailAchievementStatus.textContent = "Locked";
+  }
 
   // Function to create and animate the SVG
   function createAchievementElement(svgConfig) {
@@ -187,6 +213,57 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 });
+function animateProgressUpdate(target, updateCallback, completeCallback) {
+  let current = 0; // Start from 0%
+  const interval = setInterval(() => {
+      current += 5; // Increment progress by 5%
+      if (current >= target) {
+          clearInterval(interval); // Stop when reaching the target
+          current = target; // Ensure exact target value
+          if (completeCallback) completeCallback(); // Final callback
+      }
+      updateCallback(current); // Update UI
+  }, 100); // Interval time in ms
+}
+
+function updateAchievementUIAnimated() {
+  const brainProgressFill = document.querySelector(".progressFill.theBrain");
+  const brainProgressPercentage = document.querySelector(".progressPercentage.theBrain");
+  const brainAchievementStatus = document.querySelector(".achievementStatus.theBrain");
+
+  const tailProgressFill = document.querySelector(".progressFill.theTail");
+  const tailProgressPercentage = document.querySelector(".progressPercentage.theTail");
+  const tailAchievementStatus = document.querySelector(".achievementStatus.theTail");
+
+  const brainTarget = achievementProgress.theBrain.progress;
+  const tailTarget = achievementProgress.theTail.progress;
+
+  let brainCurrent = 0;
+  let tailCurrent = 0;
+
+  // Use a single interval to update both
+  const interval = setInterval(() => {
+      brainCurrent = Math.min(brainCurrent + 5, brainTarget);
+      tailCurrent = Math.min(tailCurrent + 5, tailTarget);
+
+      // Update Brain Progress
+      brainProgressFill.style.width = `${brainCurrent}%`;
+      brainProgressPercentage.textContent = `${brainCurrent}%`;
+
+      // Update Tail Progress
+      tailProgressFill.style.width = `${tailCurrent}%`;
+      tailProgressPercentage.textContent = `${tailCurrent}%`;
+
+      // Check if both are complete
+      if (brainCurrent === brainTarget && tailCurrent === tailTarget) {
+          clearInterval(interval);
+
+          // Update final status
+          brainAchievementStatus.textContent = achievementProgress.theBrain.status;
+          tailAchievementStatus.textContent = achievementProgress.theTail.status;
+      }
+  }, 100); // Adjust interval time as needed
+}
 
 let activeTimeouts = []; // Track all active timeouts
 let activeIntervals = []; // Track all active intervals
@@ -210,102 +287,79 @@ function trackedSetInterval(callback, interval) {
 }
 
 
-document.getElementById('achievementsButton').addEventListener('click', () => {
-  // Retrieve path completion data from localStorage
-  const pathOneCompleted = localStorage.getItem('pathOneCompleted') === 'true';
-  const pathTwoCompleted = localStorage.getItem('pathTwoCompleted') === 'true';
+document.getElementById("achievementsButton").addEventListener("click", () => {
+  console.log("Loading progress before opening achievements...");
+  loadAchievementProgress(); // Load progress into memory
 
-  // Calculate progress and determine status
-  let progress = 0;
-  if (pathOneCompleted) progress += 50;
-  if (pathTwoCompleted) progress += 50;
+  console.log("Current achievementProgress:", achievementProgress);
 
-  const status = progress === 100 ? "Unlocked" : "Locked";
-
-  // Update the achievement progress object
-  achievementProgress.theBrain = {
-    progress,
-    status
-  };
-
-  achievementProgress.theTail = {
-    title: "The Tail",
-    description: "Find another way out",
-    status: "Locked", // "Locked" or "Unlocked"
-    progress: 0 // Progress percentage
-};
-
-
-  // Call the existing `updateAchievementUI` to update the UI
-  updateAchievementUI();
+  updateAchievementUIAnimated(); // Update the UI with loaded progress
 });
 
 let achievementProgress = {
   theBrain: {
     title: "The Brain",
-    description: "Win level 8 using both possible paths",
-    status: "Locked", // "Locked" or "Unlocked"
-    progress: 0 // Progress percentage
-  }
+    
+    progress: 0,
+    status: "Locked",
+  },
+  theTail: {
+    title: "The Tail",
+    
+    progress: 0,
+    status: "Locked",
+  },
 };
 
 function saveAchievementProgress() {
-  if (typeof require !== "undefined") {
+  try {
+    const progressJSON = JSON.stringify(achievementProgress);
+    if (typeof require !== "undefined") {
       const fs = require("fs");
       const path = require("path");
       const savePath = path.join(__dirname, "achievementProgress.json");
-
-      try {
-          fs.writeFileSync(savePath, JSON.stringify(achievementProgress, null, 2));
-          console.log("Achievement progress saved to file.");
-      } catch (err) {
-          console.error("Failed to save achievement progress:", err);
-      }
-  } else {
-      localStorage.setItem("achievementProgress", JSON.stringify(achievementProgress));
-      console.log("Achievement progress saved to localStorage.");
+      fs.writeFileSync(savePath, progressJSON);
+      console.log("Progress saved to file.");
+    } else {
+      localStorage.setItem("achievementProgress", progressJSON);
+      console.log("Progress saved to localStorage:", progressJSON);
+    }
+  } catch (error) {
+    console.error("Failed to save progress:", error);
   }
 }
 
 function loadAchievementProgress() {
   let savedProgress = {};
-
   if (typeof require !== "undefined") {
-      const fs = require("fs");
-      const path = require("path");
-      const savePath = path.join(__dirname, "achievementProgress.json");
+    const fs = require("fs");
+    const path = require("path");
+    const savePath = path.join(__dirname, "achievementProgress.json");
 
-      if (fs.existsSync(savePath)) {
-          try {
-              savedProgress = JSON.parse(fs.readFileSync(savePath, "utf8"));
-              console.log("Achievement progress loaded from file:", savedProgress);
-          } catch (err) {
-              console.error("Failed to load achievement progress from file:", err);
-          }
+    if (fs.existsSync(savePath)) {
+      try {
+        savedProgress = JSON.parse(fs.readFileSync(savePath, "utf8"));
+      } catch (err) {
+        console.error("Failed to load progress:", err);
       }
+    }
   } else {
-      savedProgress = JSON.parse(localStorage.getItem("achievementProgress")) || {};
-      console.log("Achievement progress loaded from localStorage:", savedProgress);
+    savedProgress = JSON.parse(localStorage.getItem("achievementProgress")) || {};
   }
 
-  // Merge loaded data with the default structure
-  achievementProgress = { ...achievementProgress, ...savedProgress };
+  achievementProgress = {
+    ...achievementProgress, // Defaults
+    ...savedProgress, // Saved data
+    theBrain: { ...achievementProgress.theBrain, ...savedProgress.theBrain },
+    theTail: { ...achievementProgress.theTail, ...savedProgress.theTail },
+  };
 
-  // Ensure "The Tail" exists
-  if (!achievementProgress.theTail) {
-      achievementProgress.theTail = {
-          title: "The Tail",
-          description: "Find another way out",
-          status: "Locked",
-          progress: 0
-      };
-  }
-
-  // Update the UI
-  updateAchievementUI();
+  console.log("Loaded progress:", achievementProgress);
 }
 
-function updateAchievementUI() {
+function updateAchievementUIAnimated() {
+  console.log("Updating UI with:", achievementProgress);
+
   const brainProgressFill = document.querySelector(".progressFill.theBrain");
   const brainProgressPercentage = document.querySelector(".progressPercentage.theBrain");
   const brainAchievementStatus = document.querySelector(".achievementStatus.theBrain");
@@ -314,26 +368,18 @@ function updateAchievementUI() {
   const tailProgressPercentage = document.querySelector(".progressPercentage.theTail");
   const tailAchievementStatus = document.querySelector(".achievementStatus.theTail");
 
-  const { progress: brainProgress, status: brainStatus } = achievementProgress.theBrain;
-  brainProgressFill.style.width = `${brainProgress}%`;
-  brainProgressPercentage.textContent = `${brainProgress}%`;
-  brainAchievementStatus.textContent = brainStatus === "Unlocked" ? "Unlocked" : "Locked";
-
-  if (brainStatus === "Unlocked") {
-      brainAchievementStatus.innerHTML = `
-        Unlocked<br>"Brain Palette"
-      `;
+  // Update "The Brain" progress
+  if (brainProgressFill && achievementProgress.theBrain) {
+    brainProgressFill.style.width = `${achievementProgress.theBrain.progress}%`;
+    brainProgressPercentage.textContent = `${achievementProgress.theBrain.progress}%`;
+    brainAchievementStatus.textContent = achievementProgress.theBrain.status;
   }
 
-  const { progress: tailProgress, status: tailStatus } = achievementProgress.theTail;
-  tailProgressFill.style.width = `${tailProgress}%`;
-  tailProgressPercentage.textContent = `${tailProgress}%`;
-  tailAchievementStatus.textContent = tailStatus === "Unlocked" ? "Unlocked" : "Locked";
-
-  if (tailStatus === "Unlocked") {
-      tailAchievementStatus.innerHTML = `
-        Unlocked<br>"Tail Tracker"
-      `;
+  // Update "The Tail" progress
+  if (tailProgressFill && achievementProgress.theTail) {
+    tailProgressFill.style.width = `${achievementProgress.theTail.progress}%`;
+    tailProgressPercentage.textContent = `${achievementProgress.theTail.progress}%`;
+    tailAchievementStatus.textContent = achievementProgress.theTail.status;
   }
 }
 
@@ -788,7 +834,6 @@ document.getElementById("menuElement").addEventListener("load", () => {
 document.getElementById("mainMenuButton").addEventListener("click", () => {
   // Hide the level selection screen
   document.getElementById("levelSelection").style.display = "none";
-
   // Show the start screen
   document.getElementById("startScreen").style.display = "flex";
 
@@ -800,6 +845,8 @@ document.getElementById("mainMenuButton").addEventListener("click", () => {
 
   // Update level completion times in the level selector
   updateLevelCompletionTime();
+  saveAchievementProgress(); // Ensure this uses the current state
+  loadAchievementProgress();
 
   // Optional: Stop any level music or reset settings
   console.log("Returning to Main Menu...");
@@ -860,17 +907,23 @@ function resetAchievementsAndUnlockables() {
   achievementProgress = {
     theBrain: {
       title: "The Brain",
-      description: "Win level 8 using both possible paths",
+      
       status: "Locked", // Reset to locked
-      progress: 0 // Reset progress
-    }
+      progress: 0, // Reset progress
+    },
+    theTail: {
+      title: "The Tail",
+      
+      status: "Locked", // Reset to locked
+      progress: 0, // Reset progress
+    },
   };
 
   // Save updated achievements to localStorage or file
   saveAchievementProgress();
 
   // Update UI
-  updateAchievementUI();
+  updateAchievementUIAnimated();
 
   // Reset unlockables UI
   resetUnlockables();
@@ -2102,14 +2155,12 @@ function showDeathScreen() {
 
 function handlePlayerDeath() {
   console.log("Player has died."); // Log for debugging purposes
-
   // Unlock "The Tail" achievement upon death
   achievementProgress.theTail.progress = 100;
   achievementProgress.theTail.status = "Unlocked";
-
   // Save progress and update UI
   saveAchievementProgress();
-  updateAchievementUI();
+  updateAchievementUIAnimated();
 
   // Show the death screen
   showDeathScreen();
