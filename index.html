@@ -74,26 +74,41 @@
         <div id="animationContainer"></div>
         <h1>Achievements</h1>
         <div class="modal-content">
+            <!-- The Brain Achievement -->
             <div id="achievementContainer">
-                <!-- Icon Box -->
                 <div class="iconBox">
                     <img src="assets/images/ach_icon.svg" alt="Achievement Icon">
                 </div>
-                <!-- Achievement Details -->
                 <div class="achievementDetails">
                     <div class="achievementTitle">The Brain</div>
                     <div class="achievementDescription">Win level 8 using both possible paths</div>
                     <div class="progressContainer">
-                        <div class="progressFill" style="width: 0%;"></div>
+                        <div class="progressFill theBrain" style="width: 0%;"></div>
                     </div>
-                    <span class="progressPercentage">0%</span> <!-- Moved below -->
+                    <span class="progressPercentage theBrain">0%</span>
                 </div>
-                <!-- Achievement Status -->
-                <div class="achievementStatus">Locked</div>
+                <div class="achievementStatus theBrain">Locked</div>
+            </div>
+    
+            <!-- The Tail Achievement -->
+            <div id="achievementContainer">
+                <div class="iconBox">
+                    <img src="assets/images/ach_icon.svg" alt="Achievement Icon">
+                </div>
+                <div class="achievementDetails">
+                    <div class="achievementTitle">The Tail</div>
+                    <div class="achievementDescription">Find another way out</div>
+                    <div class="progressContainer">
+                        <div class="progressFill theTail" style="width: 0%;"></div>
+                    </div>
+                    <span class="progressPercentage theTail">0%</span>
+                </div>
+                <div class="achievementStatus theTail">Locked</div>
             </div>
         </div>
         <button class="close-btn">Close</button>
     </div>
+    
     
     <div id="optionsWindow" class="hidden">
         <div id="optionsHeader" style="background: #444; color: white; display: flex; justify-content: space-between; padding: 10px;">

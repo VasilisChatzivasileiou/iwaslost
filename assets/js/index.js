@@ -228,6 +228,14 @@ document.getElementById('achievementsButton').addEventListener('click', () => {
     status
   };
 
+  achievementProgress.theTail = {
+    title: "The Tail",
+    description: "Find another way out",
+    status: "Locked", // "Locked" or "Unlocked"
+    progress: 0 // Progress percentage
+};
+
+
   // Call the existing `updateAchievementUI` to update the UI
   updateAchievementUI();
 });
@@ -243,19 +251,19 @@ let achievementProgress = {
 
 function saveAchievementProgress() {
   if (typeof require !== "undefined") {
-    const fs = require("fs");
-    const path = require("path");
-    const savePath = path.join(__dirname, "achievementProgress.json");
+      const fs = require("fs");
+      const path = require("path");
+      const savePath = path.join(__dirname, "achievementProgress.json");
 
-    try {
-      fs.writeFileSync(savePath, JSON.stringify(achievementProgress, null, 2));
-      console.log("Achievement progress saved to file.");
-    } catch (err) {
-      console.error("Failed to save achievement progress:", err);
-    }
+      try {
+          fs.writeFileSync(savePath, JSON.stringify(achievementProgress, null, 2));
+          console.log("Achievement progress saved to file.");
+      } catch (err) {
+          console.error("Failed to save achievement progress:", err);
+      }
   } else {
-    localStorage.setItem("achievementProgress", JSON.stringify(achievementProgress));
-    console.log("Achievement progress saved to localStorage.");
+      localStorage.setItem("achievementProgress", JSON.stringify(achievementProgress));
+      console.log("Achievement progress saved to localStorage.");
   }
 }
 
@@ -263,45 +271,69 @@ function loadAchievementProgress() {
   let savedProgress = {};
 
   if (typeof require !== "undefined") {
-    const fs = require("fs");
-    const path = require("path");
-    const savePath = path.join(__dirname, "achievementProgress.json");
+      const fs = require("fs");
+      const path = require("path");
+      const savePath = path.join(__dirname, "achievementProgress.json");
 
-    if (fs.existsSync(savePath)) {
-      try {
-        savedProgress = JSON.parse(fs.readFileSync(savePath, "utf8"));
-        console.log("Achievement progress loaded from file:", savedProgress);
-      } catch (err) {
-        console.error("Failed to load achievement progress from file:", err);
+      if (fs.existsSync(savePath)) {
+          try {
+              savedProgress = JSON.parse(fs.readFileSync(savePath, "utf8"));
+              console.log("Achievement progress loaded from file:", savedProgress);
+          } catch (err) {
+              console.error("Failed to load achievement progress from file:", err);
+          }
       }
-    }
   } else {
-    savedProgress = JSON.parse(localStorage.getItem("achievementProgress")) || {};
-    console.log("Achievement progress loaded from localStorage:", savedProgress);
+      savedProgress = JSON.parse(localStorage.getItem("achievementProgress")) || {};
+      console.log("Achievement progress loaded from localStorage:", savedProgress);
   }
 
   // Merge loaded data with the default structure
   achievementProgress = { ...achievementProgress, ...savedProgress };
+
+  // Ensure "The Tail" exists
+  if (!achievementProgress.theTail) {
+      achievementProgress.theTail = {
+          title: "The Tail",
+          description: "Find another way out",
+          status: "Locked",
+          progress: 0
+      };
+  }
 
   // Update the UI
   updateAchievementUI();
 }
 
 function updateAchievementUI() {
-  const progressFill = document.querySelector(".progressFill");
-  const progressPercentage = document.querySelector(".progressPercentage");
-  const achievementStatus = document.querySelector(".achievementStatus");
+  const brainProgressFill = document.querySelector(".progressFill.theBrain");
+  const brainProgressPercentage = document.querySelector(".progressPercentage.theBrain");
+  const brainAchievementStatus = document.querySelector(".achievementStatus.theBrain");
 
-  const { progress, status } = achievementProgress.theBrain;
+  const tailProgressFill = document.querySelector(".progressFill.theTail");
+  const tailProgressPercentage = document.querySelector(".progressPercentage.theTail");
+  const tailAchievementStatus = document.querySelector(".achievementStatus.theTail");
 
-  progressFill.style.width = `${progress}%`;
-  progressPercentage.textContent = `${progress}%`;
-  achievementStatus.textContent = status === "Unlocked" ? "Unlocked" : "Locked";
+  const { progress: brainProgress, status: brainStatus } = achievementProgress.theBrain;
+  brainProgressFill.style.width = `${brainProgress}%`;
+  brainProgressPercentage.textContent = `${brainProgress}%`;
+  brainAchievementStatus.textContent = brainStatus === "Unlocked" ? "Unlocked" : "Locked";
 
-  if (status === "Unlocked") {
-    achievementStatus.innerHTML = `
-      Unlocked<br>"Brain Palette"
-    `;
+  if (brainStatus === "Unlocked") {
+      brainAchievementStatus.innerHTML = `
+        Unlocked<br>"Brain Palette"
+      `;
+  }
+
+  const { progress: tailProgress, status: tailStatus } = achievementProgress.theTail;
+  tailProgressFill.style.width = `${tailProgress}%`;
+  tailProgressPercentage.textContent = `${tailProgress}%`;
+  tailAchievementStatus.textContent = tailStatus === "Unlocked" ? "Unlocked" : "Locked";
+
+  if (tailStatus === "Unlocked") {
+      tailAchievementStatus.innerHTML = `
+        Unlocked<br>"Tail Tracker"
+      `;
   }
 }
 
@@ -2068,12 +2100,20 @@ function showDeathScreen() {
   document.body.appendChild(modalOverlay);
 }
 
-// Replace the console log with the death screen call
 function handlePlayerDeath() {
-  console.log("You died"); // Remove this line
-  showDeathScreen(); // Show the death screen
-}
+  console.log("Player has died."); // Log for debugging purposes
 
+  // Unlock "The Tail" achievement upon death
+  achievementProgress.theTail.progress = 100;
+  achievementProgress.theTail.status = "Unlocked";
+
+  // Save progress and update UI
+  saveAchievementProgress();
+  updateAchievementUI();
+
+  // Show the death screen
+  showDeathScreen();
+}
 function clearCheckpoints() {
   // Clear the checkpoints array
   checkpoints = [];

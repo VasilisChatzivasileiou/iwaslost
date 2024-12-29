@@ -750,6 +750,13 @@ input[type="range"] {
   transition: width 0.3s ease-in-out;
 }
 
+.progressFill.theTail {
+  background-color: #FFA500; /* Tail-specific color */
+  height: 100%;
+  width: 0%;
+  transition: width 0.3s ease-in-out;
+}
+
 .progressPercentage {
   margin-left: 0px;
   margin-top: 10px;
