@@ -611,7 +611,7 @@ input[type="range"] {
   background-image: url('../images/backgroundchecks.svg'); /* Relative path */
   background-size: 400px 400px; /* Control size of each tile */
   background-repeat: repeat; /* Enable tiling */
-  background-position: top left; /* Start repeating from top-left */
+  background-position: top left;
   color: #cccccc;
   font-size: 20px;
   text-align: center;
@@ -627,7 +627,7 @@ input[type="range"] {
 
 @keyframes moveBackground {
   0% {
-    background-position: top left; /* Start at the top-left corner */
+    background-position: top left;
   }
   100% {
     background-position: 200px 200px; /* Moves towards top-right */
@@ -980,9 +980,13 @@ input[type="range"] {
   #hintButton {
     position: absolute;
     top: 209.5px; /* Adjust vertical position */
-    left: -143px; /* Place the button to the left of the maze */
+    left: -103px; /* Place the button to the left of the maze */
     transform: translateY(0); /* Fine-tune alignment if needed */
   }
+  #hintButton:disabled {
+    left: -143px;
+  }
+
 }
 
 /* Media query for medium screens */

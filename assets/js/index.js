@@ -1684,11 +1684,13 @@ function executeAdvancedMoves(moveQueue) {
 function disableHintButton() {
   hintButton.disabled = true;
   hintButton.textContent = "Hint Used";
+  //hintButton.style.left = "-143px";
 }
 
 function enableHintButton() {
   hintButton.disabled = false;
   hintButton.textContent = "Hint";
+  //hintButton.style.left = "-103px";
 }
 
 hintButton.addEventListener("click", () => {
