@@ -766,7 +766,7 @@ input[type="range"] {
 
 /* Achievement status */
 .achievementStatus {
-  margin-top: 17px;
+  margin-top: 39px;
   margin-left: 12px;
   font-size: 1rem;
   color: #D1406E; /* Red status text for "Locked" */

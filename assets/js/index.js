@@ -462,11 +462,10 @@ function checkCheckpointCollision() {
           // Update UI
           const progressFill = document.querySelector(".progressFill");
           const progressPercentage = document.querySelector(".progressPercentage");
+          const achievementStatus = document.querySelector(".achievementStatus");
           progressFill.style.width = `${progress}%`;
           progressPercentage.textContent = `${progress}%`;
 
-          // Unlock achievement if fully completed
-          const achievementStatus = document.querySelector(".achievementStatus");
           if (progress === 100) {
             achievementStatus.innerHTML = `Unlocked<br>Brain Palette`;
             console.log("Achievement unlocked: The Brain");
@@ -479,6 +478,8 @@ function checkCheckpointCollision() {
           }
 
           console.log(`Level 8 Progress updated: ${progress}%`);
+          achievementProgress.theBrain.progress = progress;
+          saveAchievementProgress();
         }
       }
     } else {
@@ -505,135 +506,153 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function updateUnlockablesUI() {
   const unlockablesCenterWindow = document.getElementById("unlockablesCenterWindow");
+  unlockablesCenterWindow.innerHTML = "";
 
-  // Clear existing unlockables
-  //unlockablesCenterWindow.innerHTML = "";
+  let hasUnlockables = false;
 
   // Ensure "isEquipped" is initialized only once
   let isEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
 
   // Check if "The Brain" achievement is unlocked
   if (achievementProgress.theBrain.status === "Unlocked") {
+    hasUnlockables = true;
 
-    unlockablesCenterWindow.innerHTML = "";
+      unlockablesCenterWindow.innerHTML = "";
 
-    // Disable flex layout of the center window
-    unlockablesCenterWindow.style.display = "block"; // Switch to block layout for stacking
+      // Disable flex layout of the center window
+      unlockablesCenterWindow.style.display = "block"; // Switch to block layout for stacking
+      unlockablesCenterWindow.style.alignItems = "flex-start";
 
-    // Create the unlockable container
-    const unlockable = document.createElement("div");
-    unlockable.style.display = "flex";
-    unlockable.style.justifyContent = "space-between";
-    unlockable.style.alignItems = "center";
-    unlockable.style.width = "90%";
-    unlockable.style.margin = "20px auto 0"; // Align to top with extra margin at the top
-    unlockable.style.padding = "0px"; // Increased padding for larger height
-    unlockable.style.backgroundColor = "#222222";
-    unlockable.style.borderRadius = "0px";
-    unlockable.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0)";
-    unlockable.style.color = "#CCCCCC";
-    unlockable.style.minHeight = "120px"; // Further increase height
+      // Create the unlockable container for "The Brain"
+      const unlockable = document.createElement("div");
+      unlockable.style.display = "flex";
+      unlockable.style.justifyContent = "space-between";
+      unlockable.style.alignItems = "center";
+      unlockable.style.width = "90%";
+      unlockable.style.margin = "20px auto 0"; // Align to top with extra margin at the top
+      unlockable.style.padding = "0px"; // Increased padding for larger height
+      unlockable.style.backgroundColor = "#222222";
+      unlockable.style.borderRadius = "0px";
+      unlockable.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0)";
+      unlockable.style.color = "#CCCCCC";
+      unlockable.style.minHeight = "120px"; // Further increase height
 
-    // Title (left)
-    const title = document.createElement("div");
-    title.style.marginLeft = "70px";
-    title.style.width = "268px"; // Limit the width
-    title.style.fontSize = "29px"; // Adjust font size
-    title.style.fontWeight = "bold";
-    title.style.lineHeight = "1.2"; // Adjust line height for proper spacing
-    title.style.textAlign = "center"; // Center text within the title container
-    title.style.display = "flex";
-    title.style.flexDirection = "column"; // Ensure multi-line text is treated as a column
-    title.style.justifyContent = "center"; // Vertically align text
-    title.style.gap = "10px"; // Add spacing between lines
+      // Title (left)
+      const title = document.createElement("div");
+      title.style.marginLeft = "70px";
+      title.style.width = "268px"; // Limit the width
+      title.style.fontSize = "29px"; // Adjust font size
+      title.style.fontWeight = "bold";
+      title.style.lineHeight = "1.2"; // Adjust line height for proper spacing
+      title.style.textAlign = "center"; // Center text within the title container
+      title.style.display = "flex";
+      title.style.flexDirection = "column"; // Ensure multi-line text is treated as a column
+      title.style.justifyContent = "center"; // Vertically align text
+      title.style.gap = "10px"; // Add spacing between lines
 
-    // "The Brain" text with custom background
-    const brainText = document.createElement("span");
-    brainText.textContent = "“the brain”";
-    brainText.style.fontSize = "40px";
-    brainText.style.fontStyle = "italic";
-    brainText.style.fontWeight = "bold"; // Bold text
-    brainText.style.fontFamily = "MS Mincho";
-    brainText.style.backgroundColor = "#cccccc";
-    brainText.style.color = "#D1406E";
-    brainText.style.padding = "0px"; // Padding inside the text box
-    brainText.style.borderRadius = "0px"; // Optional rounded corners
-    brainText.style.display = "inline-block"; // Ensure proper box rendering
+      // "The Brain" text with custom background
+      const brainText = document.createElement("span");
+      brainText.textContent = "“the brain”";
+      brainText.style.fontSize = "40px";
+      brainText.style.fontStyle = "italic";
+      brainText.style.fontWeight = "bold"; // Bold text
+      brainText.style.fontFamily = "MS Mincho";
+      brainText.style.backgroundColor = "#cccccc";
+      brainText.style.color = "#D1406E";
+      brainText.style.padding = "0px"; // Padding inside the text box
+      brainText.style.borderRadius = "0px"; // Optional rounded corners
+      brainText.style.display = "inline-block"; // Ensure proper box rendering
 
-    // "Palette" text with custom background
-    const paletteText = document.createElement("span");
-    paletteText.style.width = "100px";
-    paletteText.style.marginLeft = "35px";
-    paletteText.textContent = "palette";
-    paletteText.style.backgroundColor = "#cccccc";
-    paletteText.style.color = "#222222";
-    paletteText.style.padding = "0px"; // Padding inside the text box
-    paletteText.style.borderRadius = "0px"; // Optional rounded corners
-    paletteText.style.display = "inline-block"; // Ensure proper box rendering
+      // "Palette" text with custom background
+      const paletteText = document.createElement("span");
+      paletteText.style.width = "100px";
+      paletteText.style.marginLeft = "35px";
+      paletteText.textContent = "palette";
+      paletteText.style.backgroundColor = "#cccccc";
+      paletteText.style.color = "#222222";
+      paletteText.style.padding = "0px"; // Padding inside the text box
+      paletteText.style.borderRadius = "0px"; // Optional rounded corners
+      paletteText.style.display = "inline-block"; // Ensure proper box rendering
 
-    // Append the styled text elements to the title container
-    title.appendChild(brainText);
-    title.appendChild(paletteText);
+      // Append the styled text elements to the title container
+      title.appendChild(brainText);
+      title.appendChild(paletteText);
 
-    unlockable.appendChild(title);
+      unlockable.appendChild(title);
 
-    // Icon (middle)
-    const icon = document.createElement("img");
-    icon.src = "assets/images/brainpalette.svg"; // Path to the unlockable icon
-    icon.alt = "Brain Palette Icon";
-    icon.style.width = "200px"; // Adjust icon size
-    icon.style.height = "200px";
-    icon.style.margin = "0 15px"; // Add margin for spacing
-    unlockable.appendChild(icon);
+      // Icon (middle)
+      const icon = document.createElement("img");
+      icon.src = "assets/images/brainpalette.svg"; // Path to the unlockable icon
+      icon.alt = "Brain Palette Icon";
+      icon.style.width = "200px"; // Adjust icon size
+      icon.style.height = "200px";
+      icon.style.margin = "0 15px"; // Add margin for spacing
+      unlockable.appendChild(icon);
 
-    // Equip Button (right)
-    const equipButton = document.createElement("button");
-    equipButton.textContent = isEquipped ? "unequip" : "equip";
-    equipButton.style.fontFamily = "CustomFont";
-    equipButton.style.width = isEquipped ? "145px" : "100px";
-    equipButton.style.marginLeft = "10px"; // Bring the button closer to the icon
-    equipButton.style.marginRight = "100px";
-    equipButton.style.padding = "0px 0px"; // Adjust padding for larger height
-    equipButton.style.fontSize = "34px";
-    equipButton.style.backgroundColor = "#CCCCCC";
-    equipButton.style.color = "#222222";
-    equipButton.style.border = "none";
-    equipButton.style.borderRadius = "0px";
-    equipButton.style.cursor = "pointer";
-
-    equipButton.addEventListener("click", () => {
-      isEquipped = !isEquipped;
+      // Equip Button (right)
+      const equipButton = document.createElement("button");
       equipButton.textContent = isEquipped ? "unequip" : "equip";
+      equipButton.style.fontFamily = "CustomFont";
       equipButton.style.width = isEquipped ? "145px" : "100px";
-      localStorage.setItem("isBrainPaletteEquipped", isEquipped);
-    
-      console.log("Toggling equip state:", isEquipped); // Debug log
-      applyGameColors(isEquipped); // Call the function
-      updateCanvasBorder();        // Update canvas border
-      updateTrackerContainerStyle();        // Update tracker container style
-      updateTrackerItemStyles();            // Update tracker item styles
-      updateTrackerHighlightEffect();       // Update highlight effect styles
-      updateControlButtonStyles();          // Update control button styles
-    });
-
-    equipButton.addEventListener("mouseover", () => {
-      equipButton.style.backgroundColor = "#222222";
-      equipButton.style.color = "#CCCCCC";
-    });
-    equipButton.addEventListener("mouseout", () => {
-      equipButton.style.backgroundColor = "#cccccc";
+      equipButton.style.marginLeft = "10px"; // Bring the button closer to the icon
+      equipButton.style.marginRight = "100px";
+      equipButton.style.padding = "0px 0px"; // Adjust padding for larger height
+      equipButton.style.fontSize = "34px";
+      equipButton.style.backgroundColor = "#CCCCCC";
       equipButton.style.color = "#222222";
-    });
+      equipButton.style.border = "none";
+      equipButton.style.borderRadius = "0px";
+      equipButton.style.cursor = "pointer";
 
-    unlockable.appendChild(equipButton);
+      equipButton.addEventListener("click", () => {
+          isEquipped = !isEquipped;
+          equipButton.textContent = isEquipped ? "unequip" : "equip";
+          equipButton.style.width = isEquipped ? "145px" : "100px";
+          localStorage.setItem("isBrainPaletteEquipped", isEquipped);
 
-    // Append the unlockable to the center window
-    unlockablesCenterWindow.appendChild(unlockable);
+          console.log("Toggling equip state:", isEquipped); // Debug log
+          applyGameColors(isEquipped); // Call the function
+          updateCanvasBorder();        // Update canvas border
+          updateTrackerContainerStyle();        // Update tracker container style
+          updateTrackerItemStyles();            // Update tracker item styles
+          updateTrackerHighlightEffect();       // Update highlight effect styles
+          updateControlButtonStyles();          // Update control button styles
+      });
 
-    applyGameColors(isEquipped);
-  } else {
-    // Re-enable flex layout if there are no unlockables
-    unlockablesCenterWindow.style.display = "flex"; // Re-enable flex layout for normal behavior
+      equipButton.addEventListener("mouseover", () => {
+          equipButton.style.backgroundColor = "#222222";
+          equipButton.style.color = "#CCCCCC";
+      });
+      equipButton.addEventListener("mouseout", () => {
+          equipButton.style.backgroundColor = "#cccccc";
+          equipButton.style.color = "#222222";
+      });
+
+      unlockable.appendChild(equipButton);
+
+      // Append the unlockable to the center window
+      unlockablesCenterWindow.appendChild(unlockable);
+
+      applyGameColors(isEquipped);
+  }
+
+  // Add a simple background for "The Tail" unlockable when unlocked
+  if (achievementProgress.theTail.status === "Unlocked") {
+    unlockablesCenterWindow.style.alignItems = "flex-start";
+    hasUnlockables = true;
+      const tailBackground = document.createElement("div");
+      tailBackground.style.width = "90%";
+      tailBackground.style.margin = "20px auto 0";
+      tailBackground.style.padding = "0px";
+      tailBackground.style.backgroundColor = "#222222";
+      tailBackground.style.minHeight = "120px";
+      unlockablesCenterWindow.appendChild(tailBackground);
+  }
+  if (!hasUnlockables) {
+      // Re-enable flex layout if there are no unlockables
+      unlockablesCenterWindow.style.display = "flex"; // Re-enable flex layout for normal behavior
+      unlockablesCenterWindow.style.alignItems = "center";
+      unlockablesCenterWindow.innerHTML = "nothing here... for now";
   }
 }
 
@@ -888,7 +907,7 @@ document.getElementById("confirmReset").addEventListener("click", () => {
   resetColorsToDefault();
 
   // Reset unlockable state and UI
-  resetUnlockables();
+  resetUnlockables(); // Call the function to clear the UI
 
   // Hide modal and show notification
   document.getElementById("resetConfirmationModal").classList.add("hidden");
@@ -931,11 +950,11 @@ function resetAchievementsAndUnlockables() {
 
 function resetUnlockables() {
   // Clear unlockables data
-  localStorage.setItem("isBrainPaletteEquipped", "false");
+  
 
   // Update the UI to show no unlockables
   const unlockablesCenterWindow = document.getElementById("unlockablesCenterWindow");
-  unlockablesCenterWindow.innerHTML = "No unlockables available.";
+  unlockablesCenterWindow.innerHTML = "nothing here... for now";
 
   // Reset styles to default
   unlockablesCenterWindow.style.display = "flex";
@@ -969,18 +988,6 @@ function resetColorsToDefault() {
   });
 
   console.log("UI elements reset to default colors.");
-}
-
-function resetUnlockables() {
-  // Reinitialize unlockables state
-  localStorage.setItem("isBrainPaletteEquipped", "false");
-
-  // Ensure colors are reverted
-  applyGameColors(false);
-
-  // Refresh UI if needed
-  const unlockablesCenterWindow = document.getElementById("unlockablesCenterWindow");
-  unlockablesCenterWindow.innerHTML = "No unlockables available.";
 }
 
 // Save completion times
