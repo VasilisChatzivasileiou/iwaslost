@@ -2988,7 +2988,7 @@ function addDirectionToTracker(direction) {
   }, 100); // Duration of the fade-out effect
 }
 
-function startMoving() {
+function startMoving(onMoveComplete) {
   if (isMoving) return; // Prevent overlapping movements
 
   isMoving = true; // Lock movement
@@ -3015,39 +3015,38 @@ function startMoving() {
       break;
   }
 
+  // Draw the player's initial position on the trail canvas
+  trailCtx.fillStyle = player.color;
+  trailCtx.fillRect(player.x, player.y, player.size, player.size);
+
   const doTheMove = () => {
     const newX = player.x + dx;
     const newY = player.y + dy;
-  
-    // Directly use isCollision to determine movement validity
+
     if (isCollision(newX, newY)) {
-      player.x = Math.round(player.x / speed) * speed; // Align position to grid
+      // Handle collision
+      player.x = Math.round(player.x / speed) * speed;
       player.y = Math.round(player.y / speed) * speed;
       isMoving = false; // Unlock movement
-  
-      soundEffect.currentTime = 0; // Reset sound playback
-      soundEffect.play(); // Play sound effect
-  
-      playerLastPositions.push({
-        x: Math.round(player.x / speed) * speed,
-        y: Math.round(player.y / speed) * speed,
-      });
-  
-      lastDirection = currentDirection; // Update lastDirection
+
+      soundEffect.currentTime = 0;
+      soundEffect.play();
+
       drawPlayer();
       checkCheckpointCollision();
       if (currentLevel === 7) checkLevel7BlocksCollision(player);
       checkWin();
-      processNextMove();
+
+      if (onMoveComplete) onMoveComplete(); // Notify move completion
     } else {
-      // Update player position
+      // Update position
       player.x = newX;
       player.y = newY;
       drawPlayer();
       checkCheckpointCollision();
       if (currentLevel === 7) checkLevel7BlocksCollision(player);
       checkWin();
-  
+
       requestAnimationFrame(doTheMove);
     }
   };
@@ -3167,17 +3166,44 @@ function executeMoves() {
   if (isExecutingMoves || moveQueue.length === 0) return; // Prevent overlap
   isExecutingMoves = true;
 
-  const interval = setInterval(() => {
+  const totalMoves = [...moveQueue]; // Clone the queue for tracking the batch
+  const batchSize = totalMoves.length; // Track the batch size for debugging
+  let movesProcessed = 0; // Count executed moves in this batch
+
+  console.log(`Executing batch of ${batchSize} moves:`, totalMoves);
+
+  const processMove = () => {
     if (moveQueue.length === 0 || isMoving) {
-      clearInterval(interval); // Stop when all moves are processed or already moving
-      isExecutingMoves = false; // Reset flag
+      if (movesProcessed === batchSize) {
+        // Clear the trail only after all moves are executed
+        console.log("All moves processed, clearing trail.");
+        trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+      }
       return;
     }
 
-    const direction = moveQueue.shift(); // Get next move
-    currentDirection = direction; // Set current direction
-    startMoving(); // Start moving
-  }, 300); // Delay between moves
+    const direction = moveQueue.shift(); // Get the next move
+    currentDirection = direction; // Set the current direction
+    movesProcessed++; // Increment the processed moves count
+
+    console.log(`Processing move ${movesProcessed} of ${batchSize}: ${direction}`);
+
+    startMoving(() => {
+      console.log(`Move ${movesProcessed} complete.`);
+      if (movesProcessed === batchSize) {
+        // Clear trail after the final move
+        console.log("Final move completed, clearing trail.");
+        trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+        isExecutingMoves = false; // Reset flag
+      } else {
+        // Process the next move
+        processMove();
+      }
+    });
+  };
+
+  // Start processing the first move
+  processMove();
 }
 
 document.addEventListener("keydown", (event) => {
