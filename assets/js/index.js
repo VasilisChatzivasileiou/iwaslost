@@ -2786,7 +2786,7 @@ function renderMazeWithGaps(context, gaps = []) {
           gapElement.style.top = `${gap.y}px`;
           gapElement.style.width = `${gap.width}px`;
           gapElement.style.height = `${gap.height}px`;
-          gapElement.style.backgroundColor = gap?.color ||'rgb(153, 153, 153)';
+          gapElement.style.backgroundColor = gap?.color ||'rgb(211, 82, 82)';
           gapElement.style.zIndex = '-2';
           
           gapElement.style.pointerEvents = 'none'; // Prevent interaction
