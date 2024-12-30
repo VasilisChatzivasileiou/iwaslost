@@ -745,110 +745,6 @@ function updateUnlockablesUI() {
   }
 }
 
-
-function createUnlockableElement(mainText, subText, iconSrc) {
-  const unlockable = document.createElement("div");
-  unlockable.style.display = "flex";
-  unlockable.style.justifyContent = "space-between";
-  unlockable.style.alignItems = "center";
-  unlockable.style.width = "90%";
-  unlockable.style.margin = "20px auto 0";
-  unlockable.style.padding = "0px";
-  unlockable.style.backgroundColor = "#222222";
-  unlockable.style.borderRadius = "0px";
-  unlockable.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0)";
-  unlockable.style.color = "#CCCCCC";
-  unlockable.style.minHeight = "120px";
-
-  // Title (left)
-  const title = document.createElement("div");
-  title.style.marginLeft = "70px";
-  title.style.width = "268px";
-  title.style.fontSize = "29px";
-  title.style.fontWeight = "bold";
-  title.style.lineHeight = "1.2";
-  title.style.textAlign = "center";
-  title.style.display = "flex";
-  title.style.flexDirection = "column";
-  title.style.justifyContent = "center";
-  title.style.gap = "10px";
-
-  const mainTextElement = document.createElement("span");
-  mainTextElement.textContent = mainText;
-  mainTextElement.style.fontSize = "40px";
-  mainTextElement.style.fontStyle = "italic";
-  mainTextElement.style.fontWeight = "bold";
-  mainTextElement.style.fontFamily = "MS Mincho";
-  mainTextElement.style.backgroundColor = "#F0A8C4";
-  mainTextElement.style.color = "#222222";
-  mainTextElement.style.padding = "0px";
-  mainTextElement.style.borderRadius = "0px";
-  mainTextElement.style.display = "inline-block";
-
-  const subTextElement = document.createElement("span");
-  subTextElement.textContent = subText;
-  subTextElement.style.width = "100px";
-  subTextElement.style.marginLeft = "35px";
-  subTextElement.style.backgroundColor = "#cccccc";
-  subTextElement.style.color = "#222222";
-  subTextElement.style.padding = "0px";
-  subTextElement.style.borderRadius = "0px";
-  subTextElement.style.display = "inline-block";
-
-  title.appendChild(mainTextElement);
-  title.appendChild(subTextElement);
-
-  unlockable.appendChild(title);
-
-  // Icon (middle)
-  const icon = document.createElement("img");
-  icon.src = `assets/images/${iconSrc}`;
-  icon.alt = `${mainText} Icon`;
-  icon.style.width = "230px";
-  icon.style.height = "200px";
-  icon.style.margin = "0 15px";
-  icon.style.imageRendering = "pixelated"; // Ensure pixelated rendering
-  unlockable.appendChild(icon);
-
-  // Equip Button (right)
-  const equipButton = document.createElement("button");
-  equipButton.textContent = "equip";
-  equipButton.style.fontFamily = "CustomFont";
-  equipButton.style.width = "100px";
-  equipButton.style.marginLeft = "10px";
-  equipButton.style.marginRight = "100px";
-  equipButton.style.padding = "0px 0px";
-  equipButton.style.fontSize = "34px";
-  equipButton.style.backgroundColor = "#CCCCCC";
-  equipButton.style.color = "#222222";
-  equipButton.style.border = "none";
-  equipButton.style.borderRadius = "0px";
-  equipButton.style.cursor = "pointer";
-
-  equipButton.addEventListener("click", () => {
-    if (mainText === "“the tail”") {
-      handleTailEquip();
-    }
-  });
-
-  equipButton.addEventListener("mouseover", () => {
-    equipButton.style.backgroundColor = "#222222";
-    equipButton.style.color = "#CCCCCC";
-  });
-  equipButton.addEventListener("mouseout", () => {
-    equipButton.style.backgroundColor = "#cccccc";
-    equipButton.style.color = "#222222";
-  });
-
-  unlockable.appendChild(equipButton);
-
-  return unlockable;
-}
-
-function handleTailEquip() {
-  console.log("The Tail equip button clicked. Functionality to be added later.");
-}
-
 // Call this function when the unlockables screen is shown
 unlockablesButton.addEventListener("click", () => {
   updateUnlockablesUI();
@@ -2036,10 +1932,10 @@ function showLevelAnnouncement(level, baseColor = "#999999", highlightColor = "#
     levelAnnouncementTimeout = null; // Reset timeout ID
   }, totalDuration); // Display time = total animation time
 }
-let level7BlockTimeout = null;
-let isLevel7Initialized = false; // New flag to track initialization
 
 function startGame(mazeImageSrc, exitPosition, playerPosition) {
+
+  trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
   // Clear existing checkpoints and level-specific intervals
   clearCheckpoints();
   clearLevel7Blocks(); // Clear the block movement interval if it exists
@@ -2199,7 +2095,7 @@ async function smoothMoveBlocks(isMovingToStart) {
   const steps = 60; // Number of steps for smooth movement (~60 FPS)
   const stepDuration = 500 / steps; // Duration of each step
 
-  for (let i = 0; i < steps; i++) {
+  for (let i = 0; i < steps; i++) { 
       if (stopLevel7Blocks) return; // Exit immediately if movement stops
 
       level7Blocks.forEach((block) => {
@@ -2215,21 +2111,19 @@ async function smoothMoveBlocks(isMovingToStart) {
           const distanceY = remainingDistanceY / (steps - i);
 
           // Update block position
-          block.x += (targetX - block.x) / (steps - i);
-          block.y += (targetY - block.y) / (steps - i);
+          block.x += distanceX;
+          block.y += distanceY;
 
           // Push the player if a collision occurs
           if (isCollidingWithPlayer(block, player)) {
               const newPlayerX = player.x + distanceX;
               const newPlayerY = player.y + distanceY;
-
               if (isCollision(newPlayerX, newPlayerY, player)) {
                   console.log("you died");
                   handlePlayerDeath()
                   stopLevel7Blocks = true; // Stop movement
                   return; // Exit the movement loop
               }
-
               // Move the player if no collision
               player.x = newPlayerX;
               player.y = newPlayerY;
@@ -2238,6 +2132,8 @@ async function smoothMoveBlocks(isMovingToStart) {
 
       // Redraw the maze, blocks, and player
       recolorMaze();
+      drawLevel7Blocks(ctx); // Ensure moving blocks are drawn first
+      ctx.drawImage(trailCanvas, 0, 0); // Overlay trail canvas
       drawPlayer();
 
       await new Promise((resolve) => setTimeout(resolve, stepDuration));
@@ -2249,7 +2145,7 @@ async function smoothMoveBlocks(isMovingToStart) {
   level7Blocks.forEach((block) => {
     block.x = isMovingToStart ? block.startX : block.endX;
     block.y = isMovingToStart ? block.startY : block.endY;
-});
+  });
 }
 
 function isCollidingWithPlayer(block, player) {
@@ -2817,9 +2713,23 @@ function extractMazeData() {
   console.log("Sample maze data (first 10 bytes):", mazeData.slice(0, 10));
 }
 
+const trailCanvas = document.createElement("canvas");
+trailCanvas.width = canvas.width;
+trailCanvas.height = canvas.height;
+const trailCtx = trailCanvas.getContext("2d");
+
 function drawPlayer(cPlayer) {
-  // Recolor maze and redraw fixed elements
+  // Check if tail effect is equipped
+  const isTailEffectEquipped = localStorage.getItem("isTailEffectEquipped") === "true";
+
+  if (isTailEffectEquipped) {
+    trailCtx.fillStyle = player.color;
+    trailCtx.fillRect(player.x, player.y, player.size, player.size);
+  }
   recolorMaze();
+
+
+  // Redraw fixed elements
   drawExit();
   drawCheckpoints();
 
@@ -2827,6 +2737,7 @@ function drawPlayer(cPlayer) {
   if (currentLevel === 7) {
     drawLevel7Blocks(ctx);
   }
+  ctx.drawImage(trailCanvas, 0, 0);
 
   if (currentLevel === 6) {
     renderMazeWithGaps(ctx, gaps);
@@ -2838,10 +2749,12 @@ function drawPlayer(cPlayer) {
     ctx.fillRect(cPlayer.x, cPlayer.y, cPlayer.size, cPlayer.size);
   }
 
+
   // Draw the main player
   ctx.fillStyle = player.color;
-  ctx.fillRect(player.x, player.y, player.size, player.size);
+  ctx.fillRect(player.x, player.y, player.size, player.size); 
 
+  // Debugging: log if the player is outside bounds
   if (
     player.x < 0 || 
     player.y < 0 || 
@@ -3211,6 +3124,8 @@ async function restartGame() {
   clearAllTimers();
   level7RunId++; // Increment to cancel async loops
   stopLevel7Blocks = true; // Ensure movement stops immediately
+
+  trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
 
   // Reset player and game state
   playerSteps = [];
