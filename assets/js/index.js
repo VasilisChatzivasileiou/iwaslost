@@ -1953,7 +1953,7 @@ function startGame(mazeImageSrc, exitPosition, playerPosition) {
   // Clear existing checkpoints and level-specific intervals
   clearCheckpoints();
   clearLevel7Blocks(); // Clear the block movement interval if it exists
-
+  
   mazeImage.src = mazeImageSrc;
 
   // Wait for the maze image to load before continuing
@@ -1985,8 +1985,14 @@ function startGame(mazeImageSrc, exitPosition, playerPosition) {
     recolorMaze();
     drawPlayer();
     drawCheckpoints();
+    if (currentLevel === 6) {
+      
+      console.log(`Rendering maze for level ${currentLevel}`);
+      renderMazeWithGaps(ctx, gaps); 
+    }
+
     if (currentLevel === 7) drawLevel7Blocks(ctx);
-    };
+  };
   // Change body background color based on the level
   updateBodyBackgroundColor();
   // Update controls button colors based on the level
@@ -2696,6 +2702,10 @@ function drawPlayer(cPlayer) {
     drawLevel7Blocks(ctx);
   }
 
+  if (currentLevel === 6) {
+    renderMazeWithGaps(ctx, gaps);
+  }
+
   // Draw hint if a comparison player is provided
   if (cPlayer) {
     ctx.fillStyle = "rgba(255, 255, 0, 0.5)";
@@ -2715,11 +2725,51 @@ function drawExit() {
   ctx.fillRect(exit.x, exit.y, exit.size, exit.size);
 }
 
+
+function renderMazeWithGaps(context, gaps = []) {
+  // Render gaps
+  context.save();
+  for (const gap of gaps) {
+    if (currentLevel === gap.level) {
+      console.log(`Rendering gap at (${gap.x}, ${gap.y}) with dimensions ${gap.width}x${gap.height}`);
+      
+      // Draw semi-transparent fill for the gap
+      context.fillStyle = "rgba(255, 65, 176, 0.3)"; // Semi-transparent red
+      context.fillRect(gap.x, gap.y, gap.width, gap.height);
+
+      // Draw a visible border for clarity
+      context.strokeStyle = "rgba(255, 64, 169, 0.9)"; // Fully opaque red
+      context.lineWidth = 2; // Border thickness
+      context.strokeRect(gap.x, gap.y, gap.width, gap.height);
+    }
+  }
+  context.restore();
+}
+
+const gaps = [
+  { x: 280, y: 260, width: 60, height: 200, level: 6 }
+];
+
+
 function isCollision(newX, newY, pPlayer) {
   let cPlayer = player;
   if (pPlayer) {
       cPlayer = pPlayer;
   }
+
+  const inGap = gaps.some(
+    gap =>
+        currentLevel === gap.level &&
+        newX + cPlayer.size > gap.x &&
+        newX < gap.x + gap.width &&
+        newY + cPlayer.size > gap.y &&
+        newY < gap.y + gap.height
+);
+
+if (inGap) {
+  console.log(`Player is exiting maze through gap at (${newX}, ${newY})`);
+  return false; // No collision, allow movement
+}
 
   const mazeX = Math.floor(newX / scale);
   const mazeY = Math.floor(newY / scale);
