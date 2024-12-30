@@ -1981,6 +1981,14 @@ function startGame(mazeImageSrc, exitPosition, playerPosition) {
         y: 271,
         width: 31,
         height: 20,
+        color: "transparent"
+      });
+      gaps.push({
+        level: 6,
+        x: 411, // Adjust to your gap's coordinates
+        y: 271,
+        width: 11,
+        height: 20,
       });
       console.log("Gaps initialized for level 6:", gaps);
 
@@ -2778,8 +2786,8 @@ function renderMazeWithGaps(context, gaps = []) {
           gapElement.style.top = `${gap.y}px`;
           gapElement.style.width = `${gap.width}px`;
           gapElement.style.height = `${gap.height}px`;
-          gapElement.style.backgroundColor = 'rgb(211, 82, 82)';
-          gapElement.style.zIndex = '-20';
+          gapElement.style.backgroundColor = gap?.color ||'rgb(153, 153, 153)';
+          gapElement.style.zIndex = '-2';
           
           gapElement.style.pointerEvents = 'none'; // Prevent interaction
 
