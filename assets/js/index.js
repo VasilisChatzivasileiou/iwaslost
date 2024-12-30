@@ -646,7 +646,7 @@ function updateUnlockablesUI() {
       tailBackground.style.padding = "0px";
       tailBackground.style.backgroundColor = "#222222";
       tailBackground.style.minHeight = "120px";
-      unlockablesCenterWindow.appendChild(createUnlockableElement("“the tail”", "effect", "tailpalette.svg"));
+      unlockablesCenterWindow.appendChild(createUnlockableElement("“the tail”", "effect", "taileffect3.svg"));
   }
   if (!hasUnlockables) {
       // Re-enable flex layout if there are no unlockables
@@ -689,8 +689,8 @@ function createUnlockableElement(mainText, subText, iconSrc) {
   mainTextElement.style.fontStyle = "italic";
   mainTextElement.style.fontWeight = "bold";
   mainTextElement.style.fontFamily = "MS Mincho";
-  mainTextElement.style.backgroundColor = "#cccccc";
-  mainTextElement.style.color = "#D1406E";
+  mainTextElement.style.backgroundColor = "#F0A8C4";
+  mainTextElement.style.color = "#222222";
   mainTextElement.style.padding = "0px";
   mainTextElement.style.borderRadius = "0px";
   mainTextElement.style.display = "inline-block";
@@ -714,9 +714,10 @@ function createUnlockableElement(mainText, subText, iconSrc) {
   const icon = document.createElement("img");
   icon.src = `assets/images/${iconSrc}`;
   icon.alt = `${mainText} Icon`;
-  icon.style.width = "200px";
+  icon.style.width = "230px";
   icon.style.height = "200px";
   icon.style.margin = "0 15px";
+  icon.style.imageRendering = "pixelated"; // Ensure pixelated rendering
   unlockable.appendChild(icon);
 
   // Equip Button (right)
@@ -757,7 +758,6 @@ function createUnlockableElement(mainText, subText, iconSrc) {
 function handleTailEquip() {
   console.log("The Tail equip button clicked. Functionality to be added later.");
 }
-
 
 // Call this function when the unlockables screen is shown
 unlockablesButton.addEventListener("click", () => {
