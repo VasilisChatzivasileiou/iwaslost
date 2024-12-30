@@ -646,7 +646,7 @@ function updateUnlockablesUI() {
       tailBackground.style.padding = "0px";
       tailBackground.style.backgroundColor = "#222222";
       tailBackground.style.minHeight = "120px";
-      unlockablesCenterWindow.appendChild(tailBackground);
+      unlockablesCenterWindow.appendChild(createUnlockableElement("“the tail”", "effect", "tailpalette.svg"));
   }
   if (!hasUnlockables) {
       // Re-enable flex layout if there are no unlockables
@@ -655,6 +655,109 @@ function updateUnlockablesUI() {
       unlockablesCenterWindow.innerHTML = "nothing here... for now";
   }
 }
+
+function createUnlockableElement(mainText, subText, iconSrc) {
+  const unlockable = document.createElement("div");
+  unlockable.style.display = "flex";
+  unlockable.style.justifyContent = "space-between";
+  unlockable.style.alignItems = "center";
+  unlockable.style.width = "90%";
+  unlockable.style.margin = "20px auto 0";
+  unlockable.style.padding = "0px";
+  unlockable.style.backgroundColor = "#222222";
+  unlockable.style.borderRadius = "0px";
+  unlockable.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0)";
+  unlockable.style.color = "#CCCCCC";
+  unlockable.style.minHeight = "120px";
+
+  // Title (left)
+  const title = document.createElement("div");
+  title.style.marginLeft = "70px";
+  title.style.width = "268px";
+  title.style.fontSize = "29px";
+  title.style.fontWeight = "bold";
+  title.style.lineHeight = "1.2";
+  title.style.textAlign = "center";
+  title.style.display = "flex";
+  title.style.flexDirection = "column";
+  title.style.justifyContent = "center";
+  title.style.gap = "10px";
+
+  const mainTextElement = document.createElement("span");
+  mainTextElement.textContent = mainText;
+  mainTextElement.style.fontSize = "40px";
+  mainTextElement.style.fontStyle = "italic";
+  mainTextElement.style.fontWeight = "bold";
+  mainTextElement.style.fontFamily = "MS Mincho";
+  mainTextElement.style.backgroundColor = "#cccccc";
+  mainTextElement.style.color = "#D1406E";
+  mainTextElement.style.padding = "0px";
+  mainTextElement.style.borderRadius = "0px";
+  mainTextElement.style.display = "inline-block";
+
+  const subTextElement = document.createElement("span");
+  subTextElement.textContent = subText;
+  subTextElement.style.width = "100px";
+  subTextElement.style.marginLeft = "35px";
+  subTextElement.style.backgroundColor = "#cccccc";
+  subTextElement.style.color = "#222222";
+  subTextElement.style.padding = "0px";
+  subTextElement.style.borderRadius = "0px";
+  subTextElement.style.display = "inline-block";
+
+  title.appendChild(mainTextElement);
+  title.appendChild(subTextElement);
+
+  unlockable.appendChild(title);
+
+  // Icon (middle)
+  const icon = document.createElement("img");
+  icon.src = `assets/images/${iconSrc}`;
+  icon.alt = `${mainText} Icon`;
+  icon.style.width = "200px";
+  icon.style.height = "200px";
+  icon.style.margin = "0 15px";
+  unlockable.appendChild(icon);
+
+  // Equip Button (right)
+  const equipButton = document.createElement("button");
+  equipButton.textContent = "equip";
+  equipButton.style.fontFamily = "CustomFont";
+  equipButton.style.width = "100px";
+  equipButton.style.marginLeft = "10px";
+  equipButton.style.marginRight = "100px";
+  equipButton.style.padding = "0px 0px";
+  equipButton.style.fontSize = "34px";
+  equipButton.style.backgroundColor = "#CCCCCC";
+  equipButton.style.color = "#222222";
+  equipButton.style.border = "none";
+  equipButton.style.borderRadius = "0px";
+  equipButton.style.cursor = "pointer";
+
+  equipButton.addEventListener("click", () => {
+    if (mainText === "“the tail”") {
+      handleTailEquip();
+    }
+  });
+
+  equipButton.addEventListener("mouseover", () => {
+    equipButton.style.backgroundColor = "#222222";
+    equipButton.style.color = "#CCCCCC";
+  });
+  equipButton.addEventListener("mouseout", () => {
+    equipButton.style.backgroundColor = "#cccccc";
+    equipButton.style.color = "#222222";
+  });
+
+  unlockable.appendChild(equipButton);
+
+  return unlockable;
+}
+
+function handleTailEquip() {
+  console.log("The Tail equip button clicked. Functionality to be added later.");
+}
+
 
 // Call this function when the unlockables screen is shown
 unlockablesButton.addEventListener("click", () => {
