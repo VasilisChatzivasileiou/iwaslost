@@ -1954,6 +1954,8 @@ function startGame(mazeImageSrc, exitPosition, playerPosition) {
   clearCheckpoints();
   clearLevel7Blocks(); // Clear the block movement interval if it exists
   
+  gaps.length = 0;
+
   mazeImage.src = mazeImageSrc;
 
   // Wait for the maze image to load before continuing
@@ -1969,7 +1971,20 @@ function startGame(mazeImageSrc, exitPosition, playerPosition) {
     player.startY = playerPosition.y;
 
     // Level-specific initialization
-    if (currentLevel === 7) {
+    if (currentLevel === 6) {
+      // Initialize gaps for Level 6
+      gaps.push({
+        level: 6,
+        x: 391, // Adjust to your gap's coordinates
+        y: 271,
+        width: 20,
+        height: 20,
+      });
+      console.log("Gaps initialized for level 6:", gaps);
+
+      // Render maze with gaps
+      renderMazeWithGaps(ctx, gaps);
+    } else if (currentLevel === 7) {
       initializeLevel7Blocks(); // Initialize the moving block for level 7
     } else if (currentLevel === 8) {
       initializeCheckpoints(); // Ensure the checkpoint is valid
@@ -2537,7 +2552,6 @@ function showLevelSelector() {
     clearTimeout(levelAnnouncementTimeout);
     levelAnnouncementTimeout = null;
   }
-
   resetHints();
   enableHintButton();
 
@@ -2547,10 +2561,11 @@ function showLevelSelector() {
   hintButton.style.display = "none"; // Hide the Hint button when in menu
 
   const tipText = document.getElementById("levelSelectionTip");
-    if (tipText) {
-        tipText.style.display = "block";
-    }
-
+  if (tipText) {
+    tipText.style.display = "block";
+  }
+  gaps.length = 0; // Reset gaps to an empty array
+  console.log("Gaps cleared when entering the level selector.");
 }
 function startLevel(level) {
   console.log("Starting Level", level);
@@ -2743,22 +2758,30 @@ function drawExit() {
 
 
 function renderMazeWithGaps(context, gaps = []) {
-  context.save();
+  // Clear previous gap elements
+  const existingGaps = document.querySelectorAll('.maze-gap');
+  existingGaps.forEach(gap => gap.remove());
+
   for (const gap of gaps) {
       if (currentLevel === gap.level) {
-          console.log(`Rendering gap at (${gap.x}, ${gap.y}) with dimensions ${gap.width}x${gap.height}`);
+          console.log(`Rendering DOM gap at (${gap.x}, ${gap.y}) with dimensions ${gap.width}x${gap.height}`);
 
-          // Draw the gap
-          context.fillStyle = "rgba(255, 65, 176, 0.3)";
-          context.fillRect(gap.x, gap.y, gap.width, gap.height);
+          // Create a new div for the gap
+          const gapElement = document.createElement('div');
+          gapElement.className = 'maze-gap';
+          gapElement.style.position = 'absolute';
+          gapElement.style.left = `${gap.x}px`;
+          gapElement.style.top = `${gap.y}px`;
+          gapElement.style.width = `${gap.width}px`;
+          gapElement.style.height = `${gap.height}px`;
+          gapElement.style.backgroundColor = 'rgba(255, 65, 176, 0.3)';
+          
+          gapElement.style.pointerEvents = 'none'; // Prevent interaction
 
-          // Draw border
-          context.strokeStyle = "rgba(255, 64, 169, 0.9)";
-          context.lineWidth = 2;
-          context.strokeRect(gap.x, gap.y, gap.width, gap.height);
+          // Append the gap to the maze-container
+          mazeContainer.appendChild(gapElement);
       }
   }
-  context.restore();
 }
 
 const gaps = [
@@ -2772,31 +2795,20 @@ function isCollision(newX, newY, pPlayer) {
       cPlayer = pPlayer;
   }
 
-  const inGap = gaps.some(
-    gap =>
-        currentLevel === gap.level &&
-        newX + cPlayer.size > gap.x &&
-        newX < gap.x + gap.width &&
-        newY + cPlayer.size > gap.y &&
-        newY < gap.y + gap.height
+  const inGap = currentLevel === 6 && gaps.some(
+    (gap) =>
+      newX + cPlayer.size > gap.x &&
+      newX < gap.x + gap.width &&
+      newY + cPlayer.size > gap.y &&
+      newY < gap.y + gap.height
   );
 
   if (inGap) {
     console.log(`Player is in a gap at (${newX}, ${newY})`);
 
-    // Allow movement within mazeContainer
-    if (
-        newX + cPlayer.size < 0 ||
-        newY + cPlayer.size < 0 ||
-        newX > mazeContainer.clientWidth ||
-        newY > mazeContainer.clientHeight
-    ) {
-        console.log("Player is moving outside the canvas through a gap.");
-        handlePlayerExit();
-        return false; // No collision
-    }
-    return false; // No collision within the gap
-}
+    // Allow movement even if outside canvas boundaries
+    return false;
+  }
 
   const mazeX = Math.floor(newX / scale);
   const mazeY = Math.floor(newY / scale);
@@ -2854,7 +2866,6 @@ function isCollision(newX, newY, pPlayer) {
           }
       }
   }
-
   return checkStandardCollisions(newX, newY, cPlayer);
 }
 
@@ -2885,13 +2896,6 @@ function checkStandardCollisions(newX, newY, cPlayer) {
   }
   return false; // No collision
 }
-
-function handlePlayerExit() {
-  console.log("Player exited the maze!");
-  alert("You exited the maze through a gap!"); // Display a message
-  // Add logic here, such as advancing to the next level or ending the game
-}
-
 function addDirectionToTracker(direction) {
   moveCount++;
   playerSteps.push(directionMap[direction]);
@@ -2984,43 +2988,36 @@ function startMoving() {
   const doTheMove = () => {
     const newX = player.x + dx;
     const newY = player.y + dy;
-
-    if (
-      newX < 0 ||
-      newX + player.size > canvas.width ||
-      newY < 0 ||
-      newY + player.size > canvas.height ||
-      isCollision(newX, newY)
-    ) {
+  
+    // Directly use isCollision to determine movement validity
+    if (isCollision(newX, newY)) {
       player.x = Math.round(player.x / speed) * speed; // Align position to grid
       player.y = Math.round(player.y / speed) * speed;
       isMoving = false; // Unlock movement
-
+  
       soundEffect.currentTime = 0; // Reset sound playback
       soundEffect.play(); // Play sound effect
-
+  
       playerLastPositions.push({
         x: Math.round(player.x / speed) * speed,
         y: Math.round(player.y / speed) * speed,
       });
-
-      // Update lastDirection only after completing a move
-      lastDirection = currentDirection;
-
+  
+      lastDirection = currentDirection; // Update lastDirection
       drawPlayer();
-      checkCheckpointCollision(); // Add collision check here
-      if (currentLevel === 7) checkLevel7BlocksCollision(player); // Add Level 7 block collision check
+      checkCheckpointCollision();
+      if (currentLevel === 7) checkLevel7BlocksCollision(player);
       checkWin();
-      processNextMove(); // Process the next move in the queue
+      processNextMove();
     } else {
       // Update player position
       player.x = newX;
       player.y = newY;
       drawPlayer();
-      checkCheckpointCollision(); // Add collision check here
-      if (currentLevel === 7) checkLevel7BlocksCollision(player); // Add Level 7 block collision check
+      checkCheckpointCollision();
+      if (currentLevel === 7) checkLevel7BlocksCollision(player);
       checkWin();
-
+  
       requestAnimationFrame(doTheMove);
     }
   };
