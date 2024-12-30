@@ -29,7 +29,6 @@ const animationContainer = document.getElementById('animationContainer');
 const soundEffect = new Audio('blockhit3.mp3'); // Replace with your sound file path
 
 
-
 document.addEventListener("DOMContentLoaded", () => {
   const startScreen = document.getElementById("startScreen");
   const levelSelection = document.getElementById("levelSelection"); // Declare this variable
@@ -2773,6 +2772,7 @@ function renderMazeWithGaps(context, gaps = []) {
           gapElement.style.width = `${gap.width}px`;
           gapElement.style.height = `${gap.height}px`;
           gapElement.style.backgroundColor = 'rgba(153, 153, 153, 1)';
+          gapElement.style.zIndex = '-1';
           
           gapElement.style.pointerEvents = 'none'; // Prevent interaction
 
