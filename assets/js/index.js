@@ -2000,15 +2000,16 @@ function startGame(mazeImageSrc, exitPosition, playerPosition) {
 
     // Redraw the player and checkpoint
     recolorMaze();
-    drawPlayer();
     drawCheckpoints();
+    
     if (currentLevel === 6) {
       
       console.log(`Rendering maze for level ${currentLevel}`);
       renderMazeWithGaps(ctx, gaps); 
     }
-
+    
     if (currentLevel === 7) drawLevel7Blocks(ctx);
+    drawPlayer();
   };
   // Change body background color based on the level
   updateBodyBackgroundColor();
@@ -2399,7 +2400,12 @@ function startFlickeringEffect() {
     const blurRadius = Math.random() * 50 + 20; // Random blur radius between 20px and 70px
     const spreadRadius = Math.random() * 10 - 5; // Random spread radius between -5px and 5px
     const opacity = Math.random() * 0.7 + 0.3; // Random opacity between 0.3 and 1
-    mazeContainer.style.boxShadow = `inset 0 0 ${blurRadius}px 0 rgba(0, 0, 0, ${opacity})`;
+
+    // Update the dynamic shadow for the ::after pseudo-element
+    mazeContainer.style.setProperty(
+      "--dynamic-shadow",
+      `inset 0 0 ${blurRadius}px ${spreadRadius}px rgba(0, 0, 0, ${opacity})`
+    );
 
     // Repeat with a random delay between 100ms and 400ms
     setTimeout(applyRandomShadow, Math.random() * 300 + 100);
@@ -2609,6 +2615,7 @@ const player = {
   startX: 180,
   startY: 380,
   color: "#d1406e", // Add a color property
+  
 };
 
 const exit = {
@@ -2771,8 +2778,8 @@ function renderMazeWithGaps(context, gaps = []) {
           gapElement.style.top = `${gap.y}px`;
           gapElement.style.width = `${gap.width}px`;
           gapElement.style.height = `${gap.height}px`;
-          gapElement.style.backgroundColor = 'rgba(153, 153, 153, 1)';
-          gapElement.style.zIndex = '-1';
+          gapElement.style.backgroundColor = 'rgb(211, 82, 82)';
+          gapElement.style.zIndex = '-20';
           
           gapElement.style.pointerEvents = 'none'; // Prevent interaction
 
