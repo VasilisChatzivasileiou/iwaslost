@@ -1953,6 +1953,9 @@ function startGame(mazeImageSrc, exitPosition, playerPosition) {
   // Clear existing checkpoints and level-specific intervals
   clearCheckpoints();
   clearLevel7Blocks(); // Clear the block movement interval if it exists
+
+  console.log("Current Level:", currentLevel);
+  console.log("Gaps:", gaps);
   
   gaps.length = 0;
 
@@ -2565,14 +2568,8 @@ function showLevelSelector() {
     tipText.style.display = "block";
   }
   gaps.length = 0; // Reset gaps to an empty array
+  currentLevel = null; // Ensure no lingering currentLevel
   console.log("Gaps cleared when entering the level selector.");
-}
-function startLevel(level) {
-  console.log("Starting Level", level);
-  document.getElementById("levelSelection").style.display = "none";
-  document.getElementById("gameContainer").style.display = "flex";
-  menuButton.style.display = "block"; // Show the Menu button
-  // Initialize game logic for the selected level here
 }
 
 let lastDirection = null; // Store the last completed move direction
@@ -2711,6 +2708,8 @@ function extractMazeData() {
   mazeData = imageData.data;
 
   console.log("Maze data extracted for:", mazeImage.src);
+  console.log("Maze dimensions:", scaledWidth, scaledHeight);
+  console.log("Sample maze data (first 10 bytes):", mazeData.slice(0, 10));
 }
 
 function drawPlayer(cPlayer) {
@@ -2792,10 +2791,11 @@ const gaps = [
 function isCollision(newX, newY, pPlayer) {
   let cPlayer = player;
   if (pPlayer) {
-      cPlayer = pPlayer;
+    cPlayer = pPlayer;
   }
 
-  const inGap = currentLevel === 6 && gaps.some(
+  // Check if in a gap (only for Level 6)
+  const inGap = currentLevel === 6 && gaps.length > 0 && gaps.some(
     (gap) =>
       newX + cPlayer.size > gap.x &&
       newX < gap.x + gap.width &&
@@ -2810,62 +2810,73 @@ function isCollision(newX, newY, pPlayer) {
     return false;
   }
 
+  // Enforce canvas boundaries (if not in a gap)
+  if (
+    newX < 0 ||
+    newY < 0 ||
+    newX + cPlayer.size > canvas.width ||
+    newY + cPlayer.size > canvas.height
+  ) {
+    console.log(`Out of bounds: (${newX}, ${newY})`);
+    return true; // Block movement outside bounds
+  }
+
   const mazeX = Math.floor(newX / scale);
   const mazeY = Math.floor(newY / scale);
 
   const corners = [
-      { x: mazeX, y: mazeY },
-      { x: mazeX + cPlayer.size / scale - 1, y: mazeY },
-      { x: mazeX, y: mazeY + cPlayer.size / scale - 1 },
-      {
-          x: mazeX + cPlayer.size / scale - 1,
-          y: mazeY + cPlayer.size / scale - 1,
-      },
+    { x: mazeX, y: mazeY },
+    { x: mazeX + cPlayer.size / scale - 1, y: mazeY },
+    { x: mazeX, y: mazeY + cPlayer.size / scale - 1 },
+    {
+      x: mazeX + cPlayer.size / scale - 1,
+      y: mazeY + cPlayer.size / scale - 1,
+    },
   ];
 
   const scaledWidth = canvas.width / scale;
 
   // Check for wall collisions
   for (const corner of corners) {
-      const index = (corner.y * scaledWidth + corner.x) * 4 + 3;
-      if (mazeData[index] !== 0) {
-          console.log(
-              `Collision detected at (${corner.x}, ${corner.y})`
-          );
-          return true; // Collision with wall
-      }
+    const index = (corner.y * scaledWidth + corner.x) * 4 + 3;
+    if (mazeData[index] !== 0) {
+      console.log(`Collision detected at (${corner.x}, ${corner.y})`);
+      return true; // Collision with wall
+    }
   }
 
   // Check for solid checkpoint collisions
   for (const checkpoint of checkpoints) {
-      if (
-          checkpoint.solid && // Only consider solid checkpoints
-          newX < checkpoint.x + checkpoint.size &&
-          newX + cPlayer.size > checkpoint.x &&
-          newY < checkpoint.y + checkpoint.size &&
-          newY + cPlayer.size > checkpoint.y
-      ) {
-          console.log(
-              `Collision with solid checkpoint at (${checkpoint.x}, ${checkpoint.y})`
-          );
-          return true; // Collision with solid checkpoint
-      }
+    if (
+      checkpoint.solid && // Only consider solid checkpoints
+      newX < checkpoint.x + checkpoint.size &&
+      newX + cPlayer.size > checkpoint.x &&
+      newY < checkpoint.y + checkpoint.size &&
+      newY + cPlayer.size > checkpoint.y
+    ) {
+      console.log(
+        `Collision with solid checkpoint at (${checkpoint.x}, ${checkpoint.y})`
+      );
+      return true; // Collision with solid checkpoint
+    }
   }
 
   // Check for collisions with Level 7 blocks (moving or stationary)
   if (currentLevel === 7) {
-      for (const block of level7Blocks) {
-          if (
-              newX < block.x + block.width &&
-              newX + cPlayer.size > block.x &&
-              newY < block.y + block.height &&
-              newY + cPlayer.size > block.y
-          ) {
-              console.log(`Collision with block at (${block.x}, ${block.y})`);
-              return true; // Collision with a block
-          }
+    for (const block of level7Blocks) {
+      if (
+        newX < block.x + block.width &&
+        newX + cPlayer.size > block.x &&
+        newY < block.y + block.height &&
+        newY + cPlayer.size > block.y
+      ) {
+        console.log(`Collision with block at (${block.x}, ${block.y})`);
+        return true; // Collision with a block
       }
+    }
   }
+
+  // Default collision check
   return checkStandardCollisions(newX, newY, cPlayer);
 }
 
@@ -2896,6 +2907,7 @@ function checkStandardCollisions(newX, newY, cPlayer) {
   }
   return false; // No collision
 }
+
 function addDirectionToTracker(direction) {
   moveCount++;
   playerSteps.push(directionMap[direction]);
