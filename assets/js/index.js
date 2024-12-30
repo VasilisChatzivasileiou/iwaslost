@@ -6,7 +6,7 @@ const saveFilePath = isNode ? require("path").join(__dirname, "levelCompletionTi
 const inGameResetButton = document.getElementById("inGameResetButton");
 
 const levelSelection = document.getElementById("levelSelection");
-
+const mazeContainer = document.querySelector(".maze-container");
 const gameContainer = document.getElementById("gameContainer");
 const menuButton = document.getElementById("menuButton");
 const levelAnnouncement = document.getElementById("levelAnnouncement");
@@ -2552,7 +2552,6 @@ function showLevelSelector() {
     }
 
 }
-
 function startLevel(level) {
   console.log("Starting Level", level);
   document.getElementById("levelSelection").style.display = "none";
@@ -2573,6 +2572,14 @@ const moveQueue = []; // Queue to store moves
 
 const canvas = document.getElementById("mazeCanvas");
 const ctx = canvas.getContext("2d");
+
+canvas.width = 400; // Larger internal width for rendering
+canvas.height = 400; // Larger internal height for rendering
+
+// Use CSS to restrict the visible size of the canvas
+canvas.style.width = "400px"; // Visible width
+canvas.style.height = "400px"; // Visible height
+
 const resetButton = document.getElementById("resetButton");
 const trackerList = document.getElementById("trackerList");
 const winPopup = document.getElementById("winPopup");
@@ -2715,6 +2722,15 @@ function drawPlayer(cPlayer) {
   // Draw the main player
   ctx.fillStyle = player.color;
   ctx.fillRect(player.x, player.y, player.size, player.size);
+
+  if (
+    player.x < 0 || 
+    player.y < 0 || 
+    player.x > mazeContainer.clientWidth || 
+    player.y > mazeContainer.clientHeight
+  ) {
+    console.log("Player outside of mazeContainer bounds.");
+  }
 }
 function drawExit() {
   // Retrieve the exit color from the CSS variable
@@ -2727,27 +2743,26 @@ function drawExit() {
 
 
 function renderMazeWithGaps(context, gaps = []) {
-  // Render gaps
   context.save();
   for (const gap of gaps) {
-    if (currentLevel === gap.level) {
-      console.log(`Rendering gap at (${gap.x}, ${gap.y}) with dimensions ${gap.width}x${gap.height}`);
-      
-      // Draw semi-transparent fill for the gap
-      context.fillStyle = "rgba(255, 65, 176, 0.3)"; // Semi-transparent red
-      context.fillRect(gap.x, gap.y, gap.width, gap.height);
+      if (currentLevel === gap.level) {
+          console.log(`Rendering gap at (${gap.x}, ${gap.y}) with dimensions ${gap.width}x${gap.height}`);
 
-      // Draw a visible border for clarity
-      context.strokeStyle = "rgba(255, 64, 169, 0.9)"; // Fully opaque red
-      context.lineWidth = 2; // Border thickness
-      context.strokeRect(gap.x, gap.y, gap.width, gap.height);
-    }
+          // Draw the gap
+          context.fillStyle = "rgba(255, 65, 176, 0.3)";
+          context.fillRect(gap.x, gap.y, gap.width, gap.height);
+
+          // Draw border
+          context.strokeStyle = "rgba(255, 64, 169, 0.9)";
+          context.lineWidth = 2;
+          context.strokeRect(gap.x, gap.y, gap.width, gap.height);
+      }
   }
   context.restore();
 }
 
 const gaps = [
-  { x: 280, y: 260, width: 60, height: 200, level: 6 }
+  { x: 280, y: 260, width: 160, height: 200, level: 6 }
 ];
 
 
@@ -2764,11 +2779,23 @@ function isCollision(newX, newY, pPlayer) {
         newX < gap.x + gap.width &&
         newY + cPlayer.size > gap.y &&
         newY < gap.y + gap.height
-);
+  );
 
-if (inGap) {
-  console.log(`Player is exiting maze through gap at (${newX}, ${newY})`);
-  return false; // No collision, allow movement
+  if (inGap) {
+    console.log(`Player is in a gap at (${newX}, ${newY})`);
+
+    // Allow movement within mazeContainer
+    if (
+        newX + cPlayer.size < 0 ||
+        newY + cPlayer.size < 0 ||
+        newX > mazeContainer.clientWidth ||
+        newY > mazeContainer.clientHeight
+    ) {
+        console.log("Player is moving outside the canvas through a gap.");
+        handlePlayerExit();
+        return false; // No collision
+    }
+    return false; // No collision within the gap
 }
 
   const mazeX = Math.floor(newX / scale);
@@ -2828,7 +2855,41 @@ if (inGap) {
       }
   }
 
+  return checkStandardCollisions(newX, newY, cPlayer);
+}
+
+function checkStandardCollisions(newX, newY, cPlayer) {
+  const mazeX = Math.floor(newX / scale);
+  const mazeY = Math.floor(newY / scale);
+
+  const corners = [
+      { x: mazeX, y: mazeY },
+      { x: mazeX + cPlayer.size / scale - 1, y: mazeY },
+      { x: mazeX, y: mazeY + cPlayer.size / scale - 1 },
+      {
+          x: mazeX + cPlayer.size / scale - 1,
+          y: mazeY + cPlayer.size / scale - 1,
+      },
+  ];
+
+  const scaledWidth = canvas.width / scale;
+
+  for (const corner of corners) {
+      const index = (corner.y * scaledWidth + corner.x) * 4 + 3;
+      if (mazeData[index] !== 0) {
+          console.log(
+              `Collision detected at (${corner.x}, ${corner.y})`
+          );
+          return true; // Collision with wall
+      }
+  }
   return false; // No collision
+}
+
+function handlePlayerExit() {
+  console.log("Player exited the maze!");
+  alert("You exited the maze through a gap!"); // Display a message
+  // Add logic here, such as advancing to the next level or ending the game
 }
 
 function addDirectionToTracker(direction) {
