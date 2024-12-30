@@ -510,11 +510,12 @@ function updateUnlockablesUI() {
   let hasUnlockables = false;
 
   // Ensure "isEquipped" is initialized only once
-  let isEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
+  let isBrainPaletteEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
+  let isTailEffectEquipped = localStorage.getItem("isTailEffectEquipped") === "true";
 
   // Check if "The Brain" achievement is unlocked
   if (achievementProgress.theBrain.status === "Unlocked") {
-    hasUnlockables = true;
+      hasUnlockables = true;
 
       unlockablesCenterWindow.innerHTML = "";
 
@@ -590,9 +591,9 @@ function updateUnlockablesUI() {
 
       // Equip Button (right)
       const equipButton = document.createElement("button");
-      equipButton.textContent = isEquipped ? "unequip" : "equip";
+      equipButton.textContent = isBrainPaletteEquipped ? "unequip" : "equip";
       equipButton.style.fontFamily = "CustomFont";
-      equipButton.style.width = isEquipped ? "145px" : "100px";
+      equipButton.style.width = isBrainPaletteEquipped ? "145px" : "100px";
       equipButton.style.marginLeft = "10px"; // Bring the button closer to the icon
       equipButton.style.marginRight = "100px";
       equipButton.style.padding = "0px 0px"; // Adjust padding for larger height
@@ -604,13 +605,13 @@ function updateUnlockablesUI() {
       equipButton.style.cursor = "pointer";
 
       equipButton.addEventListener("click", () => {
-          isEquipped = !isEquipped;
-          equipButton.textContent = isEquipped ? "unequip" : "equip";
-          equipButton.style.width = isEquipped ? "145px" : "100px";
-          localStorage.setItem("isBrainPaletteEquipped", isEquipped);
+          isBrainPaletteEquipped = !isBrainPaletteEquipped;
+          equipButton.textContent = isBrainPaletteEquipped ? "unequip" : "equip";
+          equipButton.style.width = isBrainPaletteEquipped ? "145px" : "100px";
+          localStorage.setItem("isBrainPaletteEquipped", isBrainPaletteEquipped);
 
-          console.log("Toggling equip state:", isEquipped); // Debug log
-          applyGameColors(isEquipped); // Call the function
+          console.log("Toggling equip state:", isBrainPaletteEquipped); // Debug log
+          applyGameColors(isBrainPaletteEquipped); // Call the function
           updateCanvasBorder();        // Update canvas border
           updateTrackerContainerStyle();        // Update tracker container style
           updateTrackerItemStyles();            // Update tracker item styles
@@ -632,21 +633,110 @@ function updateUnlockablesUI() {
       // Append the unlockable to the center window
       unlockablesCenterWindow.appendChild(unlockable);
 
-      applyGameColors(isEquipped);
+      applyGameColors(isBrainPaletteEquipped);
   }
 
   // Add a simple background for "The Tail" unlockable when unlocked
   if (achievementProgress.theTail.status === "Unlocked") {
-    unlockablesCenterWindow.style.alignItems = "flex-start";
-    hasUnlockables = true;
-      const tailBackground = document.createElement("div");
-      tailBackground.style.width = "90%";
-      tailBackground.style.margin = "20px auto 0";
-      tailBackground.style.padding = "0px";
-      tailBackground.style.backgroundColor = "#222222";
-      tailBackground.style.minHeight = "120px";
-      unlockablesCenterWindow.appendChild(createUnlockableElement("“the tail”", "effect", "taileffect3.svg"));
+      unlockablesCenterWindow.style.alignItems = "flex-start";
+      hasUnlockables = true;
+
+      const tailUnlockable = document.createElement("div");
+      tailUnlockable.style.display = "flex";
+      tailUnlockable.style.justifyContent = "space-between";
+      tailUnlockable.style.alignItems = "center";
+      tailUnlockable.style.width = "90%";
+      tailUnlockable.style.margin = "20px auto 0";
+      tailUnlockable.style.padding = "0px";
+      tailUnlockable.style.backgroundColor = "#222222";
+      tailUnlockable.style.color = "#CCCCCC";
+      tailUnlockable.style.minHeight = "120px";
+
+      // Title (left)
+      const tailTitle = document.createElement("div");
+      tailTitle.style.marginLeft = "70px";
+      tailTitle.style.width = "268px";
+      tailTitle.style.fontSize = "29px";
+      tailTitle.style.fontWeight = "bold";
+      tailTitle.style.lineHeight = "1.2";
+      tailTitle.style.textAlign = "center";
+      tailTitle.style.display = "flex";
+      tailTitle.style.flexDirection = "column";
+      tailTitle.style.justifyContent = "center";
+      tailTitle.style.gap = "10px";
+
+      const tailMainText = document.createElement("span");
+      tailMainText.textContent = "“the tail”";
+      tailMainText.style.fontSize = "40px";
+      tailMainText.style.fontStyle = "italic";
+      tailMainText.style.fontWeight = "bold";
+      tailMainText.style.fontFamily = "MS Mincho";
+      tailMainText.style.backgroundColor = "#F0A8C4";
+      tailMainText.style.color = "#222222";
+      tailMainText.style.display = "inline-block";
+
+      const tailSubText = document.createElement("span");
+      tailSubText.textContent = "effect";
+      tailSubText.style.width = "100px";
+      tailSubText.style.marginLeft = "35px";
+      tailSubText.style.backgroundColor = "#cccccc";
+      tailSubText.style.color = "#222222";
+      tailSubText.style.display = "inline-block";
+
+      tailTitle.appendChild(tailMainText);
+      tailTitle.appendChild(tailSubText);
+
+      tailUnlockable.appendChild(tailTitle);
+
+      // Icon (middle)
+      const tailIcon = document.createElement("img");
+      tailIcon.src = "assets/images/taileffect3.svg";
+      tailIcon.alt = "Tail Effect Icon";
+      tailIcon.style.width = "230px";
+      tailIcon.style.height = "200px";
+      tailIcon.style.margin = "0 15px";
+      tailUnlockable.appendChild(tailIcon);
+
+      // Equip Button (right)
+      const tailEquipButton = document.createElement("button");
+      tailEquipButton.textContent = isTailEffectEquipped ? "unequip" : "equip";
+      tailEquipButton.style.fontFamily = "CustomFont";
+      tailEquipButton.style.width = isTailEffectEquipped ? "145px" : "100px";
+      tailEquipButton.style.marginLeft = "10px";
+      tailEquipButton.style.marginRight = "100px";
+      tailEquipButton.style.fontSize = "34px";
+      tailEquipButton.style.backgroundColor = "#CCCCCC";
+      tailEquipButton.style.color = "#222222";
+      tailEquipButton.style.border = "none";
+      tailEquipButton.style.cursor = "pointer";
+
+      tailEquipButton.addEventListener("click", () => {
+          isTailEffectEquipped = !isTailEffectEquipped;
+          tailEquipButton.textContent = isTailEffectEquipped ? "unequip" : "equip";
+          tailEquipButton.style.width = isTailEffectEquipped ? "145px" : "100px";
+          localStorage.setItem("isTailEffectEquipped", isTailEffectEquipped);
+
+          if (isTailEffectEquipped) {
+              console.log("Tail effect equipped! Add your changes here.");
+          } else {
+              console.log("Tail effect unequipped! Revert changes here.");
+          }
+      });
+
+      tailEquipButton.addEventListener("mouseover", () => {
+          tailEquipButton.style.backgroundColor = "#222222";
+          tailEquipButton.style.color = "#CCCCCC";
+      });
+      tailEquipButton.addEventListener("mouseout", () => {
+          tailEquipButton.style.backgroundColor = "#cccccc";
+          tailEquipButton.style.color = "#222222";
+      });
+
+      tailUnlockable.appendChild(tailEquipButton);
+
+      unlockablesCenterWindow.appendChild(tailUnlockable);
   }
+
   if (!hasUnlockables) {
       // Re-enable flex layout if there are no unlockables
       unlockablesCenterWindow.style.display = "flex"; // Re-enable flex layout for normal behavior
@@ -654,6 +744,7 @@ function updateUnlockablesUI() {
       unlockablesCenterWindow.innerHTML = "nothing here... for now";
   }
 }
+
 
 function createUnlockableElement(mainText, subText, iconSrc) {
   const unlockable = document.createElement("div");
