@@ -719,6 +719,7 @@ function updateUnlockablesUI() {
           if (isTailEffectEquipped) {
               console.log("Tail effect equipped! Add your changes here.");
           } else {
+              unequipTailEffect();
               console.log("Tail effect unequipped! Revert changes here.");
           }
       });
@@ -743,6 +744,15 @@ function updateUnlockablesUI() {
       unlockablesCenterWindow.style.alignItems = "center";
       unlockablesCenterWindow.innerHTML = "nothing here... for now";
   }
+}
+
+function unequipTailEffect() {
+  console.log("Unequipping tail effect. Clearing trail and resetting state.");
+  trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+
+  // Reset related state
+  activeTrailSegments = []; // Assuming trail segments are tracked in this array
+  localStorage.setItem("isTailEffectEquipped", false);
 }
 
 // Call this function when the unlockables screen is shown
@@ -3015,9 +3025,14 @@ function startMoving(onMoveComplete) {
       break;
   }
 
-  // Draw the player's initial position on the trail canvas
-  trailCtx.fillStyle = player.color;
-  trailCtx.fillRect(player.x, player.y, player.size, player.size);
+  // Check if tail effect is equipped
+  const isTailEquipped = localStorage.getItem("isTailEffectEquipped") === "true";
+
+  // Clear trail if unequipped
+  if (!isTailEquipped) {
+    trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+    console.log("Tail effect unequipped. Trail cleared.");
+  }
 
   const doTheMove = () => {
     const newX = player.x + dx;
@@ -3042,6 +3057,13 @@ function startMoving(onMoveComplete) {
       // Update position
       player.x = newX;
       player.y = newY;
+
+      // Draw the player's trail only if the tail effect is equipped
+      if (isTailEquipped) {
+        trailCtx.fillStyle = player.color;
+        trailCtx.fillRect(player.x, player.y, player.size, player.size);
+      }
+
       drawPlayer();
       checkCheckpointCollision();
       if (currentLevel === 7) checkLevel7BlocksCollision(player);
@@ -3176,8 +3198,11 @@ function executeMoves() {
     if (moveQueue.length === 0 || isMoving) {
       if (movesProcessed === batchSize) {
         // Clear the trail only after all moves are executed
-        console.log("All moves processed, clearing trail.");
-        trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+        if (localStorage.getItem("isTailEffectEquipped") === "true") {
+          trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+          console.log("Trail cleared after all moves.");
+        }
+        isExecutingMoves = false; // Reset flag
       }
       return;
     }
@@ -3191,21 +3216,27 @@ function executeMoves() {
     startMoving(() => {
       console.log(`Move ${movesProcessed} complete.`);
       if (movesProcessed === batchSize) {
-        // Clear trail after the final move
-        console.log("Final move completed, clearing trail.");
-        trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+        if (localStorage.getItem("isTailEffectEquipped") === "true") {
+          trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+          console.log("Trail cleared after final move.");
+        }
         isExecutingMoves = false; // Reset flag
       } else {
-        // Process the next move
-        processMove();
+        processMove(); // Process the next move
       }
     });
   };
 
-  // Start processing the first move
-  processMove();
-}
+  if (localStorage.getItem("isTailEffectEquipped") !== "true") {
+    console.log("Trail effect unequipped. Forcing full trail clear.");
+    trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+    console.log(
+      `Canvas dimensions: ${trailCanvas.width}x${trailCanvas.height}.`
+    );
+  }
 
+  processMove(); // Start processing the first move
+}
 document.addEventListener("keydown", (event) => {
   if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) {
     const direction = event.key;
