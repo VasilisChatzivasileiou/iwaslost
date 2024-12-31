@@ -25,6 +25,85 @@
           background-repeat: repeat;
         }
         */
+
+        .trail-block {
+            position: fixed !important;
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+            z-index: 999999 !important;
+            transition: all 500ms ease;
+            transform: translate3d(0, 0, 0);
+            will-change: transform;
+        }
+
+        /* Make sure all controls and buttons stay below trail blocks */
+        .controls,
+        .controls button,
+        .reset-button,
+        .confirm-button,
+        .arrow,
+        [id^="duplicatedArrow"],
+        #gameCanvas,
+        .maze-container {
+            z-index: 1 !important;
+        }
+
+        /* Ensure the controls wrapper doesn't interfere with trail blocks */
+        .controls-wrapper {
+            z-index: 1 !important;
+        }
+
+        .buttons-container {
+            display: flex !important;
+            justify-content: flex-start !important;
+            gap: 5px;
+            align-items: center;
+            margin-left: 0px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .controls-wrapper {
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            gap: 0px;
+            margin-top: 5px;
+            width: 100%;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 5px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .counter-box {
+            width: 100px;
+            height: 50px;
+            background-color: #222222;
+            border: 2px solid #999999;
+            color: #999999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 25px;
+            font-family: "CustomFont";
+            box-sizing: border-box;
+            margin: 0;
+            padding: 4px 0 0 0;
+            line-height: 1;
+        }
+
+        .maze-container {
+            position: relative !important;
+            transform-style: preserve-3d !important;
+        }
       </style>
 </head>
 <body>
@@ -270,25 +349,26 @@
                     <div class="maze-container">
                         <canvas id="mazeCanvas"></canvas>
                     </div>
-                    <div class="controls-wrapper">
-                        <div id="timerDisplay" style="margin-top: 0px; color: #999999; font-size: 18px; text-align: center; font-family: 'CustomFont', sans-serif;">
+                    <div class="controls-wrapper" style="align-items: flex-start !important;">
+                        <div id="timerDisplay" style="margin-top: 0px; color: #999999; font-size: 18px; text-align: center; font-family: 'CustomFont', sans-serif; width: 100%;">
                             time: 00:00
                         </div>
-                        <div class="controls">
-                            <button data-direction="ArrowLeft" style="position: relative;">
-                                <div class="arrow" style="transform: rotate(180deg);"></div>
+                        <div class="controls" style="width: 100%; justify-content: center; z-index: 1 !important;">
+                            <button data-direction="ArrowLeft" style="position: relative; z-index: 1 !important;">
+                                <div class="arrow" style="transform: rotate(180deg); z-index: 1 !important;"></div>
                             </button>
-                            <button data-direction="ArrowUp" style="position: relative;">
-                                <div class="arrow" style="transform: rotate(-90deg);"></div>
+                            <button data-direction="ArrowUp" style="position: relative; z-index: 1 !important;">
+                                <div class="arrow" style="transform: rotate(-90deg); z-index: 1 !important;"></div>
                             </button>
-                            <button data-direction="ArrowDown" style="position: relative;">
-                                <div class="arrow" style="transform: rotate(90deg);"></div>
+                            <button data-direction="ArrowDown" style="position: relative; z-index: 1 !important;">
+                                <div class="arrow" style="transform: rotate(90deg); z-index: 1 !important;"></div>
                             </button>
-                            <button data-direction="ArrowRight" style="position: relative;">
-                                <div class="arrow"></div>
+                            <button data-direction="ArrowRight" style="position: relative; z-index: 1 !important;">
+                                <div class="arrow" style="z-index: 1 !important;"></div>
                             </button>
                         </div>
-                        <div class="buttons-container">
+                        <div class="buttons-container" style="display: flex !important; justify-content: flex-start !important; gap: 5px; align-items: center; margin-left: 4px; width: 100%;">
+                            <div class="counter-box" id="restartCounter">0</div>
                             <button id="inGameResetButton" style="position: relative;" class="reset-button">restart</button>
                             <button id="confirmButton" style="position: relative;" class="confirm-button">accept</button>
                         </div>

@@ -146,7 +146,7 @@ body {
   display: inline-block;
   height: 402px;
   width: 402px;
-  z-index: 0; /* Base element stays in its normal stacking context */
+  z-index: 1 !important; /* Base element stays in its normal stacking context */
 }
 
 .maze-container::after {
@@ -258,8 +258,10 @@ canvas {
   justify-content: center;
   flex-direction: column;
   align-items: center;
-  gap: 0px; /* Add space between the buttons */
+  gap: 0px;
   margin-top: 5px;
+  width: 100%;
+  z-index: 1 !important;
 }
 
 .controls {
@@ -267,6 +269,8 @@ canvas {
   justify-content: center;
   gap: 5px;
   margin-bottom: 5px;
+  position: relative;
+  z-index: 1 !important;
 }
 
 .controls button {
@@ -279,6 +283,8 @@ canvas {
   border: none;
   border-radius: 0px;
   cursor: pointer;
+  z-index: 1 !important;
+  position: relative;
 }
 
 .controls button:hover {
@@ -348,8 +354,12 @@ canvas {
 
 .buttons-container {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 5px;
+  align-items: center;
+  margin-left: 4px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 #levelAnnouncement {
@@ -1321,4 +1331,78 @@ input[type="range"] {
   z-index: 1000;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   width: 250px;
+}
+
+.button-with-counter {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  justify-content: flex-start;  /* Left align */
+  margin-left: 4px;
+  width: auto;
+}
+
+.counter-box {
+  width: 100px;
+  height: 50px;
+  background-color: #222222;
+  border: 2px solid #999999;
+  color: #999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;  /* Center the number */
+  font-size: 25px;
+  font-family: "CustomFont";
+  box-sizing: border-box;
+  margin: 0;
+  padding: 4px 0 0 0;  /* Remove left padding */
+  line-height: 1;
+}
+
+/* Update equipped state to only respond to brain palette */
+.counter-box.equipped {
+  background-color: #8A314E;
+  border-color: #FF6A99;
+  color: #FF6A99;
+}
+
+.trail-block {
+  position: absolute !important;
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+  z-index: 999999 !important;
+  transition: all 500ms ease;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+}
+
+/* Ensure all controls stay below trail blocks */
+.controls-wrapper {
+  z-index: 1 !important;
+}
+
+.controls {
+  z-index: 1 !important;
+}
+
+.controls button {
+  z-index: 1 !important;
+}
+
+.arrow {
+  z-index: 1 !important;
+}
+
+[id^="duplicatedArrow"] {
+  z-index: 1 !important;
+}
+
+#gameCanvas {
+  z-index: 1 !important;
+}
+
+.maze-container {
+  z-index: 1 !important;
+  position: relative;
 }

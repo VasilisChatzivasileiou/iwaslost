@@ -552,7 +552,7 @@ function updateUnlockablesUI() {
 
       // "The Brain" text with custom background
       const brainText = document.createElement("span");
-      brainText.textContent = "“the brain”";
+      brainText.textContent = "\"the brain\"";
       brainText.style.fontSize = "40px";
       brainText.style.fontStyle = "italic";
       brainText.style.fontWeight = "bold"; // Bold text
@@ -666,7 +666,7 @@ function updateUnlockablesUI() {
       tailTitle.style.gap = "10px";
 
       const tailMainText = document.createElement("span");
-      tailMainText.textContent = "“the tail”";
+      tailMainText.textContent = "\"the tail\"";
       tailMainText.style.fontSize = "40px";
       tailMainText.style.fontStyle = "italic";
       tailMainText.style.fontWeight = "bold";
@@ -1216,7 +1216,7 @@ function loadLevelCompletionTimes() {
 
     if (timerElement) {
       timerElement.textContent = `Time: ${time}`;
-      timerElement.style.display = "block"; // Make sure it’s visible
+      timerElement.style.display = "block"; // Make sure it's visible
       console.log(`Loaded timer for ${level}: ${time}`);
     } else {
       console.error(`Timer element with ID '${elementId}' not found. Check your HTML.`);
@@ -1564,7 +1564,7 @@ document.getElementById("logo").addEventListener("click", () => {
 
 let currentLevel = 1; // Start with level 1
 
-let playerSteps = []; // Stores the player’s moves
+let playerSteps = []; // Stores the player's moves
 let lastCorrectStep = 0; // Tracks the last correct step
 
 let levelAnnouncementTimeout = null; // Store timeout ID for the level announcement
@@ -1648,7 +1648,7 @@ function showHint() {
     hintLabel.style.display = "none";
   }, 1500);
 
-  // Case 1: Player hasn’t moved yet
+  // Case 1: Player hasn't moved yet
   if (playerSteps.length === 0) {
     highlightNextSteps(correctPath.slice(0, 2)); // Highlight first two buttons
     highlightPathOnMaze(correctPath.slice(0, 2), player.startX, player.startY);
@@ -2732,44 +2732,273 @@ trailCanvas.width = canvas.width;
 trailCanvas.height = canvas.height;
 const trailCtx = trailCanvas.getContext("2d");
 
+// Add these variables at the top level with other declarations
+let trailBlocks = []; // Store trail block positions
+let isTrailAnimating = false;
+let trailTimeout = null;
+
 function drawPlayer(cPlayer) {
   const isTailEquipped = localStorage.getItem("isTailEffectEquipped") === "true";
 
-  if (isTailEquipped) {
-    // Draw the player's current position on the trail canvas
-    trailCtx.fillStyle = player.color;
-    trailCtx.fillRect(player.x, player.y, player.size, player.size);
-  }
-
-  // Recolor the maze (on main canvas only)
+  // Draw everything except trail blocks first
   recolorMaze();
-
-  // Redraw fixed elements
   drawExit();
   drawCheckpoints();
-
-  // Handle Level 7 blocks separately
   if (currentLevel === 7) {
-    drawLevel7Blocks(ctx); // Redraw moving blocks
+    drawLevel7Blocks(ctx);
   }
-
-  // Overlay the trail canvas (to protect the trail from being recolored)
-  ctx.drawImage(trailCanvas, 0, 0);
-
   if (currentLevel === 6) {
     renderMazeWithGaps(ctx, gaps);
   }
 
-  // Draw hint if a comparison player is provided
   if (cPlayer) {
     ctx.fillStyle = "rgba(255, 255, 0, 0.5)";
     ctx.fillRect(cPlayer.x, cPlayer.y, cPlayer.size, cPlayer.size);
   }
 
-  // Draw the main player on top of everything
   ctx.fillStyle = player.color;
   ctx.fillRect(player.x, player.y, player.size, player.size);
+
+  // Draw trail blocks last so they're on top
+  if (isTailEquipped && !isTrailAnimating) {
+    trailCtx.fillStyle = player.color;
+    trailCtx.fillRect(player.x, player.y, player.size, player.size);
+    ctx.drawImage(trailCanvas, 0, 0);
+  }
 }
+
+function animateTrailMerge() {
+  if (!trailBlocks.length) return;
+  
+  isTrailAnimating = true;
+  
+  // Get counter position
+  const counterBox = document.querySelector('.counter-box');
+  const counterRect = counterBox.getBoundingClientRect();
+  const mazeContainer = document.querySelector('.maze-container');
+  const mazeRect = mazeContainer.getBoundingClientRect();
+  const canvas = document.getElementById('mazeCanvas');
+  const canvasRect = canvas.getBoundingClientRect();
+  
+  // Calculate target position relative to viewport
+  const targetX = counterRect.left + counterRect.width/2 - player.size/2;
+  const targetY = counterRect.top + counterRect.height/2 - player.size/2;
+  
+  // Store current counter value
+  const restartCounter = document.getElementById('restartCounter');
+  const currentCount = parseInt(restartCounter.textContent || '0');
+  const totalBlocks = trailBlocks.length;
+  
+  // Create absolute positioned divs for each trail block
+  const trailDivs = trailBlocks.map(block => {
+    const trailDiv = document.createElement('div');
+    trailDiv.className = 'trail-block';
+    
+    // Calculate initial position relative to viewport, accounting for canvas position
+    const initialX = canvasRect.left + block.x * (canvasRect.width / canvas.width);
+    const initialY = canvasRect.top + block.y * (canvasRect.height / canvas.height);
+    
+    trailDiv.style.cssText = `
+      position: fixed !important;
+      left: ${initialX}px;
+      top: ${initialY}px;
+      width: ${player.size * (canvasRect.width / canvas.width)}px;
+      height: ${player.size * (canvasRect.height / canvas.height)}px;
+      background-color: ${player.color};
+      transition: all 500ms ease;
+      z-index: 999999 !important;
+      pointer-events: none;
+    `;
+    document.body.appendChild(trailDiv);
+    return trailDiv;
+  });
+  
+  // Clear canvas trail
+  trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+  
+  // Start animation
+  requestAnimationFrame(() => {
+    trailDivs.forEach(div => {
+      div.style.left = `${targetX}px`;
+      div.style.top = `${targetY}px`;
+    });
+  });
+  
+  // After animation completes
+  setTimeout(() => {
+    // Remove trail divs
+    trailDivs.forEach(div => div.remove());
+    
+    // Show +X animation
+    restartCounter.textContent = `+${totalBlocks}`;
+    restartCounter.style.paddingTop = '4px';
+    
+    // Show final score after delay
+    setTimeout(() => {
+      restartCounter.textContent = (currentCount + totalBlocks).toString();
+      trailBlocks = [];
+      isTrailAnimating = false;
+    }, 500);
+  }, 550);
+}
+
+function fadeOutCenteredBlock(x, y, totalPoints) {
+  const startTime = Date.now();
+  const duration = 300; // Shorter fade duration
+  
+  function fade() {
+    const elapsed = Date.now() - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    
+    if (progress >= 1) {
+      // Clean up
+      trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+      trailBlocks = [];
+      isTrailAnimating = false;
+      document.querySelectorAll('.total-points').forEach(label => label.remove());
+      
+      // Final redraw
+      recolorMaze();
+      drawExit();
+      drawCheckpoints();
+      if (currentLevel === 7) drawLevel7Blocks(ctx);
+      if (currentLevel === 6) renderMazeWithGaps(ctx, gaps);
+      ctx.fillStyle = player.color;
+      ctx.fillRect(player.x, player.y, player.size, player.size);
+      return;
+    }
+    
+    // Simple fade out
+    const opacity = 1 - progress;
+    
+    // Draw fading block
+    trailCtx.fillStyle = `${player.color}${Math.floor(opacity * 255).toString(16).padStart(2, '0')}`;
+    trailCtx.fillRect(x, y, player.size, player.size);
+    
+    // Update total points label opacity
+    const totalLabel = document.querySelector('.total-points');
+    if (totalLabel) {
+      totalLabel.style.opacity = opacity;
+    }
+    
+    // Redraw everything
+    recolorMaze();
+    ctx.drawImage(trailCanvas, 0, 0);
+    drawExit();
+    drawCheckpoints();
+    if (currentLevel === 7) drawLevel7Blocks(ctx);
+    if (currentLevel === 6) renderMazeWithGaps(ctx, gaps);
+    ctx.fillStyle = player.color;
+    ctx.fillRect(player.x, player.y, player.size, player.size);
+    
+    requestAnimationFrame(fade);
+  }
+  
+  fade();
+}
+
+// Modify the startMoving function to handle trail animation
+function startMoving(onMoveComplete) {
+  if (isMoving) return;
+  
+  // Clear any existing trail animation timeout
+  if (trailTimeout) {
+    clearTimeout(trailTimeout);
+    trailTimeout = null;
+  }
+
+  isMoving = true;
+  const speed = 2;
+  const blockSize = 20; // Fixed block size
+  let dx = 0, dy = 0;
+  
+  switch (currentDirection) {
+    case "ArrowUp": dy = -speed; break;
+    case "ArrowDown": dy = speed; break;
+    case "ArrowLeft": dx = -speed; break;
+    case "ArrowRight": dx = speed; break;
+  }
+
+  const isTailEquipped = localStorage.getItem("isTailEffectEquipped") === "true";
+  const startX = player.x;
+  const startY = player.y;
+
+  const doTheMove = () => {
+    const newX = player.x + dx;
+    const newY = player.y + dy;
+
+    if (isCollision(newX, newY)) {
+      // Snap to grid
+      player.x = Math.round(player.x / blockSize) * blockSize;
+      player.y = Math.round(player.y / blockSize) * blockSize;
+      isMoving = false;
+
+      // Only add trail block if we've moved a full block
+      if (isTailEquipped) {
+        // Calculate blocks moved by counting 20-pixel increments
+        const distanceX = Math.abs(player.x - startX);
+        const distanceY = Math.abs(player.y - startY);
+        const blocksMovedX = Math.floor(distanceX / blockSize);
+        const blocksMovedY = Math.floor(distanceY / blockSize);
+        
+        // Use the larger distance for diagonal movement
+        const blocksMoved = Math.max(blocksMovedX, blocksMovedY);
+
+        if (blocksMoved > 0) {
+          // Add intermediate blocks along the path
+          for (let i = 1; i <= blocksMoved; i++) {
+            const ratio = i / blocksMoved;
+            const blockX = startX + Math.round((player.x - startX) * ratio);
+            const blockY = startY + Math.round((player.y - startY) * ratio);
+            
+            trailBlocks.push({ x: blockX, y: blockY });
+            console.log("Added trail block at:", { x: blockX, y: blockY });
+          trailCtx.fillStyle = player.color;
+            trailCtx.fillRect(blockX, blockY, player.size, player.size);
+          }
+          console.log(`Total blocks moved: ${blocksMoved}`);
+        }
+      }
+
+      drawPlayer();
+      soundEffect.currentTime = 0;
+      soundEffect.play();
+
+      checkCheckpointCollision();
+      if (currentLevel === 7) checkLevel7BlocksCollision(player);
+      checkWin();
+
+      if (onMoveComplete) onMoveComplete();
+    } else {
+      player.x = newX;
+      player.y = newY;
+
+      drawPlayer();
+      checkCheckpointCollision();
+      if (currentLevel === 7) checkLevel7BlocksCollision(player);
+      checkWin();
+
+      requestAnimationFrame(doTheMove);
+    }
+  };
+
+  requestAnimationFrame(doTheMove);
+}
+
+// Modify restartGame to clear trail state
+function restartGame() {
+  // ... existing restart code ...
+  
+  trailBlocks = [];
+  isTrailAnimating = false;
+  if (trailTimeout) {
+    clearTimeout(trailTimeout);
+    trailTimeout = null;
+  }
+  
+  // ... rest of restart code ...
+}
+
 function drawExit() {
   // Retrieve the exit color from the CSS variable
   const exitColor = getComputedStyle(document.documentElement)
@@ -2995,60 +3224,62 @@ function addDirectionToTracker(direction) {
 }
 
 function startMoving(onMoveComplete) {
-  if (isMoving) return; // Prevent overlapping movements
+  if (isMoving) return;
 
-  isMoving = true; // Lock movement
+  isMoving = true;
   const speed = 2;
-  const blockSize = player.size;
-  let dx = 0,
-    dy = 0;
+  const blockSize = 20; // Fixed block size
+  let dx = 0, dy = 0;
 
   switch (currentDirection) {
-    case "ArrowUp":
-      dx = 0;
-      dy = -speed;
-      break;
-    case "ArrowDown":
-      dx = 0;
-      dy = speed;
-      break;
-    case "ArrowLeft":
-      dx = -speed;
-      dy = 0;
-      break;
-    case "ArrowRight":
-      dx = speed;
-      dy = 0;
-      break;
+    case "ArrowUp": dy = -speed; break;
+    case "ArrowDown": dy = speed; break;
+    case "ArrowLeft": dx = -speed; break;
+    case "ArrowRight": dx = speed; break;
   }
 
   const isTailEquipped = localStorage.getItem("isTailEffectEquipped") === "true";
-  const uniqueTrailBlocks = new Set(); // Track unique blocks for this move 
-
-  if (isTailEquipped) {
-    trailCtx.fillStyle = player.color;
-    trailCtx.fillRect(player.x, player.y, player.size, player.size);
-    trailSquaresCount++;
-    console.log(`Trail square added. Current count: ${trailSquaresCount}`);
-  } else {
-    trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
-    console.log("Tail effect unequipped. Trail cleared.");
-  }
+  const startX = player.x;
+  const startY = player.y;
 
   const doTheMove = () => {
     const newX = player.x + dx;
     const newY = player.y + dy;
 
     if (isCollision(newX, newY)) {
+      // Snap to grid
       player.x = Math.round(player.x / blockSize) * blockSize;
       player.y = Math.round(player.y / blockSize) * blockSize;
       isMoving = false;
 
-      drawPlayer();
+      // Only add trail block if we've moved a full block
+      if (isTailEquipped) {
+        // Calculate blocks moved by counting 20-pixel increments
+        const distanceX = Math.abs(player.x - startX);
+        const distanceY = Math.abs(player.y - startY);
+        const blocksMovedX = Math.floor(distanceX / blockSize);
+        const blocksMovedY = Math.floor(distanceY / blockSize);
+        
+        // Use the larger distance for diagonal movement
+        const blocksMoved = Math.max(blocksMovedX, blocksMovedY);
 
-      const blockKey = `${Math.floor(player.x / blockSize)},${Math.floor(player.y / blockSize)}`;
-      uniqueTrailBlocks.add(blockKey);
-      
+        if (blocksMoved > 0) {
+          // Add intermediate blocks along the path
+          for (let i = 1; i <= blocksMoved; i++) {
+            const ratio = i / blocksMoved;
+            const blockX = startX + Math.round((player.x - startX) * ratio);
+            const blockY = startY + Math.round((player.y - startY) * ratio);
+            
+            trailBlocks.push({ x: blockX, y: blockY });
+            console.log("Added trail block at:", { x: blockX, y: blockY });
+        trailCtx.fillStyle = player.color;
+            trailCtx.fillRect(blockX, blockY, player.size, player.size);
+          }
+          console.log(`Total blocks moved: ${blocksMoved}`);
+        }
+      }
+
+      drawPlayer();
       soundEffect.currentTime = 0;
       soundEffect.play();
 
@@ -3056,20 +3287,10 @@ function startMoving(onMoveComplete) {
       if (currentLevel === 7) checkLevel7BlocksCollision(player);
       checkWin();
 
-      if (onMoveComplete) onMoveComplete(uniqueTrailBlocks);
+      if (onMoveComplete) onMoveComplete();
     } else {
       player.x = newX;
       player.y = newY;
-
-      const blockKey = `${Math.floor(player.x / blockSize)},${Math.floor(player.y / blockSize)}`;
-      uniqueTrailBlocks.add(blockKey);
-
-
-
-      if (isTailEquipped) {
-        trailCtx.fillStyle = player.color;
-        trailCtx.fillRect(player.x, player.y, player.size, player.size);
-      }
 
       drawPlayer();
       checkCheckpointCollision();
@@ -3148,6 +3369,12 @@ document.querySelectorAll(".controls button").forEach((button) => {
 async function restartGame() {
   console.log("Restarting game...");
 
+  // Reset counters with null checks
+  const restartCounter = document.getElementById('restartCounter');
+  if (restartCounter) {
+    restartCounter.textContent = '0';
+  }
+
   // Stop all active timers and asynchronous loops
   clearAllTimers();
   level7RunId++; // Increment to cancel async loops
@@ -3176,6 +3403,19 @@ async function restartGame() {
 
   // Hide win popup
   winPopup.style.display = "none";
+  
+  // Reset trail blocks but add initial position
+  trailBlocks = [];
+  const isTailEquipped = localStorage.getItem("isTailEffectEquipped") === "true";
+  if (isTailEquipped) {
+    trailBlocks.push({ x: player.x, y: player.y });
+    trailCtx.fillStyle = player.color;
+    trailCtx.fillRect(player.x, player.y, player.size, player.size);
+  }
+
+  // Update counter styles based on equipped state
+  updateCounterStyles();
+
   // Redraw the maze and player
   recolorMaze();
   drawPlayer();
@@ -3190,68 +3430,80 @@ async function restartGame() {
     initializeLevel7Blocks(true); // Reinitialize blocks
   }
 }
-let trailSquaresCount = 0; // Global counter for trail squares
+
+function updateCounterStyles() {
+  const isBrainPaletteEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
+  const counter = document.getElementById('restartCounter');
+  
+  if (counter) {
+    if (isBrainPaletteEquipped) {
+      counter.classList.add('equipped');
+    } else {
+      counter.classList.remove('equipped');
+    }
+  }
+}
+
+// Update the counter styles when the brain palette is toggled
+document.addEventListener('DOMContentLoaded', () => {
+  const unlockablesScreen = document.getElementById('unlockablesScreen');
+  if (unlockablesScreen) {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList') {
+          const brainPaletteButton = unlockablesScreen.querySelector('button');
+          if (brainPaletteButton) {
+            brainPaletteButton.addEventListener('click', updateCounterStyles);
+          }
+        }
+      });
+    });
+    
+    observer.observe(unlockablesScreen, { childList: true, subtree: true });
+  }
+});
 
 function executeMoves() {
   if (isExecutingMoves || moveQueue.length === 0) return; // Prevent overlap
   isExecutingMoves = true;
 
-  confirmMoves();
-
-  trailSquaresCount = 0; // Reset the counter for a new batch
-
-  const totalMoves = [...moveQueue]; // Clone the queue for tracking the batch
-  const batchSize = totalMoves.length; // Track the batch size for debugging
-  let movesProcessed = 0; // Count executed moves in this batch
-  const globalUniqueTrailBlocks = new Set();
-
-  console.log(`Executing batch of ${batchSize} moves:`, totalMoves);
+  // Clear any existing trail and reset trail blocks
+  trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+  const isTailEquipped = localStorage.getItem("isTailEffectEquipped") === "true";
+  
+  console.log("Starting new move sequence. Clearing trail blocks.");
+  // Reset trail blocks to only include current position
+  trailBlocks = [];
+  if (isTailEquipped) {
+    trailBlocks = [{ x: player.x, y: player.y }];
+    console.log("Initial trail block at:", { x: player.x, y: player.y });
+    trailCtx.fillStyle = player.color;
+    trailCtx.fillRect(player.x, player.y, player.size, player.size);
+  }
 
   const processMove = () => {
     if (moveQueue.length === 0 || isMoving) {
-      if (movesProcessed === batchSize) {
-        const trailDistance = uniqueTrailBlocks.size;
-        console.log(`Trail distance covered in this batch: ${trailDistance} blocks`);
-        isExecutingMoves = false; // Reset flag
+      if (!isMoving && trailBlocks.length > 0) {
+        console.log("Move sequence complete. Total trail blocks:", trailBlocks.length);
+        console.log("Trail block positions:", trailBlocks);
+        // All moves completed, start the merge animation
+        animateTrailMerge();
       }
+      isExecutingMoves = false;
       return;
     }
 
-    const direction = moveQueue.shift(); // Get the next move
-    currentDirection = direction; // Set the current direction
-    movesProcessed++; // Increment the processed moves count
-
-    console.log(`Processing move ${movesProcessed} of ${batchSize}: ${direction}`);
-
-    startMoving((moveTrailBlocks) => {
-      // Merge the blocks from the current move into the global set
-      for (const block of moveTrailBlocks) {
-        globalUniqueTrailBlocks.add(block);
-      }
-
-      console.log(`Move ${movesProcessed} complete. Unique trail blocks so far: ${globalUniqueTrailBlocks.size}`);
-
-      if (movesProcessed === batchSize) {
-        // Batch completed
-        const trailDistance = globalUniqueTrailBlocks.size;
-        console.log(`Final trail distance covered in this batch: ${trailDistance} blocks`);
-        isExecutingMoves = false; // Reset flag
-      } else {
-        processMove(); // Process the next move
-      }
+    const direction = moveQueue.shift();
+    currentDirection = direction;
+    startMoving(() => {
+      processMove(); // Process next move after current one completes
     });
   };
 
-  // Start processing the first move
   processMove();
 }
 
-function confirmMoves() {
-  // Clear the trail when confirming new moves
-  trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
-  console.log("New moves confirmed. Trail cleared.");
-}
-
+// Add keyboard controls
 document.addEventListener("keydown", (event) => {
   if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) {
     const direction = event.key;
