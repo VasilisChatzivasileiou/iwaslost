@@ -647,13 +647,11 @@ function updateUnlockablesUI() {
           equipButton.style.width = isBrainPaletteEquipped ? "145px" : "100px";
           localStorage.setItem("isBrainPaletteEquipped", isBrainPaletteEquipped);
 
-          console.log("Toggling equip state:", isBrainPaletteEquipped); // Debug log
-          applyGameColors(isBrainPaletteEquipped); // Call the function
-          updateCanvasBorder();        // Update canvas border
-          updateTrackerContainerStyle();        // Update tracker container style
-          updateTrackerItemStyles();            // Update tracker item styles
-          updateTrackerHighlightEffect();       // Update highlight effect styles
-          updateControlButtonStyles();          // Update control button styles
+          console.log("Toggling equip state:", isBrainPaletteEquipped);
+          applyGameColors(isBrainPaletteEquipped);
+          updateCanvasBorder();
+          updateTrackerContainerStyle();
+          updateControlButtonStyles();
       });
 
       equipButton.addEventListener("mouseover", () => {
@@ -2066,6 +2064,7 @@ function startGame(mazeImageSrc, exitPosition, playerPosition) {
   showLevelAnnouncement(currentLevel);
   const isEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
   applyGameColors(isEquipped); // Call the function to apply colors
+  updateControlButtonStyles(); // Add this line
   // Show the game container
   gameContainer.style.display = "block";
 
@@ -2220,8 +2219,9 @@ function isCollidingWithPlayer(block, player) {
 function drawLevel7Blocks(ctx) {
   if (!level7Blocks.length || currentLevel !== 7) return;
 
-  ctx.fillStyle = "#222222";
+  const isEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
   level7Blocks.forEach((block) => {
+    ctx.fillStyle = isEquipped ? "#8A314E" : "#222222";
     ctx.fillRect(block.x, block.y, block.width, block.height);
   });
 }
@@ -2329,6 +2329,13 @@ function showDeathScreen() {
   deathMessage.style.color = "#FF6A99"; // Accent color
   modalContent.appendChild(deathMessage);
 
+  const isEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
+  const buttonBgColor = isEquipped ? "#8A314E" : "#222222";
+  const buttonHoverBgColor = isEquipped ? "#F96D99" : "#999999";
+  const buttonTextColor = isEquipped ? "#FF6A99" : "#999999";
+  const buttonHoverTextColor = isEquipped ? "#8A314E" : "#222222";
+  const buttonBorderColor = isEquipped ? "#FF6A99" : "#999999";
+
   // Add Restart Button
   const restartButton = document.createElement("button");
   restartButton.style.fontFamily = "CustomFont";
@@ -2336,8 +2343,8 @@ function showDeathScreen() {
   restartButton.style.margin = "10px";
   restartButton.style.padding = "10px 20px";
   restartButton.style.fontSize = "1rem";
-  restartButton.style.backgroundColor = "#8A314E";
-  restartButton.style.color = "#fff";
+  restartButton.style.backgroundColor = buttonBgColor;
+  restartButton.style.color = buttonTextColor;
   restartButton.style.border = "none";
   restartButton.style.borderRadius = "0px";
   restartButton.style.cursor = "pointer";
@@ -2357,8 +2364,8 @@ function showDeathScreen() {
   menuButton.style.padding = "10px 20px";
   menuButton.style.fontSize = "1rem";
   menuButton.style.backgroundColor = "#222";
-  menuButton.style.color = "#FF6A99"; // Accent color
-  menuButton.style.border = "2px solid #8A314E";
+  menuButton.style.color = buttonTextColor;
+  menuButton.style.border = `2px solid ${buttonBorderColor}`;
   menuButton.style.borderRadius = "0px";
   menuButton.style.cursor = "pointer";
   menuButton.addEventListener("click", () => {
@@ -2371,19 +2378,21 @@ function showDeathScreen() {
 
   // Add hover effects
   restartButton.addEventListener("mouseover", () => {
-    restartButton.style.backgroundColor = "#FF6A99";
+    restartButton.style.backgroundColor = buttonHoverBgColor;
+    restartButton.style.color = buttonHoverTextColor;
   });
   restartButton.addEventListener("mouseout", () => {
-    restartButton.style.backgroundColor = "#8A314E";
+    restartButton.style.backgroundColor = buttonBgColor;
+    restartButton.style.color = buttonTextColor;
   });
 
   menuButton.addEventListener("mouseover", () => {
-    menuButton.style.backgroundColor = "#8A314E";
-    menuButton.style.color = "#fff";
+    menuButton.style.backgroundColor = buttonHoverBgColor;
+    menuButton.style.color = buttonHoverTextColor;
   });
   menuButton.addEventListener("mouseout", () => {
     menuButton.style.backgroundColor = "#222";
-    menuButton.style.color = "#FF6A99";
+    menuButton.style.color = buttonTextColor;
   });
 
   // Append modal content to overlay
@@ -3082,16 +3091,69 @@ function startMoving(onMoveComplete) {
 
 // Modify restartGame to clear trail state
 function restartGame() {
-  // ... existing restart code ...
-  
-  trailBlocks = [];
-  isTrailAnimating = false;
-  if (trailTimeout) {
-    clearTimeout(trailTimeout);
-    trailTimeout = null;
+  console.log("Restarting game...");
+
+  // Reset counters with null checks
+  const restartCounter = document.getElementById('restartCounter');
+  if (restartCounter) {
+    restartCounter.textContent = ''; // Empty instead of '0'
   }
+
+  // Stop all active timers and asynchronous loops
+  clearAllTimers();
+  level7RunId++; // Increment to cancel async loops
+  stopLevel7Blocks = true; // Ensure movement stops immediately
+
+  trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+
+  // Reset player and game state
+  playerSteps = [];
+  playerLastPositions = [];
+  lastCorrectStep = 0;
+  isMoving = false;
+  isExecutingMoves = false;
+  currentDirection = null;
+  nextDirection = null;
+  lastDirection = null;
+  moveQueue.length = 0;
+  moveCount = 0;
+
+  // Reset player position
+  player.x = player.startX;
+  player.y = player.startY;
+
+  // Clear tracker list
+  trackerList.innerHTML = "";
+
+  // Hide win popup
+  winPopup.style.display = "none";
   
-  // ... rest of restart code ...
+  // Reset trail blocks but add initial position
+  trailBlocks = [];
+  const isTailEquipped = localStorage.getItem("isTailEffectEquipped") === "true";
+  if (isTailEquipped) {
+    trailBlocks.push({ x: player.x, y: player.y });
+    trailCtx.fillStyle = player.color;
+    trailCtx.fillRect(player.x, player.y, player.size, player.size);
+  }
+
+  // Update counter styles based on equipped state
+  updateCounterStyles();
+  updateControlButtonStyles(); // Add this line
+
+  // Redraw the maze and player
+  recolorMaze();
+  drawPlayer();
+
+  // Restart timers and checkpoints
+  startTimer();
+  initializeCheckpoints();
+
+  if (currentLevel === 7) {
+    level7Blocks = [];
+    stopLevel7Blocks = true;
+    initializeLevel7Blocks(true); // Reinitialize blocks
+  }
 }
 
 function drawExit() {
@@ -3532,7 +3594,7 @@ async function restartGame() {
   // Reset counters with null checks
   const restartCounter = document.getElementById('restartCounter');
   if (restartCounter) {
-    restartCounter.textContent = '0';
+    restartCounter.textContent = ''; // Empty instead of '0'
   }
 
   // Stop all active timers and asynchronous loops
@@ -3575,6 +3637,7 @@ async function restartGame() {
 
   // Update counter styles based on equipped state
   updateCounterStyles();
+  updateControlButtonStyles(); // Add this line
 
   // Redraw the maze and player
   recolorMaze();
@@ -3923,4 +3986,293 @@ function returnToLevelSix() {
     
     // Start loading the image
     newImage.src = "level6(3).png";
+}
+
+function updateControlButtonStyles() {
+  const isEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
+  const inGameResetButton = document.getElementById("inGameResetButton");
+  const confirmButton = document.getElementById("confirmButton");
+
+  if (inGameResetButton && confirmButton) {
+    // Set colors based on brain palette state
+    const bgColor = isEquipped ? "#8A314E" : "#222222";
+    const textColor = isEquipped ? "#FF6A99" : "#999999";
+    const hoverBgColor = isEquipped ? "#F96D99" : "#999999";
+    const hoverTextColor = isEquipped ? "#8A314E" : "#222222";
+    const borderColor = isEquipped ? "#FF6A99" : "#999999";
+
+    // Update inGameResetButton
+    inGameResetButton.style.backgroundColor = bgColor;
+    inGameResetButton.style.color = textColor;
+    inGameResetButton.style.border = `2px solid ${borderColor}`;
+    inGameResetButton.onmouseover = () => {
+      inGameResetButton.style.backgroundColor = hoverBgColor;
+      inGameResetButton.style.color = hoverTextColor;
+    };
+    inGameResetButton.onmouseout = () => {
+      inGameResetButton.style.backgroundColor = bgColor;
+      inGameResetButton.style.color = textColor;
+    };
+
+    // Update confirmButton
+    confirmButton.style.backgroundColor = bgColor;
+    confirmButton.style.color = textColor;
+    confirmButton.style.border = `2px solid ${borderColor}`;
+    confirmButton.onmouseover = () => {
+      confirmButton.style.backgroundColor = hoverBgColor;
+      confirmButton.style.color = hoverTextColor;
+    };
+    confirmButton.onmouseout = () => {
+      confirmButton.style.backgroundColor = bgColor;
+      confirmButton.style.color = textColor;
+    };
+  }
+}
+
+// Call this function when brain palette is equipped/unequipped
+unlockablesButton.addEventListener('click', () => {
+  unlockablesScreen.style.display = 'flex';
+  updateUnlockablesUI();
+});
+
+// Add the updateControlButtonStyles call to the brain palette equip button click handler
+function updateUnlockablesUI() {
+  const unlockablesCenterWindow = document.getElementById("unlockablesCenterWindow");
+  unlockablesCenterWindow.innerHTML = "";
+
+  let hasUnlockables = false;
+
+  // Ensure "isEquipped" is initialized only once
+  let isBrainPaletteEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
+  let isTailEffectEquipped = localStorage.getItem("isTailEffectEquipped") === "true";
+
+  // Check if "The Brain" achievement is unlocked
+  if (achievementProgress.theBrain.status === "Unlocked") {
+      hasUnlockables = true;
+
+      unlockablesCenterWindow.innerHTML = "";
+
+      // Disable flex layout of the center window
+      unlockablesCenterWindow.style.display = "block"; // Switch to block layout for stacking
+      unlockablesCenterWindow.style.alignItems = "flex-start";
+
+      // Create the unlockable container for "The Brain"
+      const unlockable = document.createElement("div");
+      unlockable.style.display = "flex";
+      unlockable.style.justifyContent = "space-between";
+      unlockable.style.alignItems = "center";
+      unlockable.style.width = "90%";
+      unlockable.style.margin = "20px auto 0"; // Align to top with extra margin at the top
+      unlockable.style.padding = "0px"; // Increased padding for larger height
+      unlockable.style.backgroundColor = "#222222";
+      unlockable.style.borderRadius = "0px";
+      unlockable.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0)";
+      unlockable.style.color = "#CCCCCC";
+      unlockable.style.minHeight = "120px"; // Further increase height
+
+      // Title (left)
+      const title = document.createElement("div");
+      title.style.marginLeft = "70px";
+      title.style.width = "268px"; // Limit the width
+      title.style.fontSize = "29px"; // Adjust font size
+      title.style.fontWeight = "bold";
+      title.style.lineHeight = "1.2"; // Adjust line height for proper spacing
+      title.style.textAlign = "center"; // Center text within the title container
+      title.style.display = "flex";
+      title.style.flexDirection = "column"; // Ensure multi-line text is treated as a column
+      title.style.justifyContent = "center"; // Vertically align text
+      title.style.gap = "10px"; // Add spacing between lines
+
+      // "The Brain" text with custom background
+      const brainText = document.createElement("span");
+      brainText.textContent = "\"the brain\"";
+      brainText.style.fontSize = "40px";
+      brainText.style.fontStyle = "italic";
+      brainText.style.fontWeight = "bold"; // Bold text
+      brainText.style.fontFamily = "MS Mincho";
+      brainText.style.backgroundColor = "#cccccc";
+      brainText.style.color = "#D1406E";
+      brainText.style.padding = "0px"; // Padding inside the text box
+      brainText.style.borderRadius = "0px"; // Optional rounded corners
+      brainText.style.display = "inline-block"; // Ensure proper box rendering
+
+      // "Palette" text with custom background
+      const paletteText = document.createElement("span");
+      paletteText.style.width = "100px";
+      paletteText.style.marginLeft = "35px";
+      paletteText.textContent = "palette";
+      paletteText.style.backgroundColor = "#cccccc";
+      paletteText.style.color = "#222222";
+      paletteText.style.padding = "0px"; // Padding inside the text box
+      paletteText.style.borderRadius = "0px"; // Optional rounded corners
+      paletteText.style.display = "inline-block"; // Ensure proper box rendering
+
+      // Append the styled text elements to the title container
+      title.appendChild(brainText);
+      title.appendChild(paletteText);
+
+      unlockable.appendChild(title);
+
+      // Icon (middle)
+      const icon = document.createElement("img");
+      icon.src = "assets/images/brainpalette.svg"; // Path to the unlockable icon
+      icon.alt = "Brain Palette Icon";
+      icon.style.width = "200px"; // Adjust icon size
+      icon.style.height = "200px";
+      icon.style.margin = "0 15px"; // Add margin for spacing
+      unlockable.appendChild(icon);
+
+      // Equip Button (right)
+      const equipButton = document.createElement("button");
+      equipButton.textContent = isBrainPaletteEquipped ? "unequip" : "equip";
+      equipButton.style.fontFamily = "CustomFont";
+      equipButton.style.width = isBrainPaletteEquipped ? "145px" : "100px";
+      equipButton.style.marginLeft = "10px"; // Bring the button closer to the icon
+      equipButton.style.marginRight = "100px";
+      equipButton.style.padding = "0px 0px"; // Adjust padding for larger height
+      equipButton.style.fontSize = "34px";
+      equipButton.style.backgroundColor = "#CCCCCC";
+      equipButton.style.color = "#222222";
+      equipButton.style.border = "none";
+      equipButton.style.borderRadius = "0px";
+      equipButton.style.cursor = "pointer";
+
+      equipButton.addEventListener("click", () => {
+          isBrainPaletteEquipped = !isBrainPaletteEquipped;
+          equipButton.textContent = isBrainPaletteEquipped ? "unequip" : "equip";
+          equipButton.style.width = isBrainPaletteEquipped ? "145px" : "100px";
+          localStorage.setItem("isBrainPaletteEquipped", isBrainPaletteEquipped);
+
+          console.log("Toggling equip state:", isBrainPaletteEquipped);
+          applyGameColors(isBrainPaletteEquipped);
+          updateCanvasBorder();
+          updateTrackerContainerStyle();
+          updateControlButtonStyles();
+      });
+
+      equipButton.addEventListener("mouseover", () => {
+          equipButton.style.backgroundColor = "#222222";
+          equipButton.style.color = "#CCCCCC";
+      });
+      equipButton.addEventListener("mouseout", () => {
+          equipButton.style.backgroundColor = "#cccccc";
+          equipButton.style.color = "#222222";
+      });
+
+      unlockable.appendChild(equipButton);
+
+      // Append the unlockable to the center window
+      unlockablesCenterWindow.appendChild(unlockable);
+
+      applyGameColors(isBrainPaletteEquipped);
+  }
+
+  // Add a simple background for "The Tail" unlockable when unlocked
+  if (achievementProgress.theTail.status === "Unlocked") {
+      unlockablesCenterWindow.style.alignItems = "flex-start";
+      hasUnlockables = true;
+
+      const tailUnlockable = document.createElement("div");
+      tailUnlockable.style.display = "flex";
+      tailUnlockable.style.justifyContent = "space-between";
+      tailUnlockable.style.alignItems = "center";
+      tailUnlockable.style.width = "90%";
+      tailUnlockable.style.margin = "20px auto 0";
+      tailUnlockable.style.padding = "0px";
+      tailUnlockable.style.backgroundColor = "#222222";
+      tailUnlockable.style.color = "#CCCCCC";
+      tailUnlockable.style.minHeight = "120px";
+
+      // Title (left)
+      const tailTitle = document.createElement("div");
+      tailTitle.style.marginLeft = "70px";
+      tailTitle.style.width = "268px";
+      tailTitle.style.fontSize = "29px";
+      tailTitle.style.fontWeight = "bold";
+      tailTitle.style.lineHeight = "1.2";
+      tailTitle.style.textAlign = "center";
+      tailTitle.style.display = "flex";
+      tailTitle.style.flexDirection = "column";
+      tailTitle.style.justifyContent = "center";
+      tailTitle.style.gap = "10px";
+
+      const tailMainText = document.createElement("span");
+      tailMainText.textContent = "\"the tail\"";
+      tailMainText.style.fontSize = "40px";
+      tailMainText.style.fontStyle = "italic";
+      tailMainText.style.fontWeight = "bold";
+      tailMainText.style.fontFamily = "MS Mincho";
+      tailMainText.style.backgroundColor = "#F0A8C4";
+      tailMainText.style.color = "#222222";
+      tailMainText.style.display = "inline-block";
+
+      const tailSubText = document.createElement("span");
+      tailSubText.textContent = "effect";
+      tailSubText.style.width = "100px";
+      tailSubText.style.marginLeft = "35px";
+      tailSubText.style.backgroundColor = "#cccccc";
+      tailSubText.style.color = "#222222";
+      tailSubText.style.display = "inline-block";
+
+      tailTitle.appendChild(tailMainText);
+      tailTitle.appendChild(tailSubText);
+
+      tailUnlockable.appendChild(tailTitle);
+
+      // Icon (middle)
+      const tailIcon = document.createElement("img");
+      tailIcon.src = "assets/images/taileffect3.svg";
+      tailIcon.alt = "Tail Effect Icon";
+      tailIcon.style.width = "230px";
+      tailIcon.style.height = "200px";
+      tailIcon.style.margin = "0 15px";
+      tailUnlockable.appendChild(tailIcon);
+
+      // Equip Button (right)
+      const tailEquipButton = document.createElement("button");
+      tailEquipButton.textContent = isTailEffectEquipped ? "unequip" : "equip";
+      tailEquipButton.style.fontFamily = "CustomFont";
+      tailEquipButton.style.width = isTailEffectEquipped ? "145px" : "100px";
+      tailEquipButton.style.marginLeft = "10px";
+      tailEquipButton.style.marginRight = "100px";
+      tailEquipButton.style.fontSize = "34px";
+      tailEquipButton.style.backgroundColor = "#CCCCCC";
+      tailEquipButton.style.color = "#222222";
+      tailEquipButton.style.border = "none";
+      tailEquipButton.style.cursor = "pointer";
+
+      tailEquipButton.addEventListener("click", () => {
+          isTailEffectEquipped = !isTailEffectEquipped;
+          tailEquipButton.textContent = isTailEffectEquipped ? "unequip" : "equip";
+          tailEquipButton.style.width = isTailEffectEquipped ? "145px" : "100px";
+          localStorage.setItem("isTailEffectEquipped", isTailEffectEquipped);
+
+          if (isTailEffectEquipped) {
+              console.log("Tail effect equipped! Add your changes here.");
+          } else {
+              unequipTailEffect();
+              console.log("Tail effect unequipped! Revert changes here.");
+          }
+      });
+
+      tailEquipButton.addEventListener("mouseover", () => {
+          tailEquipButton.style.backgroundColor = "#222222";
+          tailEquipButton.style.color = "#CCCCCC";
+      });
+      tailEquipButton.addEventListener("mouseout", () => {
+          tailEquipButton.style.backgroundColor = "#cccccc";
+          tailEquipButton.style.color = "#222222";
+      });
+
+      tailUnlockable.appendChild(tailEquipButton);
+
+      unlockablesCenterWindow.appendChild(tailUnlockable);
+  }
+
+  if (!hasUnlockables) {
+      // Re-enable flex layout if there are no unlockables
+      unlockablesCenterWindow.style.display = "flex"; // Re-enable flex layout for normal behavior
+      unlockablesCenterWindow.style.alignItems = "center";
+      unlockablesCenterWindow.innerHTML = "nothing here... for now";
+  }
 }
