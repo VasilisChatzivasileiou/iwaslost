@@ -2729,24 +2729,27 @@ trailCanvas.height = canvas.height;
 const trailCtx = trailCanvas.getContext("2d");
 
 function drawPlayer(cPlayer) {
-  // Check if tail effect is equipped
-  const isTailEffectEquipped = localStorage.getItem("isTailEffectEquipped") === "true";
+  const isTailEquipped = localStorage.getItem("isTailEffectEquipped") === "true";
 
-  if (isTailEffectEquipped) {
+  if (isTailEquipped) {
+    // Draw the player's current position on the trail canvas
     trailCtx.fillStyle = player.color;
     trailCtx.fillRect(player.x, player.y, player.size, player.size);
   }
-  recolorMaze();
 
+  // Recolor the maze (on main canvas only)
+  recolorMaze();
 
   // Redraw fixed elements
   drawExit();
   drawCheckpoints();
 
-  // Draw Level 7 blocks if applicable
+  // Handle Level 7 blocks separately
   if (currentLevel === 7) {
-    drawLevel7Blocks(ctx);
+    drawLevel7Blocks(ctx); // Redraw moving blocks
   }
+
+  // Overlay the trail canvas (to protect the trail from being recolored)
   ctx.drawImage(trailCanvas, 0, 0);
 
   if (currentLevel === 6) {
@@ -2759,20 +2762,9 @@ function drawPlayer(cPlayer) {
     ctx.fillRect(cPlayer.x, cPlayer.y, cPlayer.size, cPlayer.size);
   }
 
-
-  // Draw the main player
+  // Draw the main player on top of everything
   ctx.fillStyle = player.color;
-  ctx.fillRect(player.x, player.y, player.size, player.size); 
-
-  // Debugging: log if the player is outside bounds
-  if (
-    player.x < 0 || 
-    player.y < 0 || 
-    player.x > mazeContainer.clientWidth || 
-    player.y > mazeContainer.clientHeight
-  ) {
-    console.log("Player outside of mazeContainer bounds.");
-  }
+  ctx.fillRect(player.x, player.y, player.size, player.size);
 }
 function drawExit() {
   // Retrieve the exit color from the CSS variable
@@ -3028,8 +3020,12 @@ function startMoving(onMoveComplete) {
   // Check if tail effect is equipped
   const isTailEquipped = localStorage.getItem("isTailEffectEquipped") === "true";
 
-  // Clear trail if unequipped
-  if (!isTailEquipped) {
+  // Draw the player's initial position on the trail canvas
+  if (isTailEquipped) {
+    trailCtx.fillStyle = player.color;
+    trailCtx.fillRect(player.x, player.y, player.size, player.size);
+  } else {
+    // Clear the trail if the tail effect is not equipped
     trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
     console.log("Tail effect unequipped. Trail cleared.");
   }
@@ -3169,7 +3165,6 @@ async function restartGame() {
 
   // Hide win popup
   winPopup.style.display = "none";
-
   // Redraw the maze and player
   recolorMaze();
   drawPlayer();
@@ -3187,6 +3182,7 @@ async function restartGame() {
 function executeMoves() {
   if (isExecutingMoves || moveQueue.length === 0) return; // Prevent overlap
   isExecutingMoves = true;
+  confirmMoves()
 
   const totalMoves = [...moveQueue]; // Clone the queue for tracking the batch
   const batchSize = totalMoves.length; // Track the batch size for debugging
@@ -3197,11 +3193,8 @@ function executeMoves() {
   const processMove = () => {
     if (moveQueue.length === 0 || isMoving) {
       if (movesProcessed === batchSize) {
-        // Clear the trail only after all moves are executed
-        if (localStorage.getItem("isTailEffectEquipped") === "true") {
-          trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
-          console.log("Trail cleared after all moves.");
-        }
+        // Batch complete, trail persists until new moves are confirmed
+        console.log("All moves in batch processed. Trail persists.");
         isExecutingMoves = false; // Reset flag
       }
       return;
@@ -3216,10 +3209,8 @@ function executeMoves() {
     startMoving(() => {
       console.log(`Move ${movesProcessed} complete.`);
       if (movesProcessed === batchSize) {
-        if (localStorage.getItem("isTailEffectEquipped") === "true") {
-          trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
-          console.log("Trail cleared after final move.");
-        }
+        // Batch completed
+        console.log("Final move completed. Trail persists until confirmation.");
         isExecutingMoves = false; // Reset flag
       } else {
         processMove(); // Process the next move
@@ -3227,16 +3218,19 @@ function executeMoves() {
     });
   };
 
-  if (localStorage.getItem("isTailEffectEquipped") !== "true") {
-    console.log("Trail effect unequipped. Forcing full trail clear.");
-    trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
-    console.log(
-      `Canvas dimensions: ${trailCanvas.width}x${trailCanvas.height}.`
-    );
-  }
-
-  processMove(); // Start processing the first move
+  // Start processing the first move
+  processMove();
 }
+
+function confirmMoves() {
+  // Clear the trail when confirming new moves
+  trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+  console.log("New moves confirmed. Trail cleared.");
+
+  // Execute the moves
+  executeMoves();
+}
+
 document.addEventListener("keydown", (event) => {
   if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) {
     const direction = event.key;
