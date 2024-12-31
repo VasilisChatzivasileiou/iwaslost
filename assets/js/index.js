@@ -2999,6 +2999,7 @@ function startMoving(onMoveComplete) {
 
   isMoving = true; // Lock movement
   const speed = 2;
+  const blockSize = player.size;
   let dx = 0,
     dy = 0;
 
@@ -3021,15 +3022,15 @@ function startMoving(onMoveComplete) {
       break;
   }
 
-  // Check if tail effect is equipped
   const isTailEquipped = localStorage.getItem("isTailEffectEquipped") === "true";
+  const uniqueTrailBlocks = new Set(); // Track unique blocks for this move 
 
-  // Draw the player's initial position on the trail canvas
   if (isTailEquipped) {
     trailCtx.fillStyle = player.color;
     trailCtx.fillRect(player.x, player.y, player.size, player.size);
+    trailSquaresCount++;
+    console.log(`Trail square added. Current count: ${trailSquaresCount}`);
   } else {
-    // Clear the trail if the tail effect is not equipped
     trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
     console.log("Tail effect unequipped. Trail cleared.");
   }
@@ -3039,26 +3040,32 @@ function startMoving(onMoveComplete) {
     const newY = player.y + dy;
 
     if (isCollision(newX, newY)) {
-      // Handle collision
-      player.x = Math.round(player.x / speed) * speed;
-      player.y = Math.round(player.y / speed) * speed;
-      isMoving = false; // Unlock movement
+      player.x = Math.round(player.x / blockSize) * blockSize;
+      player.y = Math.round(player.y / blockSize) * blockSize;
+      isMoving = false;
 
+      drawPlayer();
+
+      const blockKey = `${Math.floor(player.x / blockSize)},${Math.floor(player.y / blockSize)}`;
+      uniqueTrailBlocks.add(blockKey);
+      
       soundEffect.currentTime = 0;
       soundEffect.play();
 
-      drawPlayer();
       checkCheckpointCollision();
       if (currentLevel === 7) checkLevel7BlocksCollision(player);
       checkWin();
 
-      if (onMoveComplete) onMoveComplete(); // Notify move completion
+      if (onMoveComplete) onMoveComplete(uniqueTrailBlocks);
     } else {
-      // Update position
       player.x = newX;
       player.y = newY;
 
-      // Draw the player's trail only if the tail effect is equipped
+      const blockKey = `${Math.floor(player.x / blockSize)},${Math.floor(player.y / blockSize)}`;
+      uniqueTrailBlocks.add(blockKey);
+
+
+
       if (isTailEquipped) {
         trailCtx.fillStyle = player.color;
         trailCtx.fillRect(player.x, player.y, player.size, player.size);
@@ -3183,22 +3190,28 @@ async function restartGame() {
     initializeLevel7Blocks(true); // Reinitialize blocks
   }
 }
+let trailSquaresCount = 0; // Global counter for trail squares
+
 function executeMoves() {
   if (isExecutingMoves || moveQueue.length === 0) return; // Prevent overlap
   isExecutingMoves = true;
-  confirmMoves()
+
+  confirmMoves();
+
+  trailSquaresCount = 0; // Reset the counter for a new batch
 
   const totalMoves = [...moveQueue]; // Clone the queue for tracking the batch
   const batchSize = totalMoves.length; // Track the batch size for debugging
   let movesProcessed = 0; // Count executed moves in this batch
+  const globalUniqueTrailBlocks = new Set();
 
   console.log(`Executing batch of ${batchSize} moves:`, totalMoves);
 
   const processMove = () => {
     if (moveQueue.length === 0 || isMoving) {
       if (movesProcessed === batchSize) {
-        // Batch complete, trail persists until new moves are confirmed
-        console.log("All moves in batch processed. Trail persists.");
+        const trailDistance = uniqueTrailBlocks.size;
+        console.log(`Trail distance covered in this batch: ${trailDistance} blocks`);
         isExecutingMoves = false; // Reset flag
       }
       return;
@@ -3210,11 +3223,18 @@ function executeMoves() {
 
     console.log(`Processing move ${movesProcessed} of ${batchSize}: ${direction}`);
 
-    startMoving(() => {
-      console.log(`Move ${movesProcessed} complete.`);
+    startMoving((moveTrailBlocks) => {
+      // Merge the blocks from the current move into the global set
+      for (const block of moveTrailBlocks) {
+        globalUniqueTrailBlocks.add(block);
+      }
+
+      console.log(`Move ${movesProcessed} complete. Unique trail blocks so far: ${globalUniqueTrailBlocks.size}`);
+
       if (movesProcessed === batchSize) {
         // Batch completed
-        console.log("Final move completed. Trail persists until confirmation.");
+        const trailDistance = globalUniqueTrailBlocks.size;
+        console.log(`Final trail distance covered in this batch: ${trailDistance} blocks`);
         isExecutingMoves = false; // Reset flag
       } else {
         processMove(); // Process the next move
@@ -3230,9 +3250,6 @@ function confirmMoves() {
   // Clear the trail when confirming new moves
   trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
   console.log("New moves confirmed. Trail cleared.");
-
-  // Execute the moves
-  executeMoves();
 }
 
 document.addEventListener("keydown", (event) => {
