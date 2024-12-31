@@ -1000,7 +1000,11 @@ document.getElementById("confirmReset").addEventListener("click", () => {
     localStorage.removeItem("pathOneCompleted");
     localStorage.removeItem("pathTwoCompleted");
     localStorage.removeItem("isBrainPaletteEquipped"); // Clear palette state
+    localStorage.removeItem("isTailEffectEquipped"); // Clear tail effect state
   }
+
+  trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+  console.log("Trail effect cleared on data reset.");
 
   // Reset colors to default
   resetColorsToDefault();
