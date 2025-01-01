@@ -514,9 +514,15 @@ let checkpoints = []; // Change to an array to hold multiple checkpoints
 
 function initializeCheckpoints() {
     checkpoints = [];
-    checkpointsTouched = { first: false, second: false }; // Reset state
-
+    
+    // For level 8, load the saved path data instead of resetting
     if (currentLevel === 8) {
+        let pathsCompleted = JSON.parse(localStorage.getItem('level8Paths') || '{"first": false, "second": false}');
+        checkpointsTouched = { 
+            first: pathsCompleted.first, 
+            second: pathsCompleted.second 
+        };
+        
         const checkpoint1 = { x: 300, y: 0, size: 20, touched: false, solid: false };
         const checkpoint2 = { x: 60, y: 0, size: 20, touched: false, solid: false };
         checkpoints.push(checkpoint1, checkpoint2);
@@ -601,12 +607,39 @@ function checkCheckpointCollision() {
             });
             console.log("Return gap added:", gaps); // Debug log
             
-            // Redraw everything to show changes
-            recolorMaze();
-            renderMazeWithGaps(ctx, gaps);
-            drawCheckpoints();
-            drawPlayer();
             shouldRedraw = true;
+        } else if (currentLevel === 9) {
+            // For level 9, handle the checkpoint becoming solid
+            if (isPlayerOnCheckpoint && !checkpoint.touched) {
+                checkpoint.touched = true;
+                shouldRedraw = true;
+            } else if (checkpoint.touched && !checkpoint.solid && !isPlayerOnCheckpoint) {
+                // If player has touched the checkpoint and is no longer on it, make it solid
+                checkpoint.solid = true;
+                shouldRedraw = true;
+            }
+        } else if (currentLevel === 8) {
+            // For level 8, track each checkpoint separately
+            if (isPlayerOnCheckpoint && !checkpoint.touched) {
+                checkpoint.touched = true;
+                if (index === 0) {
+                    checkpointsTouched.first = true;
+                } else if (index === 1) {
+                    checkpointsTouched.second = true;
+                }
+                console.log("Level 8 checkpoints:", checkpointsTouched); // Debug log
+                shouldRedraw = true;
+
+                // Check if both checkpoints are touched and update achievement progress
+                if (checkpointsTouched.first && checkpointsTouched.second) {
+                    achievementProgress.theBrain = {
+                        progress: 100,
+                        status: "Unlocked"
+                    };
+                    saveAchievementProgress();
+                    console.log("Brain achievement progress updated:", achievementProgress);
+                }
+            }
         }
     });
 
@@ -1293,13 +1326,11 @@ function resetAchievementsAndUnlockables() {
   achievementProgress = {
     theBrain: {
       title: "The Brain",
-      
       status: "Locked", // Reset to locked
       progress: 0, // Reset progress
     },
     theTail: {
       title: "The Tail",
-      
       status: "Locked", // Reset to locked
       progress: 0, // Reset progress
     },
@@ -1309,6 +1340,9 @@ function resetAchievementsAndUnlockables() {
       status: "Locked"
     }
   };
+
+  // Reset level 8 paths
+  localStorage.setItem('level8Paths', JSON.stringify({"first": false, "second": false}));
 
   // Save updated achievements to localStorage or file
   saveAchievementProgress();
@@ -1321,16 +1355,31 @@ function resetAchievementsAndUnlockables() {
 }
 
 function resetUnlockables() {
-  // Clear unlockables data
-  
+    // Clear unlockables data and unequip all items
+    localStorage.removeItem("isBrainPaletteEquipped");
+    localStorage.removeItem("isTailEffectEquipped");
+    localStorage.removeItem("isSoulAppearanceEquipped");
+    localStorage.removeItem("hasSecretKey");
 
-  // Update the UI to show no unlockables
-  const unlockablesCenterWindow = document.getElementById("unlockablesCenterWindow");
-  unlockablesCenterWindow.innerHTML = "nothing here... for now";
+    // Update the UI to show no unlockables
+    const unlockablesCenterWindow = document.getElementById("unlockablesCenterWindow");
+    unlockablesCenterWindow.innerHTML = "nothing here... for now";
 
-  // Reset styles to default
-  unlockablesCenterWindow.style.display = "flex";
-  applyGameColors(false); // Revert game colors to default
+    // Reset styles to default
+    unlockablesCenterWindow.style.display = "flex";
+    applyGameColors(false); // Revert game colors to default
+    updateCanvasBorder();
+    updateTrackerContainerStyle();
+    updateControlButtonStyles();
+
+    // Clear any trail effects
+    if (trailCtx) {
+        trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+    }
+    trailBlocks = [];
+
+    // Redraw player with default appearance
+    drawPlayer();
 }
 
 
@@ -2381,69 +2430,73 @@ async function moveLevel7BlocksWithDelay() {
 }
 
 async function smoothMoveBlocks(isMovingToStart) {
-  const steps = 60; // Number of steps for smooth movement (~60 FPS)
-  const stepDuration = 500 / steps; // Duration of each step
+    const steps = 60; // Number of steps for smooth movement (~60 FPS)
+    const stepDuration = 500 / steps; // Duration of each step
 
-  for (let i = 0; i < steps; i++) { 
-      if (stopLevel7Blocks) return; // Exit immediately if movement stops
+    for (let i = 0; i < steps; i++) { 
+        if (stopLevel7Blocks) return; // Exit immediately if movement stops
 
-      level7Blocks.forEach((block) => {
-          // Determine the target position dynamically
-          const targetX = isMovingToStart ? block.startX : block.endX;
-          const targetY = isMovingToStart ? block.startY : block.endY;
+        level7Blocks.forEach((block) => {
+            // Determine the target position dynamically
+            const targetX = isMovingToStart ? block.startX : block.endX;
+            const targetY = isMovingToStart ? block.startY : block.endY;
 
-          const remainingDistanceX = targetX - block.x;
-          const remainingDistanceY = targetY - block.y;
+            const remainingDistanceX = targetX - block.x;
+            const remainingDistanceY = targetY - block.y;
 
-          // Smoothly distribute the remaining distance
-          const distanceX = remainingDistanceX / (steps - i);
-          const distanceY = remainingDistanceY / (steps - i);
+            // Smoothly distribute the remaining distance
+            const distanceX = remainingDistanceX / (steps - i);
+            const distanceY = remainingDistanceY / (steps - i);
 
-          // Update block position
-          block.x += distanceX;
-          block.y += distanceY;
+            // Update block position
+            block.x += distanceX;
+            block.y += distanceY;
 
-      // Check for collision with player
-          if (isCollidingWithPlayer(block, player)) {
-        // Calculate new player position if pushed by block
-              const newPlayerX = player.x + distanceX;
-              const newPlayerY = player.y + distanceY;
+            // Check for collision with player
+            if (isCollidingWithPlayer(block, player)) {
+                // Calculate new player position if pushed by block
+                const newPlayerX = player.x + distanceX;
+                const newPlayerY = player.y + distanceY;
 
-        // Check if this push would result in a wall collision
-              if (isCollision(newPlayerX, newPlayerY, player)) {
-          // Only kill if we're actually moving (not at start/end positions)
-          const atStartPos = Math.abs(block.x - block.startX) < 0.1 && Math.abs(block.y - block.startY) < 0.1;
-          const atEndPos = Math.abs(block.x - block.endX) < 0.1 && Math.abs(block.y - block.endY) < 0.1;
-          if (!atStartPos && !atEndPos) {
-            console.log("Block pushed player into wall - DEATH!");
-            handlePlayerDeath();
-            stopLevel7Blocks = true;
-            return;
-          }
-        } else {
-          // If no wall collision, move with the block
-              player.x = newPlayerX;
-              player.y = newPlayerY;
+                // Check if this push would result in a wall collision
+                if (isCollision(newPlayerX, newPlayerY, player)) {
+                    // Only kill if we're actually moving (not at start/end positions)
+                    const atStartPos = Math.abs(block.x - block.startX) < 0.1 && Math.abs(block.y - block.startY) < 0.1;
+                    const atEndPos = Math.abs(block.x - block.endX) < 0.1 && Math.abs(block.y - block.endY) < 0.1;
+                    if (!atStartPos && !atEndPos) {
+                        console.log("Block pushed player into wall - DEATH!");
+                        handlePlayerDeath();
+                        stopLevel7Blocks = true;
+                        return;
+                    }
+                } else {
+                    // If no wall collision, move with the block
+                    player.x = newPlayerX;
+                    player.y = newPlayerY;
+                }
+            }
+        });
+
+        // Redraw everything
+        try {
+            await recolorMaze();
+            drawLevel7Blocks(ctx);
+            ctx.drawImage(trailCanvas, 0, 0);
+            drawPlayer();
+        } catch (error) {
+            console.error("Error during redraw:", error);
         }
-          }
-      });
 
-    // Redraw everything
-      recolorMaze();
-    drawLevel7Blocks(ctx);
-    ctx.drawImage(trailCanvas, 0, 0);
-      drawPlayer();
+        await new Promise((resolve) => setTimeout(resolve, stepDuration));
+    }
 
-      await new Promise((resolve) => setTimeout(resolve, stepDuration));
-  }
+    if (stopLevel7Blocks) return;
 
-  if (stopLevel7Blocks) return;
-
-  // Snap blocks to their target positions
-  level7Blocks.forEach((block) => {
-    block.x = isMovingToStart ? block.startX : block.endX;
-    block.y = isMovingToStart ? block.startY : block.endY;
-  });
+    // Snap blocks to their target positions
+    level7Blocks.forEach((block) => {
+        block.x = isMovingToStart ? block.startX : block.endX;
+        block.y = isMovingToStart ? block.startY : block.endY;
+    });
 }
 
 function isCollidingWithPlayer(block, player) {
@@ -2791,64 +2844,80 @@ function goToNextLevel() {
 }
 
 function checkWin(bypass = false) {
-  if (
-      (player.x < exit.x + exit.size &&
-          player.x + player.size > exit.x &&
-          player.y < exit.y + exit.size &&
-          player.y + player.size > exit.y) ||
-      bypass
-  ) {
-      clearInterval(timerInterval);
+    if (
+        (player.x < exit.x + exit.size &&
+            player.x + player.size > exit.x &&
+            player.y < exit.y + exit.size &&
+            player.y + player.size > exit.y) ||
+        bypass
+    ) {
+        clearInterval(timerInterval);
 
-      const elapsedTime = document
-          .getElementById("timerDisplay")
-          .textContent.split(": ")[1];
-      levelCompletionTimes[`level${currentLevel}`] = elapsedTime;
+        const elapsedTime = document
+            .getElementById("timerDisplay")
+            .textContent.split(": ")[1];
+        levelCompletionTimes[`level${currentLevel}`] = elapsedTime;
 
-      saveLevelCompletionTime(`level${currentLevel}`, elapsedTime);
-      updateLevelCompletionTime();
+        saveLevelCompletionTime(`level${currentLevel}`, elapsedTime);
+        updateLevelCompletionTime();
 
-      if (currentLevel === 8) {
-          // Check Level 8 progress and unlock achievement
-          const progressFill = document.querySelector(".progressFill");
-          const progressPercentage = document.querySelector(".progressPercentage");
+        if (currentLevel === 8) {
+            // Check Level 8 progress and unlock achievement
+            const progressFill = document.querySelector(".progressFill.theBrain");
+            const progressPercentage = document.querySelector(".progressPercentage.theBrain");
+            const achievementStatus = document.querySelector(".achievementStatus.theBrain");
 
-          let progress = 0;
-          if (checkpointsTouched.first) progress += 50;
-          if (checkpointsTouched.second) progress += 50;
+            // Get stored path data
+            let pathsCompleted = JSON.parse(localStorage.getItem('level8Paths') || '{"first": false, "second": false}');
+            
+            // Update paths based on which checkpoints were touched
+            if (checkpointsTouched.first) {
+                pathsCompleted.first = true;
+            }
+            if (checkpointsTouched.second) {
+                pathsCompleted.second = true;
+            }
+            
+            // Save updated path data
+            localStorage.setItem('level8Paths', JSON.stringify(pathsCompleted));
 
-          progressFill.style.width = `${progress}%`;
-          progressPercentage.textContent = `${progress}%`;
+            // Calculate progress based on completed paths
+            let progress = 0;
+            if (pathsCompleted.first) progress += 50;
+            if (pathsCompleted.second) progress += 50;
 
-          if (progress === 100) {
-              const achievementStatus = document.querySelector(".achievementStatus");
-              achievementStatus.innerHTML = `Unlocked<br>Brain Palette`;
-              console.log("Achievement unlocked: The Brain");
+            // Update achievement progress
+            achievementProgress.theBrain = {
+                progress: progress,
+                status: progress === 100 ? "Unlocked" : "Locked"
+            };
+            saveAchievementProgress();
 
-              achievementProgress.theBrain.status = "Unlocked";
-              achievementProgress.theBrain.progress = 100;
-              saveAchievementProgress();
-          }
-      }
+            if (progressFill) progressFill.style.width = `${progress}%`;
+            if (progressPercentage) progressPercentage.textContent = `${progress}%`;
+            if (achievementStatus && progress === 100) {
+                achievementStatus.innerHTML = `Unlocked<br>Brain Palette`;
+            }
+        }
 
-      // Display the win popup
-      winPopup.style.display = "block";
+        // Display the win popup
+        winPopup.style.display = "block";
+        const moveCountMessage = document.getElementById("moveCountMessage");
+        moveCountMessage.innerHTML = `You won and it took you ${moveCount} moves.<br>
+            your time was ${elapsedTime}.<br>..loser`;
 
-      moveCountMessage.innerHTML = `You won and it took you ${moveCount} moves.<br>
-          your time was ${elapsedTime}.<br>..loser`;
+        const nextLevelButton = document.getElementById("nextLevelButton");
+        const menuButtonPopup = document.getElementById("menuButtonPopup");
 
-      const nextLevelButton = document.getElementById("nextLevelButton");
-      const menuButtonPopup = document.getElementById("menuButtonPopup");
-
-      if (currentLevel < 9) {
-          nextLevelButton.style.display = "block";
-          menuButtonPopup.style.display = "none";
-      } else {
-          nextLevelButton.style.display = "none";
-          menuButtonPopup.style.display = "block";
-      }
-      updateLevelCompletionTime();
-  }
+        if (currentLevel < 9) {
+            nextLevelButton.style.display = "block";
+            menuButtonPopup.style.display = "none";
+        } else {
+            nextLevelButton.style.display = "none";
+            menuButtonPopup.style.display = "block";
+        }
+        updateLevelCompletionTime();
+    }
 }
 function updateLevelCompletionTime() {
   for (let level in levelCompletionTimes) {
@@ -3011,47 +3080,66 @@ function processNextMove() {
 }
 
 function recolorMaze() {
-
-  const isEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
-
-  const offscreenCanvas = document.createElement("canvas");
-  offscreenCanvas.width = mazeImage.width;
-  offscreenCanvas.height = mazeImage.height;
-  const offscreenCtx = offscreenCanvas.getContext("2d");
-  offscreenCtx.drawImage(mazeImage, 0, 0);
-
-  const imageData = offscreenCtx.getImageData(
-    0,
-    0,
-    mazeImage.width,
-    mazeImage.height
-  );
-  const data = imageData.data;
-
-  // Use a single color for all levels
-  const newColor = isEquipped ? { r: 138, g: 49, b: 78 } : { r: 34, g: 34, b: 34 };
-
-  for (let i = 0; i < data.length; i += 4) {
-    // If the pixel is black and non-transparent
-    if (
-      data[i] === 0 &&
-      data[i + 1] === 0 &&
-      data[i + 2] === 0 &&
-      data[i + 3] !== 0
-    ) {
-      data[i] = newColor.r;
-      data[i + 1] = newColor.g;
-      data[i + 2] = newColor.b;
+    // If the maze image isn't loaded yet, wait for it
+    if (!mazeImage.complete || !mazeImage.naturalWidth) {
+        console.log("Maze image not ready, waiting for load...");
+        return new Promise((resolve) => {
+            mazeImage.onload = () => {
+                console.log("Maze image loaded, now recoloring");
+                performRecolor();
+                resolve();
+            };
+        });
+    } else {
+        return Promise.resolve(performRecolor());
     }
-  }
 
-  offscreenCtx.putImageData(imageData, 0, 0);
+    function performRecolor() {
+        const isEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.save();
-  ctx.scale(scale, scale);
-  ctx.drawImage(offscreenCanvas, 0, 0);
-  ctx.restore();
+        const offscreenCanvas = document.createElement("canvas");
+        offscreenCanvas.width = mazeImage.width || 400;  // Fallback width
+        offscreenCanvas.height = mazeImage.height || 400;  // Fallback height
+        const offscreenCtx = offscreenCanvas.getContext("2d");
+
+        try {
+            offscreenCtx.drawImage(mazeImage, 0, 0);
+            const imageData = offscreenCtx.getImageData(
+                0,
+                0,
+                offscreenCanvas.width,
+                offscreenCanvas.height
+            );
+            const data = imageData.data;
+
+            // Use a single color for all levels
+            const newColor = isEquipped ? { r: 138, g: 49, b: 78 } : { r: 34, g: 34, b: 34 };
+
+            for (let i = 0; i < data.length; i += 4) {
+                // If the pixel is black and non-transparent
+                if (
+                    data[i] === 0 &&
+                    data[i + 1] === 0 &&
+                    data[i + 2] === 0 &&
+                    data[i + 3] !== 0
+                ) {
+                    data[i] = newColor.r;
+                    data[i + 1] = newColor.g;
+                    data[i + 2] = newColor.b;
+                }
+            }
+
+            offscreenCtx.putImageData(imageData, 0, 0);
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.scale(scale, scale);
+            ctx.drawImage(offscreenCanvas, 0, 0);
+            ctx.restore();
+        } catch (error) {
+            console.error("Error in recolorMaze:", error);
+        }
+    }
 }
 
 function extractMazeData() {
@@ -3490,11 +3578,9 @@ function restartGame() {
 
 // Change from const to let for the drawExit function
 let drawExit = function() {
-    // Retrieve the exit color from the CSS variable
-    const exitColor = getComputedStyle(document.documentElement)
+    ctx.fillStyle = getComputedStyle(document.documentElement)
         .getPropertyValue("--exit-color")
         .trim();
-    ctx.fillStyle = exitColor; // Use the color from the palette
     ctx.fillRect(exit.x, exit.y, exit.size, exit.size);
 };
 
@@ -4280,9 +4366,6 @@ function transitionToSecretLevel(preservedDirection) {
         // Extract maze data and initialize
         extractMazeData();
         
-        // Show the "secret" announcement
-        showLevelAnnouncement("secret");
-        
         // Reset game state
         isExecutingMoves = false;
         isMoving = false;
@@ -4433,7 +4516,7 @@ function returnToLevelSix() {
         extractMazeData();
         
         // Reset game state
-        moveQueue = [];
+        moveQueue.length = 0;
         currentDirection = preservedDirection;
         isExecutingMoves = false;
         isMoving = false;
@@ -4443,7 +4526,7 @@ function returnToLevelSix() {
         playerSteps = [];
         trackerList.innerHTML = '';
         
-        // Restore original drawExit function
+        // Reassign drawExit function without redeclaring
         drawExit = function() {
             ctx.fillStyle = getComputedStyle(document.documentElement)
                 .getPropertyValue("--exit-color")
