@@ -1193,57 +1193,11 @@ function hexToRgb(hex) {
 
 function recolorMenuElement(hexColor) {
   const menuElementImage = document.getElementById("menuElement");
-  const offscreenCanvas = document.createElement("canvas");
-  offscreenCanvas.width = menuElementImage.naturalWidth;
-  offscreenCanvas.height = menuElementImage.naturalHeight;
-  const offscreenCtx = offscreenCanvas.getContext("2d");
-
-  // Disable image smoothing for pixel art sharpness
-  offscreenCtx.imageSmoothingEnabled = false;
-
-  // Draw the original image onto the canvas
-  offscreenCtx.drawImage(menuElementImage, 0, 0);
-
-  // Get image data
-  const imageData = offscreenCtx.getImageData(
-    0,
-    0,
-    menuElementImage.naturalWidth,
-    menuElementImage.naturalHeight
-  );
-  const data = imageData.data;
-
-  // Convert the hex color to RGB
-  const newColor = hexToRgb(hexColor);
-  if (!newColor) {
-    console.error("Invalid hex color provided.");
-    return;
-  }
-
-  // Replace black (0, 0, 0, non-transparent) pixels with the desired color
-  for (let i = 0; i < data.length; i += 4) {
-    if (
-      data[i] === 0 &&
-      data[i + 1] === 0 &&
-      data[i + 2] === 0 &&
-      data[i + 3] !== 0
-    ) {
-      data[i] = newColor.r; // Red
-      data[i + 1] = newColor.g; // Green
-      data[i + 2] = newColor.b; // Blue
-    }
-  }
-
-  // Update the canvas with the recolored image data
-  offscreenCtx.putImageData(imageData, 0, 0);
-
-  // Replace the original image with the recolored canvas data
-  menuElementImage.src = offscreenCanvas.toDataURL();
+  menuElementImage.src = 'assets/images/logo1.png';
 }
 
-// Example usage: Set the desired hex color (e.g., "#FF8552")
 document.getElementById("menuElement").addEventListener("load", () => {
-  recolorMenuElement("#CCCCCC");
+  console.log("Menu element loaded");
 });
 
 document.getElementById("mainMenuButton").addEventListener("click", () => {
@@ -2938,6 +2892,12 @@ function preStartGame(level) {
     currentLevel = level; // Set current level
     showLevelAnnouncement(level);
 
+    // Clear the restart counter
+    const restartCounter = document.getElementById('restartCounter');
+    if (restartCounter) {
+        restartCounter.textContent = '';
+    }
+
     // Initialize gaps if it's level 6
     if (level === 6) {
         console.log("Initializing level 6 gaps");
@@ -3293,7 +3253,8 @@ function animateTrailMerge() {
     
     // Show final score after delay
     setTimeout(() => {
-      restartCounter.textContent = (currentCount + totalBlocks).toString();
+      const newCount = currentCount + totalBlocks;
+      restartCounter.textContent = newCount > 0 ? newCount.toString() : '';
       trailBlocks = [];
       isTrailAnimating = false;
     }, 500);
@@ -4511,7 +4472,6 @@ function returnToLevelSix() {
                 .getPropertyValue("--exit-color")
                 .trim();
             ctx.fillRect(exit.x, exit.y, exit.size, exit.size);
-            console.log("Drawing exit at:", { x: exit.x, y: exit.y });
         };
         
         // Skip level announcement since we're returning to level 6
