@@ -42,10 +42,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const unlockablesScreen = document.getElementById('fullscreenOverlay');
   const unlockablesBackButton = document.getElementById('unlockablesBackButton');
   
-  console.log("Game is starting. Checking for saved timers...");
+  console.log("Game is starting. Loading saved data...");
   loadLevelCompletionTimes();
+  loadAchievementProgress(); // Load achievements on startup
 
-  loadAchievementProgress();
+  // Load saved achievement progress
+  const savedProgress = localStorage.getItem('achievementProgress');
+  if (savedProgress) {
+    achievementProgress = JSON.parse(savedProgress);
+  }
 
   volumeValueDisplay.textContent = "10%";
 
@@ -81,19 +86,34 @@ document.addEventListener("DOMContentLoaded", () => {
   achievementsButton.addEventListener('click', () => {
     console.log("Loading progress before opening modal...");
     loadAchievementProgress(); // Ensure state is loaded
-    resetAchievementUI();
     achievementsModal.classList.add('active');
     startAchievementAnimation();
 
+    // Reset all progress bars to 0 initially
+    const progressBars = document.querySelectorAll('.progressFill');
+    const percentages = document.querySelectorAll('.progressPercentage');
+    const statuses = document.querySelectorAll('.achievementStatus');
+
+    progressBars.forEach(bar => bar.style.width = '0%');
+    percentages.forEach(percent => percent.textContent = '0%');
+    statuses.forEach(status => status.textContent = 'Locked');
+
+    // Delay the animation to ensure the reset is visible
     setTimeout(() => {
-        updateAchievementUIAnimated();
-    }, 500);
+      updateAchievementUIAnimated();
+    }, 100);
   });
 
   closeButton.addEventListener('click', () => {
     achievementsModal.classList.remove('active');
     clearAchievementAnimation();
   });
+
+  // Remove any duplicate event listeners
+  const existingHandler = document.getElementById("achievementsButton").onclick;
+  if (existingHandler) {
+    document.getElementById("achievementsButton").removeEventListener("click", existingHandler);
+  }
 
   function resetAchievementUI() {
     // Reset "The Brain" UI
@@ -226,6 +246,8 @@ function animateProgressUpdate(target, updateCallback, completeCallback) {
 }
 
 function updateAchievementUIAnimated() {
+  console.log("Updating UI with:", achievementProgress);
+
   const brainProgressFill = document.querySelector(".progressFill.theBrain");
   const brainProgressPercentage = document.querySelector(".progressPercentage.theBrain");
   const brainAchievementStatus = document.querySelector(".achievementStatus.theBrain");
@@ -234,34 +256,59 @@ function updateAchievementUIAnimated() {
   const tailProgressPercentage = document.querySelector(".progressPercentage.theTail");
   const tailAchievementStatus = document.querySelector(".achievementStatus.theTail");
 
-  const brainTarget = achievementProgress.theBrain.progress;
-  const tailTarget = achievementProgress.theTail.progress;
+  const soulProgressFill = document.querySelector(".progressFill.theSoul");
+  const soulProgressPercentage = document.querySelector(".progressPercentage.theSoul");
+  const soulAchievementStatus = document.querySelector(".achievementStatus.theSoul");
 
-  let brainCurrent = 0;
-  let tailCurrent = 0;
+  // Reset all progress bars to 0
+  if (brainProgressFill) brainProgressFill.style.width = '0%';
+  if (tailProgressFill) tailProgressFill.style.width = '0%';
+  if (soulProgressFill) soulProgressFill.style.width = '0%';
+  if (brainProgressPercentage) brainProgressPercentage.textContent = '0%';
+  if (tailProgressPercentage) tailProgressPercentage.textContent = '0%';
+  if (soulProgressPercentage) soulProgressPercentage.textContent = '0%';
 
-  // Use a single interval to update both
-  const interval = setInterval(() => {
-      brainCurrent = Math.min(brainCurrent + 5, brainTarget);
-      tailCurrent = Math.min(tailCurrent + 5, tailTarget);
-
-      // Update Brain Progress
-      brainProgressFill.style.width = `${brainCurrent}%`;
-      brainProgressPercentage.textContent = `${brainCurrent}%`;
-
-      // Update Tail Progress
-      tailProgressFill.style.width = `${tailCurrent}%`;
-      tailProgressPercentage.textContent = `${tailCurrent}%`;
-
-      // Check if both are complete
-      if (brainCurrent === brainTarget && tailCurrent === tailTarget) {
-          clearInterval(interval);
-
-          // Update final status
-          brainAchievementStatus.textContent = achievementProgress.theBrain.status;
-          tailAchievementStatus.textContent = achievementProgress.theTail.status;
+  // Animate Brain progress
+  if (brainProgressFill && achievementProgress.theBrain) {
+    animateProgressUpdate(
+      achievementProgress.theBrain.progress,
+      (progress) => {
+        brainProgressFill.style.width = `${progress}%`;
+        brainProgressPercentage.textContent = `${progress}%`;
+      },
+      () => {
+        brainAchievementStatus.textContent = achievementProgress.theBrain.status;
       }
-  }, 100); // Adjust interval time as needed
+    );
+  }
+
+  // Animate Tail progress
+  if (tailProgressFill && achievementProgress.theTail) {
+    animateProgressUpdate(
+      achievementProgress.theTail.progress,
+      (progress) => {
+        tailProgressFill.style.width = `${progress}%`;
+        tailProgressPercentage.textContent = `${progress}%`;
+      },
+      () => {
+        tailAchievementStatus.textContent = achievementProgress.theTail.status;
+      }
+    );
+  }
+
+  // Animate Soul progress
+  if (soulProgressFill && achievementProgress.theSoul) {
+    animateProgressUpdate(
+      achievementProgress.theSoul.progress,
+      (progress) => {
+        soulProgressFill.style.width = `${progress}%`;
+        soulProgressPercentage.textContent = `${progress}%`;
+      },
+      () => {
+        soulAchievementStatus.textContent = achievementProgress.theSoul.status;
+      }
+    );
+  }
 }
 
 let activeTimeouts = []; // Track all active timeouts
@@ -295,65 +342,84 @@ document.getElementById("achievementsButton").addEventListener("click", () => {
   updateAchievementUIAnimated(); // Update the UI with loaded progress
 });
 
+// Initialize achievement progress with consistent structure
 let achievementProgress = {
   theBrain: {
-    title: "The Brain",
-    
     progress: 0,
-    status: "Locked",
+    status: "Locked"
   },
   theTail: {
-    title: "The Tail",
-    
     progress: 0,
-    status: "Locked",
+    status: "Locked"
   },
+  theSoul: {
+    progress: 0,
+    status: "Locked"
+  }
 };
 
-function saveAchievementProgress() {
-  try {
-    const progressJSON = JSON.stringify(achievementProgress);
-    if (typeof require !== "undefined") {
-      const fs = require("fs");
-      const path = require("path");
-      const savePath = path.join(__dirname, "achievementProgress.json");
-      fs.writeFileSync(savePath, progressJSON);
-      console.log("Progress saved to file.");
-    } else {
-      localStorage.setItem("achievementProgress", progressJSON);
-      console.log("Progress saved to localStorage:", progressJSON);
-    }
-  } catch (error) {
-    console.error("Failed to save progress:", error);
+function loadAchievementProgress() {
+  const savedProgress = localStorage.getItem('achievementProgress');
+  if (savedProgress) {
+    const parsed = JSON.parse(savedProgress);
+    achievementProgress = {
+      theBrain: {
+        progress: parsed.theBrain?.progress || 0,
+        status: parsed.theBrain?.status || "Locked"
+      },
+      theTail: {
+        progress: parsed.theTail?.progress || 0,
+        status: parsed.theTail?.status || "Locked"
+      },
+      theSoul: {
+        progress: parsed.theSoul?.progress || 0,
+        status: parsed.theSoul?.status || "Locked"
+      }
+    };
   }
+  console.log("Loaded achievement progress:", achievementProgress);
 }
 
-function loadAchievementProgress() {
-  let savedProgress = {};
-  if (typeof require !== "undefined") {
-    const fs = require("fs");
-    const path = require("path");
-    const savePath = path.join(__dirname, "achievementProgress.json");
-
-    if (fs.existsSync(savePath)) {
-      try {
-        savedProgress = JSON.parse(fs.readFileSync(savePath, "utf8"));
-      } catch (err) {
-        console.error("Failed to load progress:", err);
-      }
+// Update progress bars and status
+function updateAchievementDisplay() {
+    // Update The Brain achievement
+    const brainProgressBar = document.querySelector('.progressFill.theBrain');
+    const brainPercentage = document.querySelector('.progressPercentage.theBrain');
+    const brainStatus = document.querySelector('.achievementStatus.theBrain');
+    
+    if (brainProgressBar && brainPercentage && brainStatus) {
+        brainProgressBar.style.width = `${achievementProgress.theBrain.progress}%`;
+        brainPercentage.textContent = `${achievementProgress.theBrain.progress}%`;
+        brainStatus.textContent = achievementProgress.theBrain.status;
     }
-  } else {
-    savedProgress = JSON.parse(localStorage.getItem("achievementProgress")) || {};
-  }
 
-  achievementProgress = {
-    ...achievementProgress, // Defaults
-    ...savedProgress, // Saved data
-    theBrain: { ...achievementProgress.theBrain, ...savedProgress.theBrain },
-    theTail: { ...achievementProgress.theTail, ...savedProgress.theTail },
-  };
+    // Update The Tail achievement
+    const tailProgressBar = document.querySelector('.progressFill.theTail');
+    const tailPercentage = document.querySelector('.progressPercentage.theTail');
+    const tailStatus = document.querySelector('.achievementStatus.theTail');
+    
+    if (tailProgressBar && tailPercentage && tailStatus) {
+        tailProgressBar.style.width = `${achievementProgress.theTail.progress}%`;
+        tailPercentage.textContent = `${achievementProgress.theTail.progress}%`;
+        tailStatus.textContent = achievementProgress.theTail.status;
+    }
 
-  console.log("Loaded progress:", achievementProgress);
+    // Update The Soul achievement
+    const soulProgressBar = document.querySelector('.progressFill.theSoul');
+    const soulPercentage = document.querySelector('.progressPercentage.theSoul');
+    const soulStatus = document.querySelector('.achievementStatus.theSoul');
+    
+    if (soulProgressBar && soulPercentage && soulStatus) {
+        soulProgressBar.style.width = `${achievementProgress.theSoul.progress}%`;
+        soulPercentage.textContent = `${achievementProgress.theSoul.progress}%`;
+        soulStatus.textContent = achievementProgress.theSoul.status;
+    }
+}
+
+// Save achievement progress
+function saveAchievementProgress() {
+    localStorage.setItem('achievementProgress', JSON.stringify(achievementProgress));
+    updateAchievementDisplay();
 }
 
 function updateAchievementUIAnimated() {
@@ -367,18 +433,58 @@ function updateAchievementUIAnimated() {
   const tailProgressPercentage = document.querySelector(".progressPercentage.theTail");
   const tailAchievementStatus = document.querySelector(".achievementStatus.theTail");
 
-  // Update "The Brain" progress
+  const soulProgressFill = document.querySelector(".progressFill.theSoul");
+  const soulProgressPercentage = document.querySelector(".progressPercentage.theSoul");
+  const soulAchievementStatus = document.querySelector(".achievementStatus.theSoul");
+
+  // Reset all progress bars to 0
+  if (brainProgressFill) brainProgressFill.style.width = '0%';
+  if (tailProgressFill) tailProgressFill.style.width = '0%';
+  if (soulProgressFill) soulProgressFill.style.width = '0%';
+  if (brainProgressPercentage) brainProgressPercentage.textContent = '0%';
+  if (tailProgressPercentage) tailProgressPercentage.textContent = '0%';
+  if (soulProgressPercentage) soulProgressPercentage.textContent = '0%';
+
+  // Animate Brain progress
   if (brainProgressFill && achievementProgress.theBrain) {
-    brainProgressFill.style.width = `${achievementProgress.theBrain.progress}%`;
-    brainProgressPercentage.textContent = `${achievementProgress.theBrain.progress}%`;
-    brainAchievementStatus.textContent = achievementProgress.theBrain.status;
+    animateProgressUpdate(
+      achievementProgress.theBrain.progress,
+      (progress) => {
+        brainProgressFill.style.width = `${progress}%`;
+        brainProgressPercentage.textContent = `${progress}%`;
+      },
+      () => {
+        brainAchievementStatus.textContent = achievementProgress.theBrain.status;
+      }
+    );
   }
 
-  // Update "The Tail" progress
+  // Animate Tail progress
   if (tailProgressFill && achievementProgress.theTail) {
-    tailProgressFill.style.width = `${achievementProgress.theTail.progress}%`;
-    tailProgressPercentage.textContent = `${achievementProgress.theTail.progress}%`;
-    tailAchievementStatus.textContent = achievementProgress.theTail.status;
+    animateProgressUpdate(
+      achievementProgress.theTail.progress,
+      (progress) => {
+        tailProgressFill.style.width = `${progress}%`;
+        tailProgressPercentage.textContent = `${progress}%`;
+      },
+      () => {
+        tailAchievementStatus.textContent = achievementProgress.theTail.status;
+      }
+    );
+  }
+
+  // Animate Soul progress
+  if (soulProgressFill && achievementProgress.theSoul) {
+    animateProgressUpdate(
+      achievementProgress.theSoul.progress,
+      (progress) => {
+        soulProgressFill.style.width = `${progress}%`;
+        soulProgressPercentage.textContent = `${progress}%`;
+      },
+      () => {
+        soulAchievementStatus.textContent = achievementProgress.theSoul.status;
+      }
+    );
   }
 }
 
@@ -419,35 +525,33 @@ function drawCheckpoints() {
 
   checkpoints.forEach((checkpoint) => {
     // For secret level checkpoint, only draw if not touched
-    if (currentLevel === "6secret") {
+        if (currentLevel === "6secret") {
       if (!checkpoint.touched) {
-        ctx.fillStyle = checkpoint.color || "#00FF00";
+            ctx.fillStyle = checkpoint.color || "#00FF00";
         ctx.fillRect(checkpoint.x, checkpoint.y, checkpoint.size, checkpoint.size);
       }
     } else if (currentLevel === 9) {
       // Special handling for level 9 checkpoints
       if (checkpoint.solid) {
-        // Solid checkpoint
-        ctx.fillStyle = isEquipped ? "#8A314E" : "#222222";
-        ctx.fillRect(checkpoint.x, checkpoint.y, checkpoint.size, checkpoint.size);
+      // Solid checkpoint
+            ctx.fillStyle = isEquipped ? "#8A314E" : "#222222";
+    ctx.fillRect(checkpoint.x, checkpoint.y, checkpoint.size, checkpoint.size);
       } else if (!checkpoint.touched) {
         // Non-solid, untouched checkpoint
-        ctx.fillStyle = isEquipped ? "#F96D99" : "#999999";
-        ctx.fillRect(checkpoint.x, checkpoint.y, checkpoint.size, checkpoint.size);
+            ctx.fillStyle = isEquipped ? "#F96D99" : "#999999";
+    ctx.fillRect(checkpoint.x, checkpoint.y, checkpoint.size, checkpoint.size);
       }
     } else {
       // For all other checkpoints
       if (!checkpoint.touched) {
-        ctx.fillStyle = isEquipped ? "#F96D99" : "#999999";
-        ctx.fillRect(checkpoint.x, checkpoint.y, checkpoint.size, checkpoint.size);
+            ctx.fillStyle = isEquipped ? "#F96D99" : "#999999";
+    ctx.fillRect(checkpoint.x, checkpoint.y, checkpoint.size, checkpoint.size);
       }
     }
   });
 }
 
 function checkCheckpointCollision() {
-  if (!checkpoints || checkpoints.length === 0) return;
-
   let shouldRedraw = false;
 
   checkpoints.forEach((checkpoint, index) => {
@@ -457,66 +561,74 @@ function checkCheckpointCollision() {
       player.y < checkpoint.y + checkpoint.size &&
       player.y + player.size > checkpoint.y;
 
-    if (currentLevel === 9) {
-      if (isPlayerOnCheckpoint && !checkpoint.touched) {
-        // Mark as touched but don't make solid yet
+        if (currentLevel === 9) {
+        if (isPlayerOnCheckpoint && !checkpoint.touched) {
+                // Mark as touched but don't make solid yet
         checkpoint.touched = true;
         shouldRedraw = true;
-        console.log("Checkpoint touched, waiting for player to leave...");
-      } else if (checkpoint.touched && !checkpoint.solid && !isPlayerOnCheckpoint) {
-        // Player has left the checkpoint area, now make it solid
-        checkpoint.solid = true;
+                console.log("Checkpoint touched, waiting for player to leave...");
+            } else if (checkpoint.touched && !checkpoint.solid && !isPlayerOnCheckpoint) {
+                // Player has left the checkpoint area, now make it solid
+                checkpoint.solid = true;
         shouldRedraw = true;
-        console.log(`Checkpoint at (${checkpoint.x}, ${checkpoint.y}) is now solid!`);
-      }
-    } else if (isPlayerOnCheckpoint && !checkpoint.touched) {
-      // Handle other levels' checkpoints as before
-      if (currentLevel === 8) {
-        checkpoint.touched = true;
-        if (index === 0) {
-          localStorage.setItem('pathOneCompleted', true);
-        }
-        if (index === 1) {
-          localStorage.setItem('pathTwoCompleted', true);
-        }
+                console.log(`Checkpoint at (${checkpoint.x}, ${checkpoint.y}) is now solid!`);
+            }
+        } else if (isPlayerOnCheckpoint && !checkpoint.touched) {
+            // Handle other levels' checkpoints as before
+        if (currentLevel === 8) {
+                checkpoint.touched = true;
+          if (index === 0) {
+            localStorage.setItem('pathOneCompleted', true);
+          }
+          if (index === 1) {
+            localStorage.setItem('pathTwoCompleted', true);
+          }
 
-        // Calculate progress
-        const pathOneCompleted = localStorage.getItem('pathOneCompleted') === 'true';
-        const pathTwoCompleted = localStorage.getItem('pathTwoCompleted') === 'true';
+          // Calculate progress
+          const pathOneCompleted = localStorage.getItem('pathOneCompleted') === 'true';
+          const pathTwoCompleted = localStorage.getItem('pathTwoCompleted') === 'true';
 
-        let progress = 0;
-        if (pathOneCompleted) progress += 50;
-        if (pathTwoCompleted) progress += 50;
+          let progress = 0;
+          if (pathOneCompleted) progress += 50;
+          if (pathTwoCompleted) progress += 50;
 
-        achievementProgress.theBrain.progress = progress;
-        saveAchievementProgress();
+                achievementProgress.theBrain.progress = progress;
+                saveAchievementProgress();
 
-        if (progress === 100) {
-          achievementProgress.theBrain.status = "Unlocked";
-          saveAchievementProgress();
-        }
-      } else if (currentLevel === "6secret") {
-        checkpoint.touched = true;
+          if (progress === 100) {
+            achievementProgress.theBrain.status = "Unlocked";
+            saveAchievementProgress();
+                }
+            } else if (currentLevel === "6secret") {
+                checkpoint.touched = true;
         console.log("Got the secret key!");
-        localStorage.setItem('hasSecretKey', 'true');
+                localStorage.setItem('hasSecretKey', 'true');
+        
+                // Update The Soul achievement progress
+                achievementProgress.theSoul = {
+                    progress: 100,
+                    status: "Unlocked"
+                };
+                saveAchievementProgress();
+                localStorage.setItem('achievementProgress', JSON.stringify(achievementProgress));
         
         // Remove the key checkpoint
         checkpoints = checkpoints.filter(cp => cp !== checkpoint);
         
         // Add the return gap
-        gaps.push({
-          level: "6secret",
-          x: 0,
-          y: 131,
-          width: 20,
-          height: 20,
-          isReturnGap: true,
+                gaps.push({
+                    level: "6secret",
+                    x: 0,
+                    y: 131,
+                    width: 20,
+                    height: 20,
+                    isReturnGap: true,
           color: "rgb(153, 153, 153)"
-        });
+                });
         
         // Redraw everything to show changes
         recolorMaze();
-        renderMazeWithGaps(ctx, gaps);
+                renderMazeWithGaps(ctx, gaps);
         drawCheckpoints();
         drawPlayer();
       }
@@ -526,7 +638,7 @@ function checkCheckpointCollision() {
   // Only redraw if changes were made
   if (shouldRedraw) {
     recolorMaze();
-    drawCheckpoints();
+  drawCheckpoints();
     drawPlayer();
   }
 }
@@ -543,115 +655,173 @@ document.addEventListener("DOMContentLoaded", () => {
 function updateUnlockablesUI() {
   const unlockablesCenterWindow = document.getElementById("unlockablesCenterWindow");
   unlockablesCenterWindow.innerHTML = "";
+  
+  // Set up container for vertical stacking with scrolling
+  unlockablesCenterWindow.style.display = "flex";
+  unlockablesCenterWindow.style.flexDirection = "column";
+  unlockablesCenterWindow.style.alignItems = "center";
+  unlockablesCenterWindow.style.gap = "20px";
+  unlockablesCenterWindow.style.overflowY = "auto";
+  unlockablesCenterWindow.style.maxHeight = "80vh";
+  unlockablesCenterWindow.style.padding = "20px 0";
+  unlockablesCenterWindow.style.scrollbarWidth = "thin";
+  unlockablesCenterWindow.style.scrollbarColor = "#999999 #222222";
+  unlockablesCenterWindow.style.msOverflowStyle = "none";
+  unlockablesCenterWindow.style.position = "relative";
+
+  // Add webkit scrollbar styles
+  const style = document.createElement('style');
+  style.textContent = `
+    #unlockablesCenterWindow::-webkit-scrollbar {
+      width: 8px;
+    }
+    #unlockablesCenterWindow::-webkit-scrollbar-track {
+      background: #222222;
+    }
+    #unlockablesCenterWindow::-webkit-scrollbar-thumb {
+      background: #999999;
+    }
+  `;
+  document.head.appendChild(style);
 
   let hasUnlockables = false;
-
-  // Ensure "isEquipped" is initialized only once
   let isBrainPaletteEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
   let isTailEffectEquipped = localStorage.getItem("isTailEffectEquipped") === "true";
 
-  // Check if "The Brain" achievement is unlocked
+  // Create array to store unlockables in order of unlock time
+  const unlockedItems = [];
+  
   if (achievementProgress.theBrain.status === "Unlocked") {
-      hasUnlockables = true;
+    unlockedItems.push({
+      type: 'brain',
+      element: createBrainUnlockable(isBrainPaletteEquipped)
+    });
+  }
+  
+  if (achievementProgress.theTail.status === "Unlocked") {
+    unlockedItems.push({
+      type: 'tail',
+      element: createTailUnlockable(isTailEffectEquipped)
+    });
+  }
+  
+  if (achievementProgress.theSoul.status === "Unlocked") {
+    unlockedItems.push({
+      type: 'soul',
+      element: createSoulUnlockable()
+    });
+  }
 
-      unlockablesCenterWindow.innerHTML = "";
+  if (unlockedItems.length > 0) {
+    hasUnlockables = true;
+    
+    // Create a wrapper div for the unlockables
+    const unlockablesWrapper = document.createElement('div');
+    unlockablesWrapper.style.display = 'flex';
+    unlockablesWrapper.style.flexDirection = 'column';
+    unlockablesWrapper.style.gap = '20px';
+    unlockablesWrapper.style.width = '100%';
+    unlockablesWrapper.style.paddingTop = '20px';
+    
+    // Append unlockables in order
+    unlockedItems.forEach(item => {
+      unlockablesWrapper.appendChild(item.element);
+    });
+    
+    unlockablesCenterWindow.appendChild(unlockablesWrapper);
+    
+    // Reset scroll position after a short delay to ensure DOM is updated
+    requestAnimationFrame(() => {
+      unlockablesCenterWindow.scrollTop = 0;
+    });
+  }
 
-      // Disable flex layout of the center window
-      unlockablesCenterWindow.style.display = "block"; // Switch to block layout for stacking
-      unlockablesCenterWindow.style.alignItems = "flex-start";
+  if (!hasUnlockables) {
+    unlockablesCenterWindow.innerHTML = "nothing here... for now";
+  }
+}
 
-      // Create the unlockable container for "The Brain"
+// Helper functions to create unlockables (keep existing creation logic)
+function createBrainUnlockable(isEquipped) {
       const unlockable = document.createElement("div");
       unlockable.style.display = "flex";
       unlockable.style.justifyContent = "space-between";
       unlockable.style.alignItems = "center";
       unlockable.style.width = "90%";
-      unlockable.style.margin = "20px auto 0"; // Align to top with extra margin at the top
-      unlockable.style.padding = "0px"; // Increased padding for larger height
+  unlockable.style.margin = "0 auto";
+  unlockable.style.padding = "20px 0";
       unlockable.style.backgroundColor = "#222222";
-      unlockable.style.borderRadius = "0px";
-      unlockable.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0)";
       unlockable.style.color = "#CCCCCC";
-      unlockable.style.minHeight = "120px"; // Further increase height
+  unlockable.style.minHeight = "240px";
 
       // Title (left)
       const title = document.createElement("div");
       title.style.marginLeft = "70px";
-      title.style.width = "268px"; // Limit the width
-      title.style.fontSize = "29px"; // Adjust font size
+  title.style.width = "268px";
+  title.style.fontSize = "29px";
       title.style.fontWeight = "bold";
-      title.style.lineHeight = "1.2"; // Adjust line height for proper spacing
-      title.style.textAlign = "center"; // Center text within the title container
+  title.style.lineHeight = "1.2";
+  title.style.textAlign = "center";
       title.style.display = "flex";
-      title.style.flexDirection = "column"; // Ensure multi-line text is treated as a column
-      title.style.justifyContent = "center"; // Vertically align text
-      title.style.gap = "10px"; // Add spacing between lines
+  title.style.flexDirection = "column";
+  title.style.justifyContent = "center";
+  title.style.gap = "10px";
 
-      // "The Brain" text with custom background
       const brainText = document.createElement("span");
       brainText.textContent = "\"the brain\"";
       brainText.style.fontSize = "40px";
       brainText.style.fontStyle = "italic";
-      brainText.style.fontWeight = "bold"; // Bold text
+  brainText.style.fontWeight = "bold";
       brainText.style.fontFamily = "MS Mincho";
       brainText.style.backgroundColor = "#cccccc";
       brainText.style.color = "#D1406E";
-      brainText.style.padding = "0px"; // Padding inside the text box
-      brainText.style.borderRadius = "0px"; // Optional rounded corners
-      brainText.style.display = "inline-block"; // Ensure proper box rendering
+  brainText.style.display = "inline-block";
 
-      // "Palette" text with custom background
       const paletteText = document.createElement("span");
+  paletteText.textContent = "palette";
       paletteText.style.width = "100px";
       paletteText.style.marginLeft = "35px";
-      paletteText.textContent = "palette";
       paletteText.style.backgroundColor = "#cccccc";
       paletteText.style.color = "#222222";
-      paletteText.style.padding = "0px"; // Padding inside the text box
-      paletteText.style.borderRadius = "0px"; // Optional rounded corners
-      paletteText.style.display = "inline-block"; // Ensure proper box rendering
+  paletteText.style.display = "inline-block";
 
-      // Append the styled text elements to the title container
       title.appendChild(brainText);
       title.appendChild(paletteText);
-
       unlockable.appendChild(title);
 
       // Icon (middle)
       const icon = document.createElement("img");
-      icon.src = "assets/images/brainpalette.svg"; // Path to the unlockable icon
+  icon.src = "assets/images/brainpalette.svg";
       icon.alt = "Brain Palette Icon";
-      icon.style.width = "200px"; // Adjust icon size
+  icon.style.width = "200px";
       icon.style.height = "200px";
-      icon.style.margin = "0 15px"; // Add margin for spacing
+  icon.style.margin = "0 15px";
       unlockable.appendChild(icon);
 
       // Equip Button (right)
       const equipButton = document.createElement("button");
-      equipButton.textContent = isBrainPaletteEquipped ? "unequip" : "equip";
+  equipButton.textContent = isEquipped ? "unequip" : "equip";
       equipButton.style.fontFamily = "CustomFont";
-      equipButton.style.width = isBrainPaletteEquipped ? "145px" : "100px";
-      equipButton.style.marginLeft = "10px"; // Bring the button closer to the icon
+  equipButton.style.width = isEquipped ? "145px" : "100px";
+  equipButton.style.marginLeft = "10px";
       equipButton.style.marginRight = "100px";
-      equipButton.style.padding = "0px 0px"; // Adjust padding for larger height
       equipButton.style.fontSize = "34px";
       equipButton.style.backgroundColor = "#CCCCCC";
       equipButton.style.color = "#222222";
       equipButton.style.border = "none";
-      equipButton.style.borderRadius = "0px";
       equipButton.style.cursor = "pointer";
 
       equipButton.addEventListener("click", () => {
-          isBrainPaletteEquipped = !isBrainPaletteEquipped;
-          equipButton.textContent = isBrainPaletteEquipped ? "unequip" : "equip";
-          equipButton.style.width = isBrainPaletteEquipped ? "145px" : "100px";
-          localStorage.setItem("isBrainPaletteEquipped", isBrainPaletteEquipped);
+    isEquipped = !isEquipped;
+    equipButton.textContent = isEquipped ? "unequip" : "equip";
+    equipButton.style.width = isEquipped ? "145px" : "100px";
+    localStorage.setItem("isBrainPaletteEquipped", isEquipped);
 
-          console.log("Toggling equip state:", isBrainPaletteEquipped);
-          applyGameColors(isBrainPaletteEquipped);
-          updateCanvasBorder();
-          updateTrackerContainerStyle();
-          updateControlButtonStyles();
+    console.log("Toggling equip state:", isEquipped);
+    applyGameColors(isEquipped);
+    updateCanvasBorder();
+    updateTrackerContainerStyle();
+    updateControlButtonStyles();
       });
 
       equipButton.addEventListener("mouseover", () => {
@@ -664,41 +834,33 @@ function updateUnlockablesUI() {
       });
 
       unlockable.appendChild(equipButton);
+  return unlockable;
+}
 
-      // Append the unlockable to the center window
-      unlockablesCenterWindow.appendChild(unlockable);
-
-      applyGameColors(isBrainPaletteEquipped);
-  }
-
-  // Add a simple background for "The Tail" unlockable when unlocked
-  if (achievementProgress.theTail.status === "Unlocked") {
-      unlockablesCenterWindow.style.alignItems = "flex-start";
-      hasUnlockables = true;
-
-      const tailUnlockable = document.createElement("div");
-      tailUnlockable.style.display = "flex";
-      tailUnlockable.style.justifyContent = "space-between";
-      tailUnlockable.style.alignItems = "center";
-      tailUnlockable.style.width = "90%";
-      tailUnlockable.style.margin = "20px auto 0";
-      tailUnlockable.style.padding = "0px";
-      tailUnlockable.style.backgroundColor = "#222222";
-      tailUnlockable.style.color = "#CCCCCC";
-      tailUnlockable.style.minHeight = "120px";
+function createTailUnlockable(isEquipped) {
+  const unlockable = document.createElement("div");
+  unlockable.style.display = "flex";
+  unlockable.style.justifyContent = "space-between";
+  unlockable.style.alignItems = "center";
+  unlockable.style.width = "90%";
+  unlockable.style.margin = "0 auto";
+  unlockable.style.padding = "20px 0";
+  unlockable.style.backgroundColor = "#222222";
+  unlockable.style.color = "#CCCCCC";
+  unlockable.style.minHeight = "240px";
 
       // Title (left)
-      const tailTitle = document.createElement("div");
-      tailTitle.style.marginLeft = "70px";
-      tailTitle.style.width = "268px";
-      tailTitle.style.fontSize = "29px";
-      tailTitle.style.fontWeight = "bold";
-      tailTitle.style.lineHeight = "1.2";
-      tailTitle.style.textAlign = "center";
-      tailTitle.style.display = "flex";
-      tailTitle.style.flexDirection = "column";
-      tailTitle.style.justifyContent = "center";
-      tailTitle.style.gap = "10px";
+  const title = document.createElement("div");
+  title.style.marginLeft = "70px";
+  title.style.width = "268px";
+  title.style.fontSize = "29px";
+  title.style.fontWeight = "bold";
+  title.style.lineHeight = "1.2";
+  title.style.textAlign = "center";
+  title.style.display = "flex";
+  title.style.flexDirection = "column";
+  title.style.justifyContent = "center";
+  title.style.gap = "10px";
 
       const tailMainText = document.createElement("span");
       tailMainText.textContent = "\"the tail\"";
@@ -718,10 +880,9 @@ function updateUnlockablesUI() {
       tailSubText.style.color = "#222222";
       tailSubText.style.display = "inline-block";
 
-      tailTitle.appendChild(tailMainText);
-      tailTitle.appendChild(tailSubText);
-
-      tailUnlockable.appendChild(tailTitle);
+  title.appendChild(tailMainText);
+  title.appendChild(tailSubText);
+  unlockable.appendChild(title);
 
       // Icon (middle)
       const tailIcon = document.createElement("img");
@@ -730,13 +891,13 @@ function updateUnlockablesUI() {
       tailIcon.style.width = "230px";
       tailIcon.style.height = "200px";
       tailIcon.style.margin = "0 15px";
-      tailUnlockable.appendChild(tailIcon);
+  unlockable.appendChild(tailIcon);
 
       // Equip Button (right)
       const tailEquipButton = document.createElement("button");
-      tailEquipButton.textContent = isTailEffectEquipped ? "unequip" : "equip";
+  tailEquipButton.textContent = isEquipped ? "unequip" : "equip";
       tailEquipButton.style.fontFamily = "CustomFont";
-      tailEquipButton.style.width = isTailEffectEquipped ? "145px" : "100px";
+  tailEquipButton.style.width = isEquipped ? "145px" : "100px";
       tailEquipButton.style.marginLeft = "10px";
       tailEquipButton.style.marginRight = "100px";
       tailEquipButton.style.fontSize = "34px";
@@ -746,16 +907,16 @@ function updateUnlockablesUI() {
       tailEquipButton.style.cursor = "pointer";
 
       tailEquipButton.addEventListener("click", () => {
-          isTailEffectEquipped = !isTailEffectEquipped;
-          tailEquipButton.textContent = isTailEffectEquipped ? "unequip" : "equip";
-          tailEquipButton.style.width = isTailEffectEquipped ? "145px" : "100px";
-          localStorage.setItem("isTailEffectEquipped", isTailEffectEquipped);
+    isEquipped = !isEquipped;
+    tailEquipButton.textContent = isEquipped ? "unequip" : "equip";
+    tailEquipButton.style.width = isEquipped ? "145px" : "100px";
+    localStorage.setItem("isTailEffectEquipped", isEquipped);
 
-          if (isTailEffectEquipped) {
-              console.log("Tail effect equipped! Add your changes here.");
+    if (isEquipped) {
+      console.log("Tail effect equipped!");
           } else {
               unequipTailEffect();
-              console.log("Tail effect unequipped! Revert changes here.");
+      console.log("Tail effect unequipped!");
           }
       });
 
@@ -768,17 +929,103 @@ function updateUnlockablesUI() {
           tailEquipButton.style.color = "#222222";
       });
 
-      tailUnlockable.appendChild(tailEquipButton);
+  unlockable.appendChild(tailEquipButton);
+  return unlockable;
+}
 
-      unlockablesCenterWindow.appendChild(tailUnlockable);
-  }
+function createSoulUnlockable() {
+  const unlockable = document.createElement("div");
+  unlockable.style.display = "flex";
+  unlockable.style.justifyContent = "space-between";
+  unlockable.style.alignItems = "center";
+  unlockable.style.width = "90%";
+  unlockable.style.margin = "0 auto";
+  unlockable.style.padding = "20px 0";
+  unlockable.style.backgroundColor = "#222222";
+  unlockable.style.color = "#CCCCCC";
+  unlockable.style.minHeight = "240px";
 
-  if (!hasUnlockables) {
-      // Re-enable flex layout if there are no unlockables
-      unlockablesCenterWindow.style.display = "flex"; // Re-enable flex layout for normal behavior
-      unlockablesCenterWindow.style.alignItems = "center";
-      unlockablesCenterWindow.innerHTML = "nothing here... for now";
-  }
+  // Title (left)
+  const title = document.createElement("div");
+  title.style.marginLeft = "70px";
+  title.style.width = "268px";
+  title.style.fontSize = "29px";
+  title.style.fontWeight = "bold";
+  title.style.lineHeight = "1.2";
+  title.style.textAlign = "center";
+  title.style.display = "flex";
+  title.style.flexDirection = "column";
+  title.style.justifyContent = "center";
+  title.style.gap = "10px";
+
+  const soulMainText = document.createElement("span");
+  soulMainText.textContent = "\"the soul\"";
+  soulMainText.style.fontSize = "40px";
+  soulMainText.style.fontStyle = "italic";
+  soulMainText.style.fontWeight = "bold";
+  soulMainText.style.fontFamily = "MS Mincho";
+  soulMainText.style.backgroundColor = "#cccccc";
+  soulMainText.style.color = "#222222";
+  soulMainText.style.display = "inline-block";
+
+  const soulSubText = document.createElement("span");
+  soulSubText.textContent = "appearance";
+  soulSubText.style.width = "100px";
+  soulSubText.style.marginLeft = "35px";
+  soulSubText.style.backgroundColor = "#cccccc";
+  soulSubText.style.color = "#222222";
+  soulSubText.style.display = "inline-block";
+
+  title.appendChild(soulMainText);
+  title.appendChild(soulSubText);
+  unlockable.appendChild(title);
+
+  // Placeholder Icon (middle)
+  const placeholderIcon = document.createElement("div");
+  placeholderIcon.style.width = "200px";
+  placeholderIcon.style.height = "200px";
+  placeholderIcon.style.margin = "0 15px";
+  placeholderIcon.style.backgroundColor = "#333333";
+  placeholderIcon.style.display = "flex";
+  placeholderIcon.style.justifyContent = "center";
+  placeholderIcon.style.alignItems = "center";
+  placeholderIcon.textContent = "?";
+  placeholderIcon.style.fontSize = "100px";
+  placeholderIcon.style.color = "#444444";
+  unlockable.appendChild(placeholderIcon);
+
+  // Equip Button (right)
+  const equipButton = document.createElement("button");
+  let isSoulAppearanceEquipped = localStorage.getItem("isSoulAppearanceEquipped") === "true";
+  equipButton.textContent = isSoulAppearanceEquipped ? "unequip" : "equip";
+  equipButton.style.fontFamily = "CustomFont";
+  equipButton.style.width = isSoulAppearanceEquipped ? "145px" : "100px";
+  equipButton.style.marginLeft = "10px";
+  equipButton.style.marginRight = "100px";
+  equipButton.style.fontSize = "34px";
+  equipButton.style.backgroundColor = "#CCCCCC";
+  equipButton.style.color = "#222222";
+  equipButton.style.border = "none";
+  equipButton.style.cursor = "pointer";
+
+  equipButton.addEventListener("click", () => {
+    isSoulAppearanceEquipped = !isSoulAppearanceEquipped;
+    equipButton.textContent = isSoulAppearanceEquipped ? "unequip" : "equip";
+    equipButton.style.width = isSoulAppearanceEquipped ? "145px" : "100px";
+    localStorage.setItem("isSoulAppearanceEquipped", isSoulAppearanceEquipped);
+  });
+
+  equipButton.addEventListener("mouseover", () => {
+    equipButton.style.backgroundColor = "#222222";
+    equipButton.style.color = "#CCCCCC";
+  });
+  equipButton.addEventListener("mouseout", () => {
+    equipButton.style.backgroundColor = "#cccccc";
+    equipButton.style.color = "#222222";
+  });
+
+  unlockable.appendChild(equipButton);
+  return unlockable;
 }
 
 function unequipTailEffect() {
@@ -1074,6 +1321,11 @@ function resetAchievementsAndUnlockables() {
       status: "Locked", // Reset to locked
       progress: 0, // Reset progress
     },
+    theSoul: {
+      title: "The Soul",
+      progress: 0,
+      status: "Locked"
+    }
   };
 
   // Save updated achievements to localStorage or file
@@ -2146,32 +2398,32 @@ async function smoothMoveBlocks(isMovingToStart) {
   const stepDuration = 500 / steps; // Duration of each step
 
   for (let i = 0; i < steps; i++) { 
-    if (stopLevel7Blocks) return; // Exit immediately if movement stops
+      if (stopLevel7Blocks) return; // Exit immediately if movement stops
 
-    level7Blocks.forEach((block) => {
-      // Determine the target position dynamically
-      const targetX = isMovingToStart ? block.startX : block.endX;
-      const targetY = isMovingToStart ? block.startY : block.endY;
+      level7Blocks.forEach((block) => {
+          // Determine the target position dynamically
+          const targetX = isMovingToStart ? block.startX : block.endX;
+          const targetY = isMovingToStart ? block.startY : block.endY;
 
-      const remainingDistanceX = targetX - block.x;
-      const remainingDistanceY = targetY - block.y;
+          const remainingDistanceX = targetX - block.x;
+          const remainingDistanceY = targetY - block.y;
 
-      // Smoothly distribute the remaining distance
-      const distanceX = remainingDistanceX / (steps - i);
-      const distanceY = remainingDistanceY / (steps - i);
+          // Smoothly distribute the remaining distance
+          const distanceX = remainingDistanceX / (steps - i);
+          const distanceY = remainingDistanceY / (steps - i);
 
-      // Update block position
-      block.x += distanceX;
-      block.y += distanceY;
+          // Update block position
+          block.x += distanceX;
+          block.y += distanceY;
 
       // Check for collision with player
-      if (isCollidingWithPlayer(block, player)) {
+          if (isCollidingWithPlayer(block, player)) {
         // Calculate new player position if pushed by block
-        const newPlayerX = player.x + distanceX;
-        const newPlayerY = player.y + distanceY;
+              const newPlayerX = player.x + distanceX;
+              const newPlayerY = player.y + distanceY;
 
         // Check if this push would result in a wall collision
-        if (isCollision(newPlayerX, newPlayerY, player)) {
+              if (isCollision(newPlayerX, newPlayerY, player)) {
           // Only kill if we're actually moving (not at start/end positions)
           const atStartPos = Math.abs(block.x - block.startX) < 0.1 && Math.abs(block.y - block.startY) < 0.1;
           const atEndPos = Math.abs(block.x - block.endX) < 0.1 && Math.abs(block.y - block.endY) < 0.1;
@@ -2183,19 +2435,19 @@ async function smoothMoveBlocks(isMovingToStart) {
           }
         } else {
           // If no wall collision, move with the block
-          player.x = newPlayerX;
-          player.y = newPlayerY;
+              player.x = newPlayerX;
+              player.y = newPlayerY;
         }
-      }
-    });
+          }
+      });
 
     // Redraw everything
-    recolorMaze();
+      recolorMaze();
     drawLevel7Blocks(ctx);
     ctx.drawImage(trailCanvas, 0, 0);
-    drawPlayer();
+      drawPlayer();
 
-    await new Promise((resolve) => setTimeout(resolve, stepDuration));
+      await new Promise((resolve) => setTimeout(resolve, stepDuration));
   }
 
   if (stopLevel7Blocks) return;
@@ -2248,13 +2500,13 @@ function checkLevel7BlocksCollision(player) {
 
   level7Blocks.forEach((block) => {
     // Check if player is colliding with the block
-    const collision =
-      player.x < block.x + block.width &&
+      const collision =
+          player.x < block.x + block.width &&
       player.x + player.size > block.x &&
-      player.y < block.y + block.height &&
+          player.y < block.y + block.height &&
       player.y + player.size > block.y;
 
-    if (collision) {
+      if (collision) {
       // Check if block is actually moving (not at either start or end position)
       const atStartPos = Math.abs(block.x - block.startX) < 0.1 && Math.abs(block.y - block.startY) < 0.1;
       const atEndPos = Math.abs(block.x - block.endX) < 0.1 && Math.abs(block.y - block.endY) < 0.1;
@@ -2283,7 +2535,7 @@ function checkLevel7BlocksCollision(player) {
         player.y = newPlayerY;
         drawPlayer();
       }
-    }
+      }
   });
 }
 function pushPlayerWithBlock(player, block, dx, dy) {
@@ -3297,7 +3549,7 @@ function isCollision(newX, newY, pPlayer) {
           // Wait for animation to complete, then transition while preserving movement
           setTimeout(() => {
             // Clear trail canvas but keep movement state
-            trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+        trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
             trailBlocks = [];
             
             // Transition to secret level with preserved movement
@@ -3809,8 +4061,8 @@ function transitionToSecretLevel(preservedDirection) {
     clearAllTimers();
     
     // Clear canvases
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
     
     // Update the main maze image reference
     mazeImage.src = newImage.src;
@@ -3906,9 +4158,9 @@ function returnToLevelSix() {
         console.log("Level 6 image loaded successfully");
         
         // Now that image is loaded, do the transition
-        currentLevel = 6;
-        clearAllTimers();
-        
+    currentLevel = 6;
+    clearAllTimers();
+    
         // Clear canvases
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
@@ -4039,240 +4291,375 @@ unlockablesButton.addEventListener('click', () => {
 function updateUnlockablesUI() {
   const unlockablesCenterWindow = document.getElementById("unlockablesCenterWindow");
   unlockablesCenterWindow.innerHTML = "";
+  
+  // Set up container for vertical stacking with scrolling
+  unlockablesCenterWindow.style.display = "flex";
+  unlockablesCenterWindow.style.flexDirection = "column";
+  unlockablesCenterWindow.style.alignItems = "center";
+  unlockablesCenterWindow.style.gap = "20px";
+  unlockablesCenterWindow.style.overflowY = "auto";
+  unlockablesCenterWindow.style.maxHeight = "80vh";
+  unlockablesCenterWindow.style.padding = "20px 0";
+  unlockablesCenterWindow.style.scrollbarWidth = "thin";
+  unlockablesCenterWindow.style.scrollbarColor = "#999999 #222222";
+  unlockablesCenterWindow.style.msOverflowStyle = "none";
+  unlockablesCenterWindow.style.position = "relative";
+
+  // Add webkit scrollbar styles
+  const style = document.createElement('style');
+  style.textContent = `
+    #unlockablesCenterWindow::-webkit-scrollbar {
+      width: 8px;
+    }
+    #unlockablesCenterWindow::-webkit-scrollbar-track {
+      background: #222222;
+    }
+    #unlockablesCenterWindow::-webkit-scrollbar-thumb {
+      background: #999999;
+    }
+  `;
+  document.head.appendChild(style);
 
   let hasUnlockables = false;
-
-  // Ensure "isEquipped" is initialized only once
   let isBrainPaletteEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
   let isTailEffectEquipped = localStorage.getItem("isTailEffectEquipped") === "true";
 
-  // Check if "The Brain" achievement is unlocked
+  // Create array to store unlockables in order of unlock time
+  const unlockedItems = [];
+  
   if (achievementProgress.theBrain.status === "Unlocked") {
-      hasUnlockables = true;
-
-      unlockablesCenterWindow.innerHTML = "";
-
-      // Disable flex layout of the center window
-      unlockablesCenterWindow.style.display = "block"; // Switch to block layout for stacking
-      unlockablesCenterWindow.style.alignItems = "flex-start";
-
-      // Create the unlockable container for "The Brain"
-      const unlockable = document.createElement("div");
-      unlockable.style.display = "flex";
-      unlockable.style.justifyContent = "space-between";
-      unlockable.style.alignItems = "center";
-      unlockable.style.width = "90%";
-      unlockable.style.margin = "20px auto 0"; // Align to top with extra margin at the top
-      unlockable.style.padding = "0px"; // Increased padding for larger height
-      unlockable.style.backgroundColor = "#222222";
-      unlockable.style.borderRadius = "0px";
-      unlockable.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0)";
-      unlockable.style.color = "#CCCCCC";
-      unlockable.style.minHeight = "120px"; // Further increase height
-
-      // Title (left)
-      const title = document.createElement("div");
-      title.style.marginLeft = "70px";
-      title.style.width = "268px"; // Limit the width
-      title.style.fontSize = "29px"; // Adjust font size
-      title.style.fontWeight = "bold";
-      title.style.lineHeight = "1.2"; // Adjust line height for proper spacing
-      title.style.textAlign = "center"; // Center text within the title container
-      title.style.display = "flex";
-      title.style.flexDirection = "column"; // Ensure multi-line text is treated as a column
-      title.style.justifyContent = "center"; // Vertically align text
-      title.style.gap = "10px"; // Add spacing between lines
-
-      // "The Brain" text with custom background
-      const brainText = document.createElement("span");
-      brainText.textContent = "\"the brain\"";
-      brainText.style.fontSize = "40px";
-      brainText.style.fontStyle = "italic";
-      brainText.style.fontWeight = "bold"; // Bold text
-      brainText.style.fontFamily = "MS Mincho";
-      brainText.style.backgroundColor = "#cccccc";
-      brainText.style.color = "#D1406E";
-      brainText.style.padding = "0px"; // Padding inside the text box
-      brainText.style.borderRadius = "0px"; // Optional rounded corners
-      brainText.style.display = "inline-block"; // Ensure proper box rendering
-
-      // "Palette" text with custom background
-      const paletteText = document.createElement("span");
-      paletteText.style.width = "100px";
-      paletteText.style.marginLeft = "35px";
-      paletteText.textContent = "palette";
-      paletteText.style.backgroundColor = "#cccccc";
-      paletteText.style.color = "#222222";
-      paletteText.style.padding = "0px"; // Padding inside the text box
-      paletteText.style.borderRadius = "0px"; // Optional rounded corners
-      paletteText.style.display = "inline-block"; // Ensure proper box rendering
-
-      // Append the styled text elements to the title container
-      title.appendChild(brainText);
-      title.appendChild(paletteText);
-
-      unlockable.appendChild(title);
-
-      // Icon (middle)
-      const icon = document.createElement("img");
-      icon.src = "assets/images/brainpalette.svg"; // Path to the unlockable icon
-      icon.alt = "Brain Palette Icon";
-      icon.style.width = "200px"; // Adjust icon size
-      icon.style.height = "200px";
-      icon.style.margin = "0 15px"; // Add margin for spacing
-      unlockable.appendChild(icon);
-
-      // Equip Button (right)
-      const equipButton = document.createElement("button");
-      equipButton.textContent = isBrainPaletteEquipped ? "unequip" : "equip";
-      equipButton.style.fontFamily = "CustomFont";
-      equipButton.style.width = isBrainPaletteEquipped ? "145px" : "100px";
-      equipButton.style.marginLeft = "10px"; // Bring the button closer to the icon
-      equipButton.style.marginRight = "100px";
-      equipButton.style.padding = "0px 0px"; // Adjust padding for larger height
-      equipButton.style.fontSize = "34px";
-      equipButton.style.backgroundColor = "#CCCCCC";
-      equipButton.style.color = "#222222";
-      equipButton.style.border = "none";
-      equipButton.style.borderRadius = "0px";
-      equipButton.style.cursor = "pointer";
-
-      equipButton.addEventListener("click", () => {
-          isBrainPaletteEquipped = !isBrainPaletteEquipped;
-          equipButton.textContent = isBrainPaletteEquipped ? "unequip" : "equip";
-          equipButton.style.width = isBrainPaletteEquipped ? "145px" : "100px";
-          localStorage.setItem("isBrainPaletteEquipped", isBrainPaletteEquipped);
-
-          console.log("Toggling equip state:", isBrainPaletteEquipped);
-          applyGameColors(isBrainPaletteEquipped);
-          updateCanvasBorder();
-          updateTrackerContainerStyle();
-          updateControlButtonStyles();
-      });
-
-      equipButton.addEventListener("mouseover", () => {
-          equipButton.style.backgroundColor = "#222222";
-          equipButton.style.color = "#CCCCCC";
-      });
-      equipButton.addEventListener("mouseout", () => {
-          equipButton.style.backgroundColor = "#cccccc";
-          equipButton.style.color = "#222222";
-      });
-
-      unlockable.appendChild(equipButton);
-
-      // Append the unlockable to the center window
-      unlockablesCenterWindow.appendChild(unlockable);
-
-      applyGameColors(isBrainPaletteEquipped);
+    unlockedItems.push({
+      type: 'brain',
+      element: createBrainUnlockable(isBrainPaletteEquipped)
+    });
+  }
+  
+  if (achievementProgress.theTail.status === "Unlocked") {
+    unlockedItems.push({
+      type: 'tail',
+      element: createTailUnlockable(isTailEffectEquipped)
+    });
+  }
+  
+  if (achievementProgress.theSoul.status === "Unlocked") {
+    unlockedItems.push({
+      type: 'soul',
+      element: createSoulUnlockable()
+    });
   }
 
-  // Add a simple background for "The Tail" unlockable when unlocked
-  if (achievementProgress.theTail.status === "Unlocked") {
-      unlockablesCenterWindow.style.alignItems = "flex-start";
-      hasUnlockables = true;
-
-      const tailUnlockable = document.createElement("div");
-      tailUnlockable.style.display = "flex";
-      tailUnlockable.style.justifyContent = "space-between";
-      tailUnlockable.style.alignItems = "center";
-      tailUnlockable.style.width = "90%";
-      tailUnlockable.style.margin = "20px auto 0";
-      tailUnlockable.style.padding = "0px";
-      tailUnlockable.style.backgroundColor = "#222222";
-      tailUnlockable.style.color = "#CCCCCC";
-      tailUnlockable.style.minHeight = "120px";
-
-      // Title (left)
-      const tailTitle = document.createElement("div");
-      tailTitle.style.marginLeft = "70px";
-      tailTitle.style.width = "268px";
-      tailTitle.style.fontSize = "29px";
-      tailTitle.style.fontWeight = "bold";
-      tailTitle.style.lineHeight = "1.2";
-      tailTitle.style.textAlign = "center";
-      tailTitle.style.display = "flex";
-      tailTitle.style.flexDirection = "column";
-      tailTitle.style.justifyContent = "center";
-      tailTitle.style.gap = "10px";
-
-      const tailMainText = document.createElement("span");
-      tailMainText.textContent = "\"the tail\"";
-      tailMainText.style.fontSize = "40px";
-      tailMainText.style.fontStyle = "italic";
-      tailMainText.style.fontWeight = "bold";
-      tailMainText.style.fontFamily = "MS Mincho";
-      tailMainText.style.backgroundColor = "#F0A8C4";
-      tailMainText.style.color = "#222222";
-      tailMainText.style.display = "inline-block";
-
-      const tailSubText = document.createElement("span");
-      tailSubText.textContent = "effect";
-      tailSubText.style.width = "100px";
-      tailSubText.style.marginLeft = "35px";
-      tailSubText.style.backgroundColor = "#cccccc";
-      tailSubText.style.color = "#222222";
-      tailSubText.style.display = "inline-block";
-
-      tailTitle.appendChild(tailMainText);
-      tailTitle.appendChild(tailSubText);
-
-      tailUnlockable.appendChild(tailTitle);
-
-      // Icon (middle)
-      const tailIcon = document.createElement("img");
-      tailIcon.src = "assets/images/taileffect3.svg";
-      tailIcon.alt = "Tail Effect Icon";
-      tailIcon.style.width = "230px";
-      tailIcon.style.height = "200px";
-      tailIcon.style.margin = "0 15px";
-      tailUnlockable.appendChild(tailIcon);
-
-      // Equip Button (right)
-      const tailEquipButton = document.createElement("button");
-      tailEquipButton.textContent = isTailEffectEquipped ? "unequip" : "equip";
-      tailEquipButton.style.fontFamily = "CustomFont";
-      tailEquipButton.style.width = isTailEffectEquipped ? "145px" : "100px";
-      tailEquipButton.style.marginLeft = "10px";
-      tailEquipButton.style.marginRight = "100px";
-      tailEquipButton.style.fontSize = "34px";
-      tailEquipButton.style.backgroundColor = "#CCCCCC";
-      tailEquipButton.style.color = "#222222";
-      tailEquipButton.style.border = "none";
-      tailEquipButton.style.cursor = "pointer";
-
-      tailEquipButton.addEventListener("click", () => {
-          isTailEffectEquipped = !isTailEffectEquipped;
-          tailEquipButton.textContent = isTailEffectEquipped ? "unequip" : "equip";
-          tailEquipButton.style.width = isTailEffectEquipped ? "145px" : "100px";
-          localStorage.setItem("isTailEffectEquipped", isTailEffectEquipped);
-
-          if (isTailEffectEquipped) {
-              console.log("Tail effect equipped! Add your changes here.");
-          } else {
-              unequipTailEffect();
-              console.log("Tail effect unequipped! Revert changes here.");
-          }
-      });
-
-      tailEquipButton.addEventListener("mouseover", () => {
-          tailEquipButton.style.backgroundColor = "#222222";
-          tailEquipButton.style.color = "#CCCCCC";
-      });
-      tailEquipButton.addEventListener("mouseout", () => {
-          tailEquipButton.style.backgroundColor = "#cccccc";
-          tailEquipButton.style.color = "#222222";
-      });
-
-      tailUnlockable.appendChild(tailEquipButton);
-
-      unlockablesCenterWindow.appendChild(tailUnlockable);
+  if (unlockedItems.length > 0) {
+    hasUnlockables = true;
+    
+    // Create a wrapper div for the unlockables
+    const unlockablesWrapper = document.createElement('div');
+    unlockablesWrapper.style.display = 'flex';
+    unlockablesWrapper.style.flexDirection = 'column';
+    unlockablesWrapper.style.gap = '20px';
+    unlockablesWrapper.style.width = '100%';
+    unlockablesWrapper.style.paddingTop = '20px';
+    
+    // Append unlockables in order
+    unlockedItems.forEach(item => {
+      unlockablesWrapper.appendChild(item.element);
+    });
+    
+    unlockablesCenterWindow.appendChild(unlockablesWrapper);
+    
+    // Reset scroll position after a short delay to ensure DOM is updated
+    requestAnimationFrame(() => {
+      unlockablesCenterWindow.scrollTop = 0;
+    });
   }
 
   if (!hasUnlockables) {
-      // Re-enable flex layout if there are no unlockables
-      unlockablesCenterWindow.style.display = "flex"; // Re-enable flex layout for normal behavior
-      unlockablesCenterWindow.style.alignItems = "center";
-      unlockablesCenterWindow.innerHTML = "nothing here... for now";
+    unlockablesCenterWindow.innerHTML = "nothing here... for now";
   }
+}
+
+// Helper functions to create unlockables (keep existing creation logic)
+function createBrainUnlockable(isEquipped) {
+  const unlockable = document.createElement("div");
+  unlockable.style.display = "flex";
+  unlockable.style.justifyContent = "space-between";
+  unlockable.style.alignItems = "center";
+  unlockable.style.width = "90%";
+  unlockable.style.margin = "0 auto";
+  unlockable.style.padding = "20px 0";
+  unlockable.style.backgroundColor = "#222222";
+  unlockable.style.color = "#CCCCCC";
+  unlockable.style.minHeight = "240px";
+
+  // Title (left)
+  const title = document.createElement("div");
+  title.style.marginLeft = "70px";
+  title.style.width = "268px";
+  title.style.fontSize = "29px";
+  title.style.fontWeight = "bold";
+  title.style.lineHeight = "1.2";
+  title.style.textAlign = "center";
+  title.style.display = "flex";
+  title.style.flexDirection = "column";
+  title.style.justifyContent = "center";
+  title.style.gap = "10px";
+
+  const brainText = document.createElement("span");
+  brainText.textContent = "\"the brain\"";
+  brainText.style.fontSize = "40px";
+  brainText.style.fontStyle = "italic";
+  brainText.style.fontWeight = "bold";
+  brainText.style.fontFamily = "MS Mincho";
+  brainText.style.backgroundColor = "#cccccc";
+  brainText.style.color = "#D1406E";
+  brainText.style.display = "inline-block";
+
+  const paletteText = document.createElement("span");
+  paletteText.textContent = "palette";
+  paletteText.style.width = "100px";
+  paletteText.style.marginLeft = "35px";
+  paletteText.style.backgroundColor = "#cccccc";
+  paletteText.style.color = "#222222";
+  paletteText.style.display = "inline-block";
+
+  title.appendChild(brainText);
+  title.appendChild(paletteText);
+  unlockable.appendChild(title);
+
+  // Icon (middle)
+  const icon = document.createElement("img");
+  icon.src = "assets/images/brainpalette.svg";
+  icon.alt = "Brain Palette Icon";
+  icon.style.width = "200px";
+  icon.style.height = "200px";
+  icon.style.margin = "0 15px";
+  unlockable.appendChild(icon);
+
+  // Equip Button (right)
+  const equipButton = document.createElement("button");
+  equipButton.textContent = isEquipped ? "unequip" : "equip";
+  equipButton.style.fontFamily = "CustomFont";
+  equipButton.style.width = isEquipped ? "145px" : "100px";
+  equipButton.style.marginLeft = "10px";
+  equipButton.style.marginRight = "100px";
+  equipButton.style.fontSize = "34px";
+  equipButton.style.backgroundColor = "#CCCCCC";
+  equipButton.style.color = "#222222";
+  equipButton.style.border = "none";
+  equipButton.style.cursor = "pointer";
+
+  equipButton.addEventListener("click", () => {
+    isEquipped = !isEquipped;
+    equipButton.textContent = isEquipped ? "unequip" : "equip";
+    equipButton.style.width = isEquipped ? "145px" : "100px";
+    localStorage.setItem("isBrainPaletteEquipped", isEquipped);
+
+    console.log("Toggling equip state:", isEquipped);
+    applyGameColors(isEquipped);
+    updateCanvasBorder();
+    updateTrackerContainerStyle();
+    updateControlButtonStyles();
+  });
+
+  equipButton.addEventListener("mouseover", () => {
+    equipButton.style.backgroundColor = "#222222";
+    equipButton.style.color = "#CCCCCC";
+  });
+  equipButton.addEventListener("mouseout", () => {
+    equipButton.style.backgroundColor = "#cccccc";
+    equipButton.style.color = "#222222";
+  });
+
+  unlockable.appendChild(equipButton);
+  return unlockable;
+}
+
+function createTailUnlockable(isEquipped) {
+  const unlockable = document.createElement("div");
+  unlockable.style.display = "flex";
+  unlockable.style.justifyContent = "space-between";
+  unlockable.style.alignItems = "center";
+  unlockable.style.width = "90%";
+  unlockable.style.margin = "0 auto";
+  unlockable.style.padding = "20px 0";
+  unlockable.style.backgroundColor = "#222222";
+  unlockable.style.color = "#CCCCCC";
+  unlockable.style.minHeight = "240px";
+
+  // Title (left)
+  const title = document.createElement("div");
+  title.style.marginLeft = "70px";
+  title.style.width = "268px";
+  title.style.fontSize = "29px";
+  title.style.fontWeight = "bold";
+  title.style.lineHeight = "1.2";
+  title.style.textAlign = "center";
+  title.style.display = "flex";
+  title.style.flexDirection = "column";
+  title.style.justifyContent = "center";
+  title.style.gap = "10px";
+
+  const tailMainText = document.createElement("span");
+  tailMainText.textContent = "\"the tail\"";
+  tailMainText.style.fontSize = "40px";
+  tailMainText.style.fontStyle = "italic";
+  tailMainText.style.fontWeight = "bold";
+  tailMainText.style.fontFamily = "MS Mincho";
+  tailMainText.style.backgroundColor = "#F0A8C4";
+  tailMainText.style.color = "#222222";
+  tailMainText.style.display = "inline-block";
+
+  const tailSubText = document.createElement("span");
+  tailSubText.textContent = "effect";
+  tailSubText.style.width = "100px";
+  tailSubText.style.marginLeft = "35px";
+  tailSubText.style.backgroundColor = "#cccccc";
+  tailSubText.style.color = "#222222";
+  tailSubText.style.display = "inline-block";
+
+  title.appendChild(tailMainText);
+  title.appendChild(tailSubText);
+  unlockable.appendChild(title);
+
+  // Icon (middle)
+  const tailIcon = document.createElement("img");
+  tailIcon.src = "assets/images/taileffect3.svg";
+  tailIcon.alt = "Tail Effect Icon";
+  tailIcon.style.width = "230px";
+  tailIcon.style.height = "200px";
+  tailIcon.style.margin = "0 15px";
+  unlockable.appendChild(tailIcon);
+
+  // Equip Button (right)
+  const tailEquipButton = document.createElement("button");
+  tailEquipButton.textContent = isEquipped ? "unequip" : "equip";
+  tailEquipButton.style.fontFamily = "CustomFont";
+  tailEquipButton.style.width = isEquipped ? "145px" : "100px";
+  tailEquipButton.style.marginLeft = "10px";
+  tailEquipButton.style.marginRight = "100px";
+  tailEquipButton.style.fontSize = "34px";
+  tailEquipButton.style.backgroundColor = "#CCCCCC";
+  tailEquipButton.style.color = "#222222";
+  tailEquipButton.style.border = "none";
+  tailEquipButton.style.cursor = "pointer";
+
+  tailEquipButton.addEventListener("click", () => {
+    isEquipped = !isEquipped;
+    tailEquipButton.textContent = isEquipped ? "unequip" : "equip";
+    tailEquipButton.style.width = isEquipped ? "145px" : "100px";
+    localStorage.setItem("isTailEffectEquipped", isEquipped);
+
+    if (isEquipped) {
+      console.log("Tail effect equipped!");
+    } else {
+      unequipTailEffect();
+      console.log("Tail effect unequipped!");
+    }
+  });
+
+  tailEquipButton.addEventListener("mouseover", () => {
+    tailEquipButton.style.backgroundColor = "#222222";
+    tailEquipButton.style.color = "#CCCCCC";
+  });
+  tailEquipButton.addEventListener("mouseout", () => {
+    tailEquipButton.style.backgroundColor = "#cccccc";
+    tailEquipButton.style.color = "#222222";
+  });
+
+  unlockable.appendChild(tailEquipButton);
+  return unlockable;
+}
+
+function createSoulUnlockable() {
+  const unlockable = document.createElement("div");
+  unlockable.style.display = "flex";
+  unlockable.style.justifyContent = "space-between";
+  unlockable.style.alignItems = "center";
+  unlockable.style.width = "90%";
+  unlockable.style.margin = "0 auto";
+  unlockable.style.padding = "20px 0";
+  unlockable.style.backgroundColor = "#222222";
+  unlockable.style.color = "#CCCCCC";
+  unlockable.style.minHeight = "240px";
+
+  // Title (left)
+  const title = document.createElement("div");
+  title.style.marginLeft = "70px";
+  title.style.width = "268px";
+  title.style.fontSize = "29px";
+  title.style.fontWeight = "bold";
+  title.style.lineHeight = "1.2";
+  title.style.textAlign = "center";
+  title.style.display = "flex";
+  title.style.flexDirection = "column";
+  title.style.justifyContent = "center";
+  title.style.gap = "10px";
+
+  const soulMainText = document.createElement("span");
+  soulMainText.textContent = "\"the soul\"";
+  soulMainText.style.fontSize = "40px";
+  soulMainText.style.fontStyle = "italic";
+  soulMainText.style.fontWeight = "bold";
+  soulMainText.style.fontFamily = "MS Mincho";
+  soulMainText.style.backgroundColor = "#cccccc";
+  soulMainText.style.color = "#222222";
+  soulMainText.style.display = "inline-block";
+
+  const soulSubText = document.createElement("span");
+  soulSubText.textContent = "appearance";
+  soulSubText.style.width = "100px";
+  soulSubText.style.marginLeft = "35px";
+  soulSubText.style.backgroundColor = "#cccccc";
+  soulSubText.style.color = "#222222";
+  soulSubText.style.display = "inline-block";
+
+  title.appendChild(soulMainText);
+  title.appendChild(soulSubText);
+  unlockable.appendChild(title);
+
+  // Placeholder Icon (middle)
+  const placeholderIcon = document.createElement("div");
+  placeholderIcon.style.width = "200px";
+  placeholderIcon.style.height = "200px";
+  placeholderIcon.style.margin = "0 15px";
+  placeholderIcon.style.backgroundColor = "#333333";
+  placeholderIcon.style.display = "flex";
+  placeholderIcon.style.justifyContent = "center";
+  placeholderIcon.style.alignItems = "center";
+  placeholderIcon.textContent = "?";
+  placeholderIcon.style.fontSize = "100px";
+  placeholderIcon.style.color = "#444444";
+  unlockable.appendChild(placeholderIcon);
+
+  // Equip Button (right)
+  const equipButton = document.createElement("button");
+  let isSoulAppearanceEquipped = localStorage.getItem("isSoulAppearanceEquipped") === "true";
+  equipButton.textContent = isSoulAppearanceEquipped ? "unequip" : "equip";
+  equipButton.style.fontFamily = "CustomFont";
+  equipButton.style.width = isSoulAppearanceEquipped ? "145px" : "100px";
+  equipButton.style.marginLeft = "10px";
+  equipButton.style.marginRight = "100px";
+  equipButton.style.fontSize = "34px";
+  equipButton.style.backgroundColor = "#CCCCCC";
+  equipButton.style.color = "#222222";
+  equipButton.style.border = "none";
+  equipButton.style.cursor = "pointer";
+
+  equipButton.addEventListener("click", () => {
+    isSoulAppearanceEquipped = !isSoulAppearanceEquipped;
+    equipButton.textContent = isSoulAppearanceEquipped ? "unequip" : "equip";
+    equipButton.style.width = isSoulAppearanceEquipped ? "145px" : "100px";
+    localStorage.setItem("isSoulAppearanceEquipped", isSoulAppearanceEquipped);
+  });
+
+  equipButton.addEventListener("mouseover", () => {
+    equipButton.style.backgroundColor = "#222222";
+    equipButton.style.color = "#CCCCCC";
+  });
+  equipButton.addEventListener("mouseout", () => {
+    equipButton.style.backgroundColor = "#cccccc";
+    equipButton.style.color = "#222222";
+  });
+
+  unlockable.appendChild(equipButton);
+  return unlockable;
 }
