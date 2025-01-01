@@ -28,6 +28,9 @@ const animationContainer = document.getElementById('animationContainer');
 
 const soundEffect = new Audio('blockhit3.mp3'); // Replace with your sound file path
 
+// Add soul image loading at the top with other global variables
+const soulImage = new Image();
+soulImage.src = "soul1.png";
 
 document.addEventListener("DOMContentLoaded", () => {
   const startScreen = document.getElementById("startScreen");
@@ -100,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Delay the animation to ensure the reset is visible
     setTimeout(() => {
-      updateAchievementUIAnimated();
+        updateAchievementUIAnimated();
     }, 100);
   });
 
@@ -277,7 +280,7 @@ function updateAchievementUIAnimated() {
         brainProgressPercentage.textContent = `${progress}%`;
       },
       () => {
-        brainAchievementStatus.textContent = achievementProgress.theBrain.status;
+          brainAchievementStatus.textContent = achievementProgress.theBrain.status;
       }
     );
   }
@@ -291,7 +294,7 @@ function updateAchievementUIAnimated() {
         tailProgressPercentage.textContent = `${progress}%`;
       },
       () => {
-        tailAchievementStatus.textContent = achievementProgress.theTail.status;
+          tailAchievementStatus.textContent = achievementProgress.theTail.status;
       }
     );
   }
@@ -454,7 +457,7 @@ function updateAchievementUIAnimated() {
         brainProgressPercentage.textContent = `${progress}%`;
       },
       () => {
-        brainAchievementStatus.textContent = achievementProgress.theBrain.status;
+    brainAchievementStatus.textContent = achievementProgress.theBrain.status;
       }
     );
   }
@@ -468,7 +471,7 @@ function updateAchievementUIAnimated() {
         tailProgressPercentage.textContent = `${progress}%`;
       },
       () => {
-        tailAchievementStatus.textContent = achievementProgress.theTail.status;
+    tailAchievementStatus.textContent = achievementProgress.theTail.status;
       }
     );
   }
@@ -489,6 +492,9 @@ function updateAchievementUIAnimated() {
 }
 
 unlockablesButton.addEventListener('click', () => {
+  updateUnlockablesUI();
+  const unlockablesCenterWindow = document.getElementById('unlockablesCenterWindow');
+  unlockablesCenterWindow.scrollTop = 0; // Reset scroll position to top
   unlockablesScreen.style.display = 'flex';
 });
 
@@ -655,7 +661,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function updateUnlockablesUI() {
   const unlockablesCenterWindow = document.getElementById("unlockablesCenterWindow");
   unlockablesCenterWindow.innerHTML = "";
-  
+
   // Set up container for vertical stacking with scrolling
   unlockablesCenterWindow.style.display = "flex";
   unlockablesCenterWindow.style.flexDirection = "column";
@@ -713,8 +719,8 @@ function updateUnlockablesUI() {
   }
 
   if (unlockedItems.length > 0) {
-    hasUnlockables = true;
-    
+      hasUnlockables = true;
+
     // Create a wrapper div for the unlockables
     const unlockablesWrapper = document.createElement('div');
     unlockablesWrapper.style.display = 'flex';
@@ -970,7 +976,7 @@ function createSoulUnlockable() {
 
   const soulSubText = document.createElement("span");
   soulSubText.textContent = "appearance";
-  soulSubText.style.width = "100px";
+  soulSubText.style.width = "169px";
   soulSubText.style.marginLeft = "35px";
   soulSubText.style.backgroundColor = "#cccccc";
   soulSubText.style.color = "#222222";
@@ -1009,10 +1015,12 @@ function createSoulUnlockable() {
   equipButton.style.cursor = "pointer";
 
   equipButton.addEventListener("click", () => {
-    isSoulAppearanceEquipped = !isSoulAppearanceEquipped;
-    equipButton.textContent = isSoulAppearanceEquipped ? "unequip" : "equip";
-    equipButton.style.width = isSoulAppearanceEquipped ? "145px" : "100px";
-    localStorage.setItem("isSoulAppearanceEquipped", isSoulAppearanceEquipped);
+    const wasEquipped = localStorage.getItem("isSoulAppearanceEquipped") === "true";
+    localStorage.setItem("isSoulAppearanceEquipped", !wasEquipped);
+    equipButton.textContent = !wasEquipped ? "unequip" : "equip";
+    
+    // Redraw the player with the new appearance
+    drawPlayer();
   });
 
   equipButton.addEventListener("mouseover", () => {
@@ -1036,12 +1044,6 @@ function unequipTailEffect() {
   activeTrailSegments = []; // Assuming trail segments are tracked in this array
   localStorage.setItem("isTailEffectEquipped", false);
 }
-
-// Call this function when the unlockables screen is shown
-unlockablesButton.addEventListener("click", () => {
-  updateUnlockablesUI();
-  unlockablesScreen.style.display = "flex";
-});
 
 function applyGameColors(isEquipped) {
   const levelAnnouncement = document.getElementById("levelAnnouncement");
@@ -1126,6 +1128,17 @@ function applyGameColors(isEquipped) {
       }, highlightDuration); // Wait before reverting
     }, delayBeforeHighlight + index * interval);
   });
+
+  // Update gap color in level 6
+  if (currentLevel === 6) {
+    const gapColor = isEquipped ? "#F96D99" : "rgb(153, 153, 153)";
+    gaps.forEach(gap => {
+      if (gap.isEntranceGap) {
+        gap.color = gapColor;
+      }
+    });
+    renderMazeWithGaps(ctx, gaps);
+  }
 }
 
 let timerInterval;
@@ -2262,10 +2275,13 @@ function startGame(mazeImageSrc, exitPosition, playerPosition) {
 
     // Level-specific initialization
     if (currentLevel === 6) {
+      const isEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
+      const gapColor = isEquipped ? "#F96D99" : "rgb(153, 153, 153)";
+      
       // Initialize gaps for Level 6
       gaps.push({
         level: 6,
-        x: 391, // Adjust to your gap's coordinates
+        x: 391,
         y: 271,
         width: 31,
         height: 20,
@@ -2273,10 +2289,12 @@ function startGame(mazeImageSrc, exitPosition, playerPosition) {
       });
       gaps.push({
         level: 6,
-        x: 411, // Adjust to your gap's coordinates
+        x: 411,
         y: 271,
         width: 11,
         height: 20,
+        isEntranceGap: true,
+        color: gapColor
       });
       console.log("Gaps initialized for level 6:", gaps);
 
@@ -3095,6 +3113,7 @@ let trailTimeout = null;
 
 function drawPlayer(cPlayer) {
   const isTailEquipped = localStorage.getItem("isTailEffectEquipped") === "true";
+  const isSoulEquipped = localStorage.getItem("isSoulAppearanceEquipped") === "true";
 
   // Draw everything except trail blocks first
   recolorMaze();
@@ -3112,14 +3131,30 @@ function drawPlayer(cPlayer) {
     ctx.fillRect(cPlayer.x, cPlayer.y, cPlayer.size, cPlayer.size);
   }
 
-  ctx.fillStyle = player.color;
-  ctx.fillRect(player.x, player.y, player.size, player.size);
-
-  // Draw trail blocks last so they're on top
+  // Draw trail blocks
   if (isTailEquipped && !isTrailAnimating) {
+    // Clear the trail canvas first
+    trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+    
+    // Draw all trail blocks except current player position
     trailCtx.fillStyle = player.color;
-    trailCtx.fillRect(player.x, player.y, player.size, player.size);
+    trailBlocks.forEach(block => {
+      // Only draw if this block is not at the current player position
+      if (block.x !== player.x || block.y !== player.y) {
+        trailCtx.fillRect(block.x, block.y, player.size, player.size);
+      }
+    });
+    
+    // Draw the trail
     ctx.drawImage(trailCanvas, 0, 0);
+  }
+
+  // Draw the player with soul image or default square
+  if (isSoulEquipped && soulImage.complete) {
+    ctx.drawImage(soulImage, player.x, player.y, player.size, player.size);
+  } else {
+    ctx.fillStyle = player.color;
+    ctx.fillRect(player.x, player.y, player.size, player.size);
   }
 }
 
@@ -3278,6 +3313,8 @@ function startMoving(onMoveComplete) {
   const isTailEquipped = localStorage.getItem("isTailEffectEquipped") === "true";
   const startX = player.x;
   const startY = player.y;
+  let lastTrailX = startX;
+  let lastTrailY = startY;
 
   const doTheMove = () => {
     const newX = player.x + dx;
@@ -3289,31 +3326,17 @@ function startMoving(onMoveComplete) {
       player.y = Math.round(player.y / blockSize) * blockSize;
       isMoving = false;
 
-      // Only add trail block if we've moved a full block
+      // Add final trail block at the last position
       if (isTailEquipped) {
-        // Calculate blocks moved by counting 20-pixel increments
-        const distanceX = Math.abs(player.x - startX);
-        const distanceY = Math.abs(player.y - startY);
-        const blocksMovedX = Math.floor(distanceX / blockSize);
-        const blocksMovedY = Math.floor(distanceY / blockSize);
-        
-        // Use the larger distance for diagonal movement
-        const blocksMoved = Math.max(blocksMovedX, blocksMovedY);
-
-        if (blocksMoved > 0) {
-          // Add intermediate blocks along the path
-          for (let i = 1; i <= blocksMoved; i++) {
-            const ratio = i / blocksMoved;
-            const blockX = startX + Math.round((player.x - startX) * ratio);
-            const blockY = startY + Math.round((player.y - startY) * ratio);
-            
-            trailBlocks.push({ x: blockX, y: blockY });
-            console.log("Added trail block at:", { x: blockX, y: blockY });
-          trailCtx.fillStyle = player.color;
-            trailCtx.fillRect(blockX, blockY, player.size, player.size);
+        trailBlocks.push({ x: lastTrailX, y: lastTrailY });
+        // Clear trail canvas and redraw all blocks except current position
+        trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+        trailBlocks.forEach(block => {
+          if (block.x !== player.x || block.y !== player.y) {
+            trailCtx.fillStyle = player.color;
+            trailCtx.fillRect(block.x, block.y, player.size, player.size);
           }
-          console.log(`Total blocks moved: ${blocksMoved}`);
-        }
+        });
       }
 
       drawPlayer();
@@ -3329,6 +3352,29 @@ function startMoving(onMoveComplete) {
       player.x = newX;
       player.y = newY;
 
+      // Add trail blocks during movement
+      if (isTailEquipped) {
+        const distanceX = Math.abs(player.x - lastTrailX);
+        const distanceY = Math.abs(player.y - lastTrailY);
+        
+        // Add a new trail block every blockSize pixels
+        if (distanceX >= blockSize || distanceY >= blockSize) {
+          trailBlocks.push({ x: lastTrailX, y: lastTrailY });
+          // Clear trail canvas and redraw all blocks except current position
+          trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+          trailBlocks.forEach(block => {
+            if (block.x !== player.x || block.y !== player.y) {
+              trailCtx.fillStyle = player.color;
+              trailCtx.fillRect(block.x, block.y, player.size, player.size);
+            }
+          });
+          
+          // Update last trail position
+          lastTrailX = player.x;
+          lastTrailY = player.y;
+        }
+      }
+
       drawPlayer();
       checkCheckpointCollision();
       if (currentLevel === 7) checkLevel7BlocksCollision(player);
@@ -3338,7 +3384,7 @@ function startMoving(onMoveComplete) {
     }
   };
 
-  requestAnimationFrame(doTheMove);
+  doTheMove();
 }
 
 // Modify restartGame to clear trail state
@@ -3530,7 +3576,7 @@ function isCollision(newX, newY, pPlayer) {
           returnToLevelSix();
         }
       }
-    } else if (currentLevel === 6) {
+    } else if (currentLevel === 6 && !isTransitioning) {
       // Check for secret level entrance
       const secretGap = gaps.find(gap => gap.width === 11 && gap.height === 20);
       if (secretGap && 
@@ -3715,6 +3761,8 @@ function startMoving(onMoveComplete) {
   const isTailEquipped = localStorage.getItem("isTailEffectEquipped") === "true";
   const startX = player.x;
   const startY = player.y;
+  let lastTrailX = startX;
+  let lastTrailY = startY;
 
   const doTheMove = () => {
     const newX = player.x + dx;
@@ -3726,31 +3774,17 @@ function startMoving(onMoveComplete) {
       player.y = Math.round(player.y / blockSize) * blockSize;
       isMoving = false;
 
-      // Only add trail block if we've moved a full block
+      // Add final trail block at the last position
       if (isTailEquipped) {
-        // Calculate blocks moved by counting 20-pixel increments
-        const distanceX = Math.abs(player.x - startX);
-        const distanceY = Math.abs(player.y - startY);
-        const blocksMovedX = Math.floor(distanceX / blockSize);
-        const blocksMovedY = Math.floor(distanceY / blockSize);
-        
-        // Use the larger distance for diagonal movement
-        const blocksMoved = Math.max(blocksMovedX, blocksMovedY);
-
-        if (blocksMoved > 0) {
-          // Add intermediate blocks along the path
-          for (let i = 1; i <= blocksMoved; i++) {
-            const ratio = i / blocksMoved;
-            const blockX = startX + Math.round((player.x - startX) * ratio);
-            const blockY = startY + Math.round((player.y - startY) * ratio);
-            
-            trailBlocks.push({ x: blockX, y: blockY });
-            console.log("Added trail block at:", { x: blockX, y: blockY });
-        trailCtx.fillStyle = player.color;
-            trailCtx.fillRect(blockX, blockY, player.size, player.size);
+        trailBlocks.push({ x: lastTrailX, y: lastTrailY });
+        // Clear trail canvas and redraw all blocks except current position
+        trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+        trailBlocks.forEach(block => {
+          if (block.x !== player.x || block.y !== player.y) {
+            trailCtx.fillStyle = player.color;
+            trailCtx.fillRect(block.x, block.y, player.size, player.size);
           }
-          console.log(`Total blocks moved: ${blocksMoved}`);
-        }
+        });
       }
 
       drawPlayer();
@@ -3766,6 +3800,29 @@ function startMoving(onMoveComplete) {
       player.x = newX;
       player.y = newY;
 
+      // Add trail blocks during movement
+      if (isTailEquipped) {
+        const distanceX = Math.abs(player.x - lastTrailX);
+        const distanceY = Math.abs(player.y - lastTrailY);
+        
+        // Add a new trail block every blockSize pixels
+        if (distanceX >= blockSize || distanceY >= blockSize) {
+          trailBlocks.push({ x: lastTrailX, y: lastTrailY });
+          // Clear trail canvas and redraw all blocks except current position
+          trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+          trailBlocks.forEach(block => {
+            if (block.x !== player.x || block.y !== player.y) {
+              trailCtx.fillStyle = player.color;
+              trailCtx.fillRect(block.x, block.y, player.size, player.size);
+            }
+          });
+          
+          // Update last trail position
+          lastTrailX = player.x;
+          lastTrailY = player.y;
+        }
+      }
+
       drawPlayer();
       checkCheckpointCollision();
       if (currentLevel === 7) checkLevel7BlocksCollision(player);
@@ -3775,7 +3832,7 @@ function startMoving(onMoveComplete) {
     }
   };
 
-  requestAnimationFrame(doTheMove);
+  doTheMove();
 }
 
 // Define an array of audio files
@@ -4045,24 +4102,38 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
+let isTransitioning = false;
+
 function transitionToSecretLevel(preservedDirection) {
-  // Only transition once to prevent multiple calls
-  if (currentLevel === "6secret") return;
+  // Prevent multiple transitions
+  if (isTransitioning || currentLevel === "6secret") return;
   
   console.log("Transitioning to secret level...");
+  isTransitioning = true;
   
-  // Create new image and preload it
+  // Create and preload new image
   const newImage = new Image();
+  newImage.onerror = (err) => {
+    console.error("Failed to load secret level image:", err);
+    isTransitioning = false;
+  };
+  
   newImage.onload = () => {
     console.log("Secret level image loaded successfully");
     
     // Now that image is loaded, do the transition
-    currentLevel = "6secret";
-    clearAllTimers();
-    
+  currentLevel = "6secret";
+  clearAllTimers();
+  
     // Clear canvases
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+    
+    // Clear all existing gaps
+    gaps.length = 0;
+    // Remove any existing gap elements from the DOM
+    const existingGaps = document.querySelectorAll('.maze-gap');
+    existingGaps.forEach(gap => gap.remove());
     
     // Update the main maze image reference
     mazeImage.src = newImage.src;
@@ -4093,18 +4164,8 @@ function transitionToSecretLevel(preservedDirection) {
     playerSteps = [];
     trackerList.innerHTML = '';
     
-    // Initialize the secret level checkpoints and gaps
-    if (localStorage.getItem('hasSecretKey') === 'true') {
-      gaps.push({
-        level: "6secret",
-        x: 0,
-        y: 131,
-        width: 20,
-        height: 20,
-        isReturnGap: true,
-        color: "rgb(153, 153, 153)"
-      });
-    } else {
+    // Initialize the secret level checkpoints
+    if (localStorage.getItem('hasSecretKey') !== 'true') {
       checkpoints.push({
         x: 340,
         y: 200,
@@ -4136,18 +4197,21 @@ function transitionToSecretLevel(preservedDirection) {
         executeMoves();
       });
     }
-  };
-  
-  newImage.onerror = (err) => {
-    console.error("Failed to load secret level image:", err);
-  };
+    
+    // Reset transitioning flag after everything is done
+    isTransitioning = false;
+  }
   
   // Start loading the image
   newImage.src = "level6secret.png";
 }
 
 function returnToLevelSix() {
+    // Prevent multiple transitions
+    if (isTransitioning || currentLevel === 6) return;
+    
     console.log("Returning to level 6...");
+    isTransitioning = true;
     
     // Store current movement direction
     const preservedDirection = currentDirection;
@@ -4204,9 +4268,16 @@ function returnToLevelSix() {
                 .trim();
             ctx.fillRect(exit.x, exit.y, exit.size, exit.size);
         };
-        
-        // Reinitialize level 6 gaps with new color
+
+        // Clear all existing gaps
         gaps.length = 0;
+        // Remove any existing gap elements from the DOM
+        const existingGaps = document.querySelectorAll('.maze-gap');
+        existingGaps.forEach(gap => gap.remove());
+
+        // Reinitialize level 6 gaps with new color
+        const isEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
+        const gapColor = isEquipped ? "#F96D99" : "rgb(153, 153, 153)";
         gaps.push({
             level: 6,
             x: 411,
@@ -4214,7 +4285,7 @@ function returnToLevelSix() {
             width: 11,
             height: 20,
             isEntranceGap: true,
-            color: "#999999"
+            color: gapColor
         });
         
         // Final redraw with clean state
@@ -4230,10 +4301,14 @@ function returnToLevelSix() {
                 executeMoves();
             });
         }
+
+        // Reset transitioning flag after everything is done
+        isTransitioning = false;
     };
     
     newImage.onerror = (err) => {
         console.error("Failed to load level 6 image:", err);
+        isTransitioning = false;
     };
     
     // Start loading the image
@@ -4280,12 +4355,6 @@ function updateControlButtonStyles() {
     };
   }
 }
-
-// Call this function when brain palette is equipped/unequipped
-unlockablesButton.addEventListener('click', () => {
-  unlockablesScreen.style.display = 'flex';
-  updateUnlockablesUI();
-});
 
 // Add the updateControlButtonStyles call to the brain palette equip button click handler
 function updateUnlockablesUI() {
@@ -4357,7 +4426,7 @@ function updateUnlockablesUI() {
     unlockablesWrapper.style.flexDirection = 'column';
     unlockablesWrapper.style.gap = '20px';
     unlockablesWrapper.style.width = '100%';
-    unlockablesWrapper.style.paddingTop = '20px';
+    unlockablesWrapper.style.paddingTop = '0px';
     
     // Append unlockables in order
     unlockedItems.forEach(item => {
@@ -4606,7 +4675,7 @@ function createSoulUnlockable() {
 
   const soulSubText = document.createElement("span");
   soulSubText.textContent = "appearance";
-  soulSubText.style.width = "100px";
+  soulSubText.style.width = "169px";
   soulSubText.style.marginLeft = "35px";
   soulSubText.style.backgroundColor = "#cccccc";
   soulSubText.style.color = "#222222";
@@ -4645,10 +4714,12 @@ function createSoulUnlockable() {
   equipButton.style.cursor = "pointer";
 
   equipButton.addEventListener("click", () => {
-    isSoulAppearanceEquipped = !isSoulAppearanceEquipped;
-    equipButton.textContent = isSoulAppearanceEquipped ? "unequip" : "equip";
-    equipButton.style.width = isSoulAppearanceEquipped ? "145px" : "100px";
-    localStorage.setItem("isSoulAppearanceEquipped", isSoulAppearanceEquipped);
+    const wasEquipped = localStorage.getItem("isSoulAppearanceEquipped") === "true";
+    localStorage.setItem("isSoulAppearanceEquipped", !wasEquipped);
+    equipButton.textContent = !wasEquipped ? "unequip" : "equip";
+    
+    // Redraw the player with the new appearance
+    drawPlayer();
   });
 
   equipButton.addEventListener("mouseover", () => {
@@ -4662,4 +4733,41 @@ function createSoulUnlockable() {
 
   unlockable.appendChild(equipButton);
   return unlockable;
+}
+
+// Modify the trail handling in the move function
+function move(direction) {
+  if (isMoving) return;
+  isMoving = true;
+
+  let newX = player.x;
+  let newY = player.y;
+
+  switch (direction) {
+    case "ArrowUp":
+      newY -= player.size;
+      break;
+    case "ArrowDown":
+      newY += player.size;
+      break;
+    case "ArrowLeft":
+      newX -= player.size;
+      break;
+    case "ArrowRight":
+      newX += player.size;
+      break;
+  }
+
+  if (!isCollision(newX, newY)) {
+    // Add the current position to trail blocks before moving
+    if (localStorage.getItem("isTailEffectEquipped") === "true") {
+      trailBlocks.push({ x: player.x, y: player.y });
+    }
+
+    player.x = newX;
+    player.y = newY;
+    drawPlayer();
+  }
+
+  isMoving = false;
 }

@@ -905,8 +905,9 @@ input[type="range"] {
 
 #unlockablesCenterWindow {
   display: flex; /* Enables flexbox */
-  justify-content: center; /* Horizontally center content */
-  align-items: center; /* Vertically center content */
+  flex-direction: column;
+  justify-content: flex-start; /* Align items to the top */
+  align-items: center; /* Center items horizontally */
   width: 100%;
   height: 100%;
   background-color: #999999;
@@ -914,6 +915,27 @@ input[type="range"] {
   text-align: center; /* Center text alignment */
   color: #222222; /* Text color */
   font-size: 24px; /* Adjust font size */
+  padding: 20px 0; /* Add padding top and bottom */
+  box-sizing: border-box; /* Include padding in height calculation */
+  overflow-y: auto; /* Enable vertical scrolling */
+}
+
+/* Add scrollbar styling for the unlockables window */
+#unlockablesCenterWindow::-webkit-scrollbar {
+  width: 8px;
+}
+
+#unlockablesCenterWindow::-webkit-scrollbar-track {
+  background: #222222;
+}
+
+#unlockablesCenterWindow::-webkit-scrollbar-thumb {
+  background: #cccccc;
+  border-radius: 4px;
+}
+
+#unlockablesCenterWindow::-webkit-scrollbar-thumb:hover {
+  background: #aaaaaa;
 }
 
 #unlockablesBackButton {
