@@ -2922,6 +2922,12 @@ function showLevelSelector() {
   resetHints();
   enableHintButton();
 
+  // Clear the tracker list
+  const trackerList = document.getElementById("trackerList");
+  if (trackerList) {
+    trackerList.innerHTML = "";
+  }
+
   document.getElementById("levelSelection").style.display = "flex";
   document.getElementById("gameContainer").style.display = "none";
   menuButton.style.display = "none"; // Hide the Menu button
