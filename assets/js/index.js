@@ -2266,128 +2266,104 @@ function showLevelAnnouncement(level, baseColor = "#999999", highlightColor = "#
 }
 
 function startGame(mazeImageSrc, exitPosition, playerPosition) {
+    // Clear existing state
+    trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+    clearCheckpoints();
+    clearLevel7Blocks();
+    gaps.length = 0;
 
-  trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
-  // Clear existing checkpoints and level-specific intervals
-  clearCheckpoints();
-  clearLevel7Blocks(); // Clear the block movement interval if it exists
+    console.log("Current Level:", currentLevel);
+    console.log("Gaps:", gaps);
 
-  console.log("Current Level:", currentLevel);
-  console.log("Gaps:", gaps);
-  
-  gaps.length = 0;
-
-  mazeImage.src = mazeImageSrc;
-
-  // Wait for the maze image to load before continuing
-  mazeImage.onload = () => {
-    console.log(`Maze image loaded: ${mazeImageSrc}`);
-
-    // Extract the maze data
-    extractMazeData();
-    // Update the player and exit positions
-    exit.x = exitPosition.x;
-    exit.y = exitPosition.y;
+    // Reset player position
+    player.x = playerPosition.x;
+    player.y = playerPosition.y;
     player.startX = playerPosition.x;
     player.startY = playerPosition.y;
 
-    // Level-specific initialization
-    if (currentLevel === 6) {
-      const isEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
-      const gapColor = isEquipped ? "#F96D99" : "rgb(153, 153, 153)";
-      
-      // Initialize gaps for Level 6
-      gaps.push({
-        level: 6,
-        x: 391,
-        y: 271,
-        width: 31,
-        height: 20,
-        color: "transparent"
-      });
-      gaps.push({
-        level: 6,
-        x: 411,
-        y: 271,
-        width: 11,
-        height: 20,
-        isEntranceGap: true,
-        color: gapColor
-      });
-      console.log("Gaps initialized for level 6:", gaps);
+    // Set exit position
+    exit.x = exitPosition.x;
+    exit.y = exitPosition.y;
 
-      // Render maze with gaps
-      renderMazeWithGaps(ctx, gaps);
-    } else if (currentLevel === 7) {
-      initializeLevel7Blocks(); // Initialize the moving block for level 7
-    } else if (currentLevel === 8) {
-      initializeCheckpoints(); // Ensure the checkpoint is valid
-      console.log("Checkpoint initialized for level 8:", checkpoints);
-    }
+    // Load maze image
+    mazeImage.src = mazeImageSrc;
 
-    // Log all checkpoints
-    checkpoints.forEach((checkpoint, index) => {
-      console.log(`Checkpoint ${index + 1}:`, checkpoint);
-    });
+    // Wait for the maze image to load before initializing
+    mazeImage.onload = () => {
+        console.log(`Maze image loaded: ${mazeImageSrc}`);
+        
+        // Extract maze data for collision detection
+        extractMazeData();
 
-    // Redraw the player and checkpoint
-    recolorMaze();
-    drawCheckpoints();
+        // Initialize level-specific features
+        if (currentLevel === 6) {
+            const isEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
+            const gapColor = isEquipped ? "#F96D99" : "rgb(153, 153, 153)";
+            
+            gaps.push({
+                level: 6,
+                x: 391,
+                y: 271,
+                width: 31,
+                height: 20,
+                color: "transparent"
+            });
+            gaps.push({
+                level: 6,
+                x: 411,
+                y: 271,
+                width: 11,
+                height: 20,
+                isEntranceGap: true,
+                color: gapColor
+            });
+            console.log("Gaps initialized for level 6:", gaps);
+        } else if (currentLevel === 7) {
+            initializeLevel7Blocks();
+        } else if (currentLevel === 8) {
+            initializeCheckpoints();
+            console.log("Checkpoint initialized for level 8:", checkpoints);
+        }
+
+        // Initial draw of all elements
+        recolorMaze();
+        
+        if (currentLevel === 6) {
+            renderMazeWithGaps(ctx, gaps);
+        }
+        
+        if (currentLevel === 7) {
+            drawLevel7Blocks(ctx);
+        }
+        
+        drawCheckpoints();
+        drawPlayer();
+        drawExit();
+    };
+
+    // Update UI elements
+    updateBodyBackgroundColor();
+    updateControlsButtonColors();
+    levelSelection.style.display = "none";
+    showLevelAnnouncement(currentLevel);
     
-    if (currentLevel === 6) {
-      
-      console.log(`Rendering maze for level ${currentLevel}`);
-      renderMazeWithGaps(ctx, gaps); 
-    }
+    const isEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
+    applyGameColors(isEquipped);
+    updateControlButtonStyles();
     
-    if (currentLevel === 7) drawLevel7Blocks(ctx);
-    drawPlayer();
-  };
-  // Change body background color based on the level
-  updateBodyBackgroundColor();
-  // Update controls button colors based on the level
-  updateControlsButtonColors();
-  levelSelection.style.display = "none";
-  // Show the level announcement
-  showLevelAnnouncement(currentLevel);
-  const isEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
-  applyGameColors(isEquipped); // Call the function to apply colors
-  updateControlButtonStyles(); // Add this line
-  // Show the game container
-  gameContainer.style.display = "block";
+    // Show game elements
+    gameContainer.style.display = "block";
+    menuButton.style.display = "block";
+    hintButton.style.display = "block";
 
-  // Show the Menu button since we're in a level
-  menuButton.style.display = "block";
+    // Update visual styles
+    updateCanvasBorder();
+    updateMazeContainerColor();
+    updateTrackerContainerStyle();
 
-  // Show the Hint button when in a level
-  hintButton.style.display = "block";
-
-  // Set the maze image and initialize the level
-  
-  //mazeImage.src = mazeImageSrc;
-
-  // Update the exit position
-  exit.x = exitPosition.x;
-  exit.y = exitPosition.y;
-
-  player.startX = playerPosition.x;
-  player.startY = playerPosition.y;
-
-  // Reset the game for the selected level
-  restartGame();
-
-  // Update the canvas border to match the current level
-  updateCanvasBorder();
-
-  // Update the maze container color
-  updateMazeContainerColor();
-
-  // Update the tracker container style for the current level
-  updateTrackerContainerStyle();
-
-  // Ensure correct visibility of the "Next Level" button
-  const nextLevelButton = document.getElementById("nextLevelButton");
-  nextLevelButton.style.display = currentLevel < 9 ? "block" : "none";
+    // Handle next level button visibility
+    const nextLevelButton = document.getElementById("nextLevelButton");
+    nextLevelButton.style.display = currentLevel < 9 ? "block" : "none";
 }
 let level7Blocks = []; // Array to hold multiple blocks
 const defLevel7Blocks = [
@@ -4479,9 +4455,12 @@ function returnToLevelSix() {
         player.x = player.startX;
         player.y = player.startY;
         
-        // Set exit position for level 6
-        exit.x = 180;
-        exit.y = 380;
+        // Set correct exit position for level 6 using the start position from stupidLevels
+        const exitPos = stupidLevels[5].s;
+        console.log("Setting level 6 exit position to:", exitPos);
+        exit.x = exitPos.x;
+        exit.y = exitPos.y;
+        console.log("Exit position after setting:", { x: exit.x, y: exit.y });
         
         // Clear existing gaps
         gaps.length = 0;
@@ -4532,10 +4511,10 @@ function returnToLevelSix() {
                 .getPropertyValue("--exit-color")
                 .trim();
             ctx.fillRect(exit.x, exit.y, exit.size, exit.size);
+            console.log("Drawing exit at:", { x: exit.x, y: exit.y });
         };
         
-        // Show level announcement
-        showLevelAnnouncement("6");
+        // Skip level announcement since we're returning to level 6
         
         // Final redraw with clean state
         recolorMaze();
