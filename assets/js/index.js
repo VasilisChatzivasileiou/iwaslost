@@ -54,6 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log("Game is starting. Loading saved data...");
   loadLevelCompletionTimes();
   loadAchievementProgress(); // Load achievements on startup
+  updateCounterStyles(); // Initialize counter styles on page load
 
   // Load saved achievement progress
   const savedProgress = localStorage.getItem('achievementProgress');
@@ -1189,11 +1190,6 @@ function hexToRgb(hex) {
         b: parseInt(result[3], 16),
       }
     : null;
-}
-
-function recolorMenuElement(hexColor) {
-  const menuElementImage = document.getElementById("menuElement");
-  menuElementImage.src = 'assets/images/logo1.png';
 }
 
 document.getElementById("menuElement").addEventListener("load", () => {
@@ -4121,9 +4117,13 @@ function updateCounterStyles() {
   
   if (counter) {
     if (isBrainPaletteEquipped) {
-      counter.classList.add('equipped');
+      counter.style.color = "#FF6A99";
+      counter.style.backgroundColor = "#8A314E";
+      counter.style.border = "2px solid #FF6A99";
     } else {
-      counter.classList.remove('equipped');
+      counter.style.color = "#999999";
+      counter.style.backgroundColor = "#222222";
+      counter.style.border = "2px solid #999999";
     }
   }
 }
