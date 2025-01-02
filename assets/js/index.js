@@ -5040,6 +5040,45 @@ const cavePlayerObj = {
 // Set camera to follow player with dead zone
 caveCamera.follow(cavePlayerObj, 0, VISIBLE_HEIGHT / 4);
 
+// Create an offscreen canvas for collision detection
+const caveCollisionCanvas = document.createElement('canvas');
+caveCollisionCanvas.width = CAVE_WIDTH;
+caveCollisionCanvas.height = CAVE_HEIGHT;
+const caveCollisionCtx = caveCollisionCanvas.getContext('2d', { willReadFrequently: true });
+caveCollisionCtx.imageSmoothingEnabled = false; // Disable smoothing for pixel-perfect collision
+
+// Load the cave image for collision detection
+const caveCollisionImage = new Image();
+caveCollisionImage.src = 'assets/images/cave1.png';
+caveCollisionImage.onload = function() {
+    // Draw the image at full size
+    caveCollisionCtx.drawImage(
+        caveCollisionImage,
+        0, 0,
+        caveCollisionImage.width, caveCollisionImage.height,  // Source dimensions
+        0, 0,
+        CAVE_WIDTH, CAVE_HEIGHT  // Destination dimensions
+    );
+};
+
+function checkCaveCollision(x, y) {
+    try {
+    // Get the pixel data at the player's position
+    const pixelData = caveCollisionCtx.getImageData(x, y, CAVE_PLAYER_SIZE, CAVE_PLAYER_SIZE).data;
+    
+    // Check if any pixel in the player's area is not fully transparent
+    for (let i = 3; i < pixelData.length; i += 4) {
+        if (pixelData[i] > 0) { // Alpha channel > 0 means not transparent
+            return true; // Collision detected
+        }
+    }
+    return false; // No collision
+    } catch (error) {
+        console.error('Collision check error:', error);
+        return false; // Return false on error to prevent blocking movement
+    }
+}
+
 function moveCavePlayer(direction) {
     const cavePlayer = document.getElementById('cavePlayer');
     const caveImage = document.getElementById('caveImage');
@@ -5063,9 +5102,10 @@ function moveCavePlayer(direction) {
             return;
     }
 
-    // Check boundaries
+    // Check boundaries and collisions
     if (newX < 0 || newX + CAVE_PLAYER_SIZE > CAVE_WIDTH ||
-        newY < 0 || newY + CAVE_PLAYER_SIZE > CAVE_HEIGHT) {
+        newY < 0 || newY + CAVE_PLAYER_SIZE > CAVE_HEIGHT ||
+        checkCaveCollision(newX, CAVE_HEIGHT - newY - CAVE_PLAYER_SIZE)) { // Convert Y coordinate
         return;
     }
 
@@ -5076,7 +5116,7 @@ function moveCavePlayer(direction) {
     // Update camera target position
     cavePlayerObj.x = cavePlayerX;
     cavePlayerObj.y = cavePlayerY;
-
+    
     // Update camera
     caveCamera.update();
 
@@ -5094,11 +5134,11 @@ function moveCavePlayer(direction) {
         caveImage.style.transform = 'translateY(0)';
     } else if (cavePlayerY >= CAVE_HEIGHT - viewportMiddle) {
         // At top of cave - player moves freely at top
-            cavePlayer.style.bottom = `${cavePlayerY - (CAVE_HEIGHT - VISIBLE_HEIGHT)}px`;
+        cavePlayer.style.bottom = `${cavePlayerY - (CAVE_HEIGHT - VISIBLE_HEIGHT)}px`;
         caveImage.style.transform = `translateY(${maxOffsetY}px)`;
-        } else {
-            // In scrolling zone - keep player centered
+    } else {
+        // In scrolling zone - keep player centered
         cavePlayer.style.bottom = `${viewportMiddle}px`;
-            caveImage.style.transform = `translateY(${scrollY}px)`;
+        caveImage.style.transform = `translateY(${scrollY}px)`;
     }
 }
