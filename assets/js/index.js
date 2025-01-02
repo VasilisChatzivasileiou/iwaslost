@@ -4899,6 +4899,12 @@ function resetCaveState() {
     // Reset cave image position
     const caveImage = document.getElementById('caveImage');
     caveImage.style.transform = 'translateY(0)';
+
+    // Reset camera and player object
+    caveCamera.xView = 0;
+    caveCamera.yView = 0;
+    cavePlayerObj.x = cavePlayerX;
+    cavePlayerObj.y = cavePlayerY;
 }
 
 document.getElementById('cavesMenuButton').addEventListener('click', function() {
@@ -4906,22 +4912,140 @@ document.getElementById('cavesMenuButton').addEventListener('click', function() 
     document.getElementById('startScreen').style.display = 'flex';
 });
 
-// Cave player movement variables
-let cavePlayerX = 240; // Starting X position
-let cavePlayerY = 0; // Starting Y position
+// Cave system constants
 const CAVE_PLAYER_SIZE = 24;
 const STEP_SIZE = 24;
 const CAVE_WIDTH = 480;
 const CAVE_HEIGHT = 4800;
 const VISIBLE_HEIGHT = 480;
+let cavePlayerX = 240;
+let cavePlayerY = 0;
+
+// Game namespace and utility classes
+window.Game = {};
+
+// Rectangle class for collision and boundary checks
+(function() {
+    function Rectangle(left, top, width, height) {
+        this.left = left || 0;
+        this.top = top || 0;
+        this.width = width || 0;
+        this.height = height || 0;
+        this.right = this.left + this.width;
+        this.bottom = this.top + this.height;
+    }
+
+    Rectangle.prototype.set = function(left, top, width, height) {
+        this.left = left;
+        this.top = top;
+        this.width = width || this.width;
+        this.height = height || this.height;
+        this.right = this.left + this.width;
+        this.bottom = this.top + this.height;
+    }
+
+    Rectangle.prototype.within = function(r) {
+        return (r.left <= this.left &&
+            r.right >= this.right &&
+            r.top <= this.top &&
+            r.bottom >= this.bottom);
+    }
+
+    Rectangle.prototype.overlaps = function(r) {
+        return (this.left < r.right &&
+            r.left < this.right &&
+            this.top < r.bottom &&
+            r.top < this.bottom);
+    }
+
+    Game.Rectangle = Rectangle;
+})();
+
+// Camera class for viewport management
+(function() {
+    var AXIS = {
+        NONE: 1,
+        HORIZONTAL: 2,
+        VERTICAL: 3,
+        BOTH: 4
+    };
+
+    function Camera(xView, yView, viewportWidth, viewportHeight, worldWidth, worldHeight) {
+        this.xView = xView || 0;
+        this.yView = yView || 0;
+        this.xDeadZone = 0;
+        this.yDeadZone = 0;
+        this.wView = viewportWidth;
+        this.hView = viewportHeight;
+        this.axis = AXIS.BOTH;
+        this.followed = null;
+        this.viewportRect = new Game.Rectangle(this.xView, this.yView, this.wView, this.hView);
+        this.worldRect = new Game.Rectangle(0, 0, worldWidth, worldHeight);
+    }
+
+    Camera.prototype.follow = function(gameObject, xDeadZone, yDeadZone) {
+        this.followed = gameObject;
+        this.xDeadZone = xDeadZone;
+        this.yDeadZone = yDeadZone;
+    }
+
+    Camera.prototype.update = function() {
+        if (this.followed != null) {
+            if (this.axis == AXIS.HORIZONTAL || this.axis == AXIS.BOTH) {
+                if (this.followed.x - this.xView + this.xDeadZone > this.wView)
+                    this.xView = this.followed.x - (this.wView - this.xDeadZone);
+                else if (this.followed.x - this.xDeadZone < this.xView)
+                    this.xView = this.followed.x - this.xDeadZone;
+            }
+            if (this.axis == AXIS.VERTICAL || this.axis == AXIS.BOTH) {
+                if (this.followed.y - this.yView + this.yDeadZone > this.hView)
+                    this.yView = this.followed.y - (this.hView - this.yDeadZone);
+                else if (this.followed.y - this.yDeadZone < this.yView)
+                    this.yView = this.followed.y - this.yDeadZone;
+            }
+        }
+
+        this.viewportRect.set(this.xView, this.yView);
+
+        if (!this.viewportRect.within(this.worldRect)) {
+            if (this.viewportRect.left < this.worldRect.left)
+                this.xView = this.worldRect.left;
+            if (this.viewportRect.top < this.worldRect.top)
+                this.yView = this.worldRect.top;
+            if (this.viewportRect.right > this.worldRect.right)
+                this.xView = this.worldRect.right - this.wView;
+            if (this.viewportRect.bottom > this.worldRect.bottom)
+                this.yView = this.worldRect.bottom - this.hView;
+        }
+    }
+
+    Game.Camera = Camera;
+})();
+
+// Initialize cave camera
+const caveCamera = new Game.Camera(
+    0, 0,                    // Initial camera position
+    CAVE_WIDTH, VISIBLE_HEIGHT,  // Viewport dimensions
+    CAVE_WIDTH, CAVE_HEIGHT     // World dimensions
+);
+
+// Cave player object for camera to follow
+const cavePlayerObj = {
+    x: cavePlayerX,
+    y: cavePlayerY,  // Use bottom-based coordinates directly
+    width: CAVE_PLAYER_SIZE,
+    height: CAVE_PLAYER_SIZE
+};
+
+// Set camera to follow player with dead zone
+caveCamera.follow(cavePlayerObj, 0, VISIBLE_HEIGHT / 4);
 
 function moveCavePlayer(direction) {
     const cavePlayer = document.getElementById('cavePlayer');
-    const caveImage = document.getElementById('caveImage'); // Image to be scrolled
+    const caveImage = document.getElementById('caveImage');
     let newX = cavePlayerX;
     let newY = cavePlayerY;
 
-    // Calculate new position based on arrow keys
     switch (direction) {
         case 'ArrowUp':
             newY = cavePlayerY + CAVE_PLAYER_SIZE;
@@ -4942,36 +5066,39 @@ function moveCavePlayer(direction) {
     // Check boundaries
     if (newX < 0 || newX + CAVE_PLAYER_SIZE > CAVE_WIDTH ||
         newY < 0 || newY + CAVE_PLAYER_SIZE > CAVE_HEIGHT) {
-        console.log('Boundary reached:', newX, newY);
         return;
     }
 
-    // Update player position
+    // Update positions
     cavePlayerX = newX;
     cavePlayerY = newY;
+    
+    // Update camera target position
+    cavePlayerObj.x = cavePlayerX;
+    cavePlayerObj.y = cavePlayerY;
 
-    // Always update horizontal position
+    // Update camera
+    caveCamera.update();
+
+    // Update visual positions
     cavePlayer.style.left = `${cavePlayerX}px`;
-
+    
     // Player-centric scrolling
     const viewportMiddle = VISIBLE_HEIGHT / 2;
     const maxOffsetY = CAVE_HEIGHT - VISIBLE_HEIGHT;
+    const scrollY = Math.min(Math.max(0, cavePlayerY - viewportMiddle), maxOffsetY);
 
-    if (cavePlayerY > viewportMiddle) {
-        const offsetY = Math.min(cavePlayerY - viewportMiddle, maxOffsetY);
-        
-        if (offsetY >= maxOffsetY) {
-            // At top of image - let player move freely
-            cavePlayer.style.bottom = `${cavePlayerY - (CAVE_HEIGHT - VISIBLE_HEIGHT)}px`;
-            caveImage.style.transform = `translateY(${maxOffsetY}px)`;
-        } else {
-            // In scrolling zone - keep player centered
-            cavePlayer.style.bottom = `${viewportMiddle}px`;
-            caveImage.style.transform = `translateY(${offsetY}px)`;
-        }
-    } else {
-        // At bottom of image - player moves freely
+    if (cavePlayerY <= viewportMiddle) {
+        // At bottom of cave - player moves freely
         cavePlayer.style.bottom = `${cavePlayerY}px`;
         caveImage.style.transform = 'translateY(0)';
+    } else if (cavePlayerY >= CAVE_HEIGHT - viewportMiddle) {
+        // At top of cave - player moves freely at top
+            cavePlayer.style.bottom = `${cavePlayerY - (CAVE_HEIGHT - VISIBLE_HEIGHT)}px`;
+        caveImage.style.transform = `translateY(${maxOffsetY}px)`;
+        } else {
+            // In scrolling zone - keep player centered
+        cavePlayer.style.bottom = `${viewportMiddle}px`;
+            caveImage.style.transform = `translateY(${scrollY}px)`;
     }
 }
