@@ -3262,61 +3262,6 @@ function animateTrailMerge() {
   }, 550);
 }
 
-function fadeOutCenteredBlock(x, y, totalPoints) {
-  const startTime = Date.now();
-  const duration = 300; // Shorter fade duration
-  
-  function fade() {
-    const elapsed = Date.now() - startTime;
-    const progress = Math.min(elapsed / duration, 1);
-    
-    if (progress >= 1) {
-      // Clean up
-      trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
-      trailBlocks = [];
-      isTrailAnimating = false;
-      document.querySelectorAll('.total-points').forEach(label => label.remove());
-      
-      // Final redraw
-      recolorMaze();
-      drawExit();
-      drawCheckpoints();
-      if (currentLevel === 7) drawLevel7Blocks(ctx);
-      if (currentLevel === 6) renderMazeWithGaps(ctx, gaps);
-      ctx.fillStyle = player.color;
-      ctx.fillRect(player.x, player.y, player.size, player.size);
-      return;
-    }
-    
-    // Simple fade out
-    const opacity = 1 - progress;
-    
-    // Draw fading block
-    trailCtx.fillStyle = `${player.color}${Math.floor(opacity * 255).toString(16).padStart(2, '0')}`;
-    trailCtx.fillRect(x, y, player.size, player.size);
-    
-    // Update total points label opacity
-    const totalLabel = document.querySelector('.total-points');
-    if (totalLabel) {
-      totalLabel.style.opacity = opacity;
-    }
-    
-    // Redraw everything
-    recolorMaze();
-    ctx.drawImage(trailCanvas, 0, 0);
-    drawExit();
-    drawCheckpoints();
-    if (currentLevel === 7) drawLevel7Blocks(ctx);
-    if (currentLevel === 6) renderMazeWithGaps(ctx, gaps);
-    ctx.fillStyle = player.color;
-    ctx.fillRect(player.x, player.y, player.size, player.size);
-    
-    requestAnimationFrame(fade);
-  }
-  
-  fade();
-}
-
 // Modify the startMoving function to handle trail animation
 function startMoving(onMoveComplete) {
   if (isMoving) return;
@@ -4934,72 +4879,31 @@ function createSoulUnlockable() {
   return unlockable;
 }
 
-// Modify the trail handling in the move function
-function move(direction) {
-  if (isMoving) return;
-  isMoving = true;
-
-  let newX = player.x;
-  let newY = player.y;
-
-  switch (direction) {
-    case "ArrowUp":
-      newY -= player.size;
-      break;
-    case "ArrowDown":
-      newY += player.size;
-      break;
-    case "ArrowLeft":
-      newX -= player.size;
-      break;
-    case "ArrowRight":
-      newX += player.size;
-      break;
-  }
-
-  if (!isCollision(newX, newY)) {
-    // Add the current position to trail blocks before moving
-    if (localStorage.getItem("isTailEffectEquipped") === "true") {
-      trailBlocks.push({ x: player.x, y: player.y });
-    }
-
-    player.x = newX;
-    player.y = newY;
-    drawPlayer();
-  }
-
-  isMoving = false;
-}
-
 document.getElementById("cavesButton").addEventListener("click", () => {
-    document.getElementById("startScreen").style.display = "none";
-    document.getElementById("menuElement").style.display = "none";
-    document.querySelector(".logo-container").style.display = "none";
-    document.getElementById("cavesScreen").style.display = "flex";
-    
-    // Reset player position when entering caves
-    cavePlayerX = 240;
-    cavePlayerY = 0;
-    const cavePlayer = document.getElementById('cavePlayer');
-    const caveImage = document.getElementById('caveImage');
-    
-    // Reset positions
-    cavePlayer.style.left = `${cavePlayerX}px`;
-    cavePlayer.style.bottom = `${cavePlayerY}px`;
-    caveImage.style.bottom = '0px';
-    
-    // Initialize collision detection
-    initializeCaveCollision();
-    
-    // Prevent image dragging
-    caveImage.addEventListener('dragstart', (e) => e.preventDefault());
+    document.getElementById('startScreen').style.display = 'none';
+    document.getElementById('cavesScreen').style.display = 'flex';
+    // Reset cave state
+    resetCaveState();
 });
 
-document.getElementById("cavesMenuButton").addEventListener("click", () => {
-  document.getElementById("cavesScreen").style.display = "none";
-  document.getElementById("startScreen").style.display = "flex";
-  document.getElementById("menuElement").style.display = "block";
-  document.querySelector(".logo-container").style.display = "block";
+function resetCaveState() {
+    // Reset player position
+    cavePlayerX = 240;
+    cavePlayerY = 0;
+    
+    // Reset player visual position
+    const cavePlayer = document.getElementById('cavePlayer');
+    cavePlayer.style.left = `${cavePlayerX}px`;
+    cavePlayer.style.bottom = `${cavePlayerY}px`;
+    
+    // Reset cave image position
+    const caveImage = document.getElementById('caveImage');
+    caveImage.style.transform = 'translateY(0)';
+}
+
+document.getElementById('cavesMenuButton').addEventListener('click', function() {
+    document.getElementById('cavesScreen').style.display = 'none';
+    document.getElementById('startScreen').style.display = 'flex';
 });
 
 // Cave player movement variables
@@ -5010,55 +4914,6 @@ const STEP_SIZE = 24;
 const CAVE_WIDTH = 480;
 const CAVE_HEIGHT = 4800;
 const VISIBLE_HEIGHT = 480;
-let isMovingCave = false;
-let caveCollisionCanvas = null;
-let caveCollisionCtx = null;
-let caveImageData = null;
-
-function initializeCaveCollision() {
-    const caveImage = document.getElementById('caveImage');
-    console.log('Initializing cave collision detection');
-    
-    // Create hidden canvas with explicit dimensions
-    caveCollisionCanvas = document.createElement('canvas');
-    caveCollisionCanvas.width = CAVE_WIDTH;
-    caveCollisionCanvas.height = CAVE_HEIGHT;
-    caveCollisionCtx = caveCollisionCanvas.getContext('2d', { willReadFrequently: true });
-
-    // Function to process the image
-    const processImage = () => {
-        // Clear canvas and draw image
-        caveCollisionCtx.clearRect(0, 0, CAVE_WIDTH, CAVE_HEIGHT);
-        caveCollisionCtx.drawImage(caveImage, 0, 0);
-        
-        // Get image data
-        const imageData = caveCollisionCtx.getImageData(0, 0, CAVE_WIDTH, CAVE_HEIGHT);
-        caveImageData = imageData.data;
-        
-        // Sample some pixels to verify data
-        const sampleY = CAVE_HEIGHT - 100; // Sample near the bottom
-        const sampleIndex = (sampleY * CAVE_WIDTH + 100) * 4;
-        console.log("Cave collision data initialized", {
-            width: CAVE_WIDTH,
-            height: CAVE_HEIGHT,
-            dataLength: caveImageData.length,
-            samplePixel: {
-                r: caveImageData[sampleIndex],
-                g: caveImageData[sampleIndex + 1],
-                b: caveImageData[sampleIndex + 2],
-                a: caveImageData[sampleIndex + 3]
-            }
-        });
-    };
-
-    // Process immediately if image is loaded, or wait for load
-    if (caveImage.complete) {
-        processImage();
-    } else {
-        caveImage.onload = processImage;
-    }
-}
-
 
 function moveCavePlayer(direction) {
     const cavePlayer = document.getElementById('cavePlayer');
