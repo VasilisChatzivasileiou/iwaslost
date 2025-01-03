@@ -4920,6 +4920,7 @@ const CAVE_HEIGHT = 4800;
 const VISIBLE_HEIGHT = 480;
 let cavePlayerX = 240;
 let cavePlayerY = 0;
+let isCaveMoving = false; // Movement lock flag
 
 // Game namespace and utility classes
 window.Game = {};
@@ -5079,24 +5080,24 @@ function checkCaveCollision(x, y) {
     }
 }
 
-function moveCavePlayer(direction) {
-    const cavePlayer = document.getElementById('cavePlayer');
-    const caveImage = document.getElementById('caveImage');
+// Add this before moveCavePlayer function
+function continuousMove(direction, onComplete) {
+    const step = 6; // Increased from 1 to 4 for faster movement
     let newX = cavePlayerX;
     let newY = cavePlayerY;
 
     switch (direction) {
         case 'ArrowUp':
-            newY = cavePlayerY + CAVE_PLAYER_SIZE;
+            newY = cavePlayerY + step;
             break;
         case 'ArrowDown':
-            newY = cavePlayerY - CAVE_PLAYER_SIZE;
+            newY = cavePlayerY - step;
             break;
         case 'ArrowLeft':
-            newX = cavePlayerX - CAVE_PLAYER_SIZE;
+            newX = cavePlayerX - step;
             break;
         case 'ArrowRight':
-            newX = cavePlayerX + CAVE_PLAYER_SIZE;
+            newX = cavePlayerX + step;
             break;
         default:
             return;
@@ -5105,7 +5106,9 @@ function moveCavePlayer(direction) {
     // Check boundaries and collisions
     if (newX < 0 || newX + CAVE_PLAYER_SIZE > CAVE_WIDTH ||
         newY < 0 || newY + CAVE_PLAYER_SIZE > CAVE_HEIGHT ||
-        checkCaveCollision(newX, CAVE_HEIGHT - newY - CAVE_PLAYER_SIZE)) { // Convert Y coordinate
+        checkCaveCollision(newX, CAVE_HEIGHT - newY - CAVE_PLAYER_SIZE)) {
+        isCaveMoving = false; // Release movement lock when hitting a wall
+        if (onComplete) onComplete();
         return;
     }
 
@@ -5121,6 +5124,8 @@ function moveCavePlayer(direction) {
     caveCamera.update();
 
     // Update visual positions
+    const cavePlayer = document.getElementById('cavePlayer');
+    const caveImage = document.getElementById('caveImage');
     cavePlayer.style.left = `${cavePlayerX}px`;
     
     // Player-centric scrolling
@@ -5141,4 +5146,39 @@ function moveCavePlayer(direction) {
         cavePlayer.style.bottom = `${viewportMiddle}px`;
         caveImage.style.transform = `translateY(${scrollY}px)`;
     }
+
+    // Continue moving in the same direction
+    requestAnimationFrame(() => continuousMove(direction, onComplete));
+}
+
+// Replace the moveCavePlayer function
+function moveCavePlayer(direction) {
+    // Only start movement if not already moving
+    if (!isCaveMoving) {
+        isCaveMoving = true; // Set movement lock
+        continuousMove(direction);
+    }
+}
+
+// Add this to resetCaveState function
+function resetCaveState() {
+    // Reset player position
+    cavePlayerX = 240;
+    cavePlayerY = 0;
+    isCaveMoving = false; // Reset movement lock
+    
+    // Reset player visual position
+    const cavePlayer = document.getElementById('cavePlayer');
+    cavePlayer.style.left = `${cavePlayerX}px`;
+    cavePlayer.style.bottom = `${cavePlayerY}px`;
+    
+    // Reset cave image position
+    const caveImage = document.getElementById('caveImage');
+    caveImage.style.transform = 'translateY(0)';
+
+    // Reset camera and player object
+    caveCamera.xView = 0;
+    caveCamera.yView = 0;
+    cavePlayerObj.x = cavePlayerX;
+    cavePlayerObj.y = cavePlayerY;
 }
