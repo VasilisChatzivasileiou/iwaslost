@@ -1467,6 +1467,12 @@ input[type="range"] {
   position: relative;
   overflow: hidden;
   z-index: 1;
+  transition: background-color 0.5s ease;
+}
+
+#cavesSquare.flash {
+  background-color: #cccccc;
+  transition: none;
 }
 
 #caveImage {
@@ -1510,7 +1516,7 @@ input[type="range"] {
   left: 240px;
   width: 24px;
   height: 24px;
-  background-color: #F15025;
+  background-color: #D1406E;
   z-index: 10;
   user-select: none;
   -webkit-user-drag: none;

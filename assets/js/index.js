@@ -5138,13 +5138,6 @@ function showCaveLossPopup() {
     }
 }
 
-function hideCaveLossPopup() {
-    const lossPopup = document.getElementById('caveLossPopup');
-    if (lossPopup) {
-        lossPopup.style.display = 'none';
-    }
-}
-
 function resetCaveState() {
     // First, clear any running intervals
     if (caveScrollInterval) {
@@ -5367,14 +5360,77 @@ caveCollisionCtx.imageSmoothingEnabled = false; // Disable smoothing for pixel-p
 const caveCollisionImage = new Image();
 caveCollisionImage.src = 'assets/images/cave1.png';
 caveCollisionImage.onload = function() {
-    // Draw the image at full size
+    // Create a temporary canvas
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = CAVE_WIDTH;
+    tempCanvas.height = CAVE_HEIGHT;
+    const tempCtx = tempCanvas.getContext('2d');
+    
+    // Draw the collision image for detection
     caveCollisionCtx.drawImage(
         caveCollisionImage,
         0, 0,
-        caveCollisionImage.width, caveCollisionImage.height,  // Source dimensions
+        caveCollisionImage.width, caveCollisionImage.height,
         0, 0,
-        CAVE_WIDTH, CAVE_HEIGHT  // Destination dimensions
+        CAVE_WIDTH, CAVE_HEIGHT
     );
+
+    // Add random dark blocks
+    const blockSize = 24;
+    const numBlocksX = CAVE_WIDTH / blockSize;
+    const numBlocksY = CAVE_HEIGHT / blockSize;
+    
+    // Store positions of dark blocks
+    const darkBlocks1 = []; // For #323232
+    const darkBlocks2 = []; // For #1A1A1A
+    
+    // First pass: identify dark block positions
+    for (let y = 0; y < numBlocksY; y++) {
+        for (let x = 0; x < numBlocksX; x++) {
+            const pixelData = caveCollisionCtx.getImageData(x * blockSize, y * blockSize, 1, 1).data;
+            if (pixelData[3] > 0) {
+                // 15% chance for first color
+                if (Math.random() < 0.15) {
+                    darkBlocks1.push({x: x * blockSize, y: y * blockSize});
+                }
+                // 15% chance for second color (independent of first color)
+                if (Math.random() < 0.15) {
+                    darkBlocks2.push({x: x * blockSize, y: y * blockSize});
+                }
+            }
+        }
+    }
+    
+    // First pass: draw original black walls
+    tempCtx.fillStyle = '#222222';
+    for (let y = 0; y < numBlocksY; y++) {
+        for (let x = 0; x < numBlocksX; x++) {
+            const pixelData = caveCollisionCtx.getImageData(x * blockSize, y * blockSize, 1, 1).data;
+            if (pixelData[3] > 0) {
+                tempCtx.fillRect(x * blockSize, y * blockSize, blockSize, blockSize);
+            }
+        }
+    }
+    
+    // Second pass: draw first set of dark blocks
+    tempCtx.fillStyle = '#323232';
+    darkBlocks1.forEach(block => {
+        tempCtx.fillRect(block.x, block.y, blockSize, blockSize);
+    });
+    
+    // Third pass: draw second set of dark blocks
+    tempCtx.fillStyle = '#1A1A1A';
+    darkBlocks2.forEach(block => {
+        tempCtx.fillRect(block.x, block.y, blockSize, blockSize);
+    });
+    
+    // Create a new image from the canvas
+    const newImage = new Image();
+    newImage.onload = function() {
+        const caveImage = document.getElementById('caveImage');
+        caveImage.src = this.src;
+    };
+    newImage.src = tempCanvas.toDataURL();
 };
 
 function checkCaveCollision(x, y) {
@@ -5385,6 +5441,12 @@ function checkCaveCollision(x, y) {
         // Check if any pixel in the player's area is not fully transparent
         for (let i = 3; i < pixelData.length; i += 4) {
             if (pixelData[i] > 0) { // Alpha channel > 0 means not transparent
+                // Add flash effect
+                const cavesSquare = document.getElementById('cavesSquare');
+                cavesSquare.classList.add('flash');
+                setTimeout(() => {
+                    cavesSquare.classList.remove('flash');
+                }, 50);
                 return true; // Collision detected
             }
         }
@@ -5486,7 +5548,7 @@ function continuousMove(direction, onComplete) {
     switch (direction) {
         case 'ArrowUp':
             newY = cavePlayerY + step;
-            break;
+                        break;
         case 'ArrowDown':
             newY = cavePlayerY - step;
             break;
