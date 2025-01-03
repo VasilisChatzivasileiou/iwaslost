@@ -1,0 +1,60 @@
+#startScreen {
+    opacity: 1;
+    transition: opacity 1s ease;
+}
+
+#startScreen.fade-out {
+    opacity: 0;
+}
+
+#cavesScreen {
+    opacity: 0;
+    transition: opacity 1s ease;
+}
+
+#cavesScreen.fade-in {
+    opacity: 1;
+}
+
+.caves-wrapper {
+    position: relative;
+    width: 480px;
+    margin: 0 auto;
+}
+
+.cave-progress-container {
+    position: absolute;
+    top: -30px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 2;
+}
+
+.cave-progress-text {
+    font-family: 'BIZUDMincho';
+    font-size: 24px;
+    color: #999999;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.cave-progress-bar {
+    flex-grow: 1;
+    height: 20px;
+    background-color: #999999;
+    position: relative;
+    overflow: hidden;
+}
+
+.cave-progress-fill {
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    height: calc(100% - 4px);
+    width: 0% !important;
+    background-color: #222222;
+    transition: width 0.3s ease;
+} 

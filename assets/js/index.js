@@ -1,6 +1,44 @@
-const isNode = typeof process !== 'undefined' && process.versions != null && process.versions.node != null;
-const storage = isNode ? require("fs") : null;
-const saveFilePath = isNode ? require("path").join(__dirname, "levelCompletionTimes.json") : null;
+// Environment check
+const isNode = typeof process !== 'undefined' && process.versions && process.versions.node;
+const storage = isNode ? require('fs') : null;
+const path = isNode ? require('path') : null;
+const saveFilePath = isNode ? path.join(__dirname, "levelCompletionTimes.json") : null;
+const achievementFilePath = isNode ? path.join(__dirname, "achievementProgress.json") : null;
+
+let levelCompletionTimes = {};
+
+// Data handling functions
+function saveData(key, data) {
+    try {
+        if (isNode && storage) {
+            const filePath = key === 'levelCompletionTimes' ? saveFilePath : achievementFilePath;
+            storage.writeFileSync(filePath, JSON.stringify(data));
+        } else {
+            localStorage.setItem(key, JSON.stringify(data));
+        }
+        return true;
+    } catch (err) {
+        console.error('Failed to save data:', err);
+        return false;
+    }
+}
+
+function loadData(key) {
+    try {
+        if (isNode && storage) {
+            const filePath = key === 'levelCompletionTimes' ? saveFilePath : achievementFilePath;
+            if (storage.existsSync(filePath)) {
+                return JSON.parse(storage.readFileSync(filePath, 'utf8'));
+            }
+        } else {
+            const data = localStorage.getItem(key);
+            return data ? JSON.parse(data) : null;
+        }
+    } catch (err) {
+        console.error('Failed to load data:', err);
+        return null;
+    }
+}
 
 // Game elements
 const inGameResetButton = document.getElementById("inGameResetButton");
@@ -427,7 +465,7 @@ function updateAchievementDisplay() {
 
 // Save achievement progress
 function saveAchievementProgress() {
-    localStorage.setItem('achievementProgress', JSON.stringify(achievementProgress));
+    saveData('achievementProgress', achievementProgress);
     updateAchievementDisplay();
 }
 
@@ -650,8 +688,6 @@ function checkCheckpointCollision() {
         drawPlayer();
     }
 }
-
-const levelCompletionTimes = {};
 
 document.addEventListener("DOMContentLoaded", () => {
   startGameButton.addEventListener("click", () => {
@@ -1223,7 +1259,7 @@ document.getElementById("resetButton").addEventListener("click", () => {
 });
 
 document.getElementById("confirmReset").addEventListener("click", () => {
-  const isNode = typeof require !== "undefined";
+  // Use the existing isNode variable from the top of the file
   const storage = isNode ? require("fs") : null;
   const saveFilePath = isNode
     ? require("path").join(__dirname, "levelCompletionTimes.json")
@@ -1362,135 +1398,39 @@ function resetColorsToDefault() {
 
 // Save completion times
 function saveLevelCompletionTime(level, time) {
-  console.log(`Attempting to save time for ${level}: ${time}`);
-
-  const isNode = typeof require !== "undefined"; // Check if running in Node.js/Electron
-  const storage = isNode ? require("fs") : null;
-  const saveFilePath = isNode
-    ? require("path").join(__dirname, "levelCompletionTimes.json")
-    : null;
-
-  let savedTimes = {};
-
-  if (isNode) {
-    // Node.js/Electron: Load existing times from the JSON file
-    if (storage.existsSync(saveFilePath)) {
-      try {
-        savedTimes = JSON.parse(storage.readFileSync(saveFilePath, "utf8"));
-      } catch (err) {
-        console.error("Failed to read save file:", err);
-        savedTimes = {};
-      }
-    }
-  } else {
-    // Browser: Load existing times from localStorage
-    savedTimes = JSON.parse(localStorage.getItem("levelCompletionTimes")) || {};
-  }
-
-  const currentFastestTime = savedTimes[level];
-
-  // Check if the new time is faster than the current saved time
-  if (!currentFastestTime || isNewTimeFaster(currentFastestTime, time)) {
-    savedTimes[level] = time; // Update with the new fastest time
-
-    if (isNode) {
-      // Save to JSON file in Node.js/Electron
-      try {
-        storage.writeFileSync(saveFilePath, JSON.stringify(savedTimes, null, 2));
-        console.log(`New fastest time saved for ${level}: ${time} in file`);
-      } catch (err) {
-        console.error("Failed to save time to file:", err);
-      }
+    // Get existing times
+    let storedTimes = loadData('levelCompletionTimes') || {};
+    
+    // Update the time for this level
+    storedTimes[level] = time;
+    
+    // Save the updated times
+    if (saveData('levelCompletionTimes', storedTimes)) {
+        console.log(`Timer successfully saved for ${level}: ${time}`);
     } else {
-      // Save to localStorage in browser
-      localStorage.setItem("levelCompletionTimes", JSON.stringify(savedTimes));
-      console.log(`New fastest time saved for ${level}: ${time} in localStorage`);
+        console.error(`Failed to save timer for ${level}`);
     }
-  } else {
-    console.log(`Time not updated. Current fastest for ${level}: ${currentFastestTime}`);
-  }
-
-  // Verification step
-  let storedTimes;
-  if (isNode) {
-    // Verify saved time from file
-    try {
-      storedTimes = JSON.parse(storage.readFileSync(saveFilePath, "utf8"));
-    } catch (err) {
-      console.error("Failed to verify saved time from file:", err);
-      storedTimes = {};
-    }
-  } else {
-    // Verify saved time from localStorage
-    storedTimes = JSON.parse(localStorage.getItem("levelCompletionTimes"));
-  }
-
-  if (storedTimes && storedTimes[level] === time) {
-    console.log(`Timer successfully saved for ${level}: ${time}`);
-  } else {
-    console.error(`Failed to save timer for ${level}.`);
-  }
 }
 
-// Helper function to compare times
-function isNewTimeFaster(currentTime, newTime) {
-  const [currentMinutes, currentSeconds] = currentTime.split(':').map(Number);
-  const [newMinutes, newSeconds] = newTime.split(':').map(Number);
-
-  const currentTotalSeconds = currentMinutes * 60 + currentSeconds;
-  const newTotalSeconds = newMinutes * 60 + newSeconds;
-
-  return newTotalSeconds < currentTotalSeconds;
-}
-
-// Load saved completion times
 function loadLevelCompletionTimes() {
-  const isNode = typeof require !== "undefined"; // Check if running in Node.js/Electron
-  const storage = isNode ? require("fs") : null;
-  const saveFilePath = isNode
-    ? require("path").join(__dirname, "levelCompletionTimes.json")
-    : null;
-
-  let savedTimes = {};
-
-  if (isNode) {
-    // Load timers from the JSON file in Node.js/Electron
-    if (storage.existsSync(saveFilePath)) {
-      try {
-        savedTimes = JSON.parse(storage.readFileSync(saveFilePath, "utf8"));
-        console.log("Loaded saved timers from file:", savedTimes);
-      } catch (err) {
-        console.error("Failed to read save file:", err);
-        savedTimes = {};
-      }
-    } else {
-      console.warn("No save file found. Starting with empty timers.");
+    const times = loadData('levelCompletionTimes');
+    if (times) {
+        // Use Object.assign to update the existing object instead of reassignment
+        Object.assign(levelCompletionTimes, times);
+        updateLevelCompletionTime();
     }
-  } else {
-    // Load timers from localStorage in the browser
-    savedTimes = JSON.parse(localStorage.getItem("levelCompletionTimes")) || {};
-    if (Object.keys(savedTimes).length === 0) {
-      console.warn("No saved timers found in localStorage.");
-    } else {
-      console.log("Loaded saved timers from localStorage:", savedTimes);
+}
+
+function saveAchievementProgress() {
+    saveData('achievementProgress', achievementProgress);
+}
+
+function loadAchievementProgress() {
+    const progress = loadData('achievementProgress');
+    if (progress) {
+        achievementProgress = progress;
+        updateAchievementDisplay();
     }
-  }
-
-  // Update the UI for loaded timers
-  for (const [level, time] of Object.entries(savedTimes)) {
-    const elementId = `${level}Timer`; // Construct the ID
-    const timerElement = document.getElementById(elementId);
-
-    if (timerElement) {
-      timerElement.textContent = `Time: ${time}`;
-      timerElement.style.display = "block"; // Make sure it's visible
-      console.log(`Loaded timer for ${level}: ${time}`);
-    } else {
-      console.error(`Timer element with ID '${elementId}' not found. Check your HTML.`);
-    }
-  }
-
-  return savedTimes;
 }
 
 function displayLevelCompletionTime(level) {
@@ -4153,7 +4093,13 @@ function executeMoves() {
 document.addEventListener("keydown", (event) => {
   // Handle cave movement
   if (document.getElementById('cavesScreen').style.display === 'flex') {
-    moveCavePlayer(event.key);
+    // Allow movement without checking game state flags
+    if (!isCaveMoving) {
+        isCaveMoving = true;
+        continuousMove(event.key, () => {
+            isCaveMoving = false;
+        });
+    }
     return;
   }
 
@@ -4889,7 +4835,7 @@ let cavePlayerX = 240;
 let cavePlayerY = 0;
 let isCaveMoving = false;
 let isGameActive = false;
-let caveScrollSpeed = 0.5;
+let caveScrollSpeed = 0.95; // Middle value between 0.5 and 1.5
 let isCountdownComplete = false;
 let caveScrollInterval = null;
 
@@ -5021,15 +4967,17 @@ function resetCaveState() {
     isCountdownComplete = false;
     isCaveMoving = false;
     
-    // Reset player position
-    cavePlayerX = 240;
-    cavePlayerY = 0;
-    
-    // Reset visual positions
-    const cavePlayer = document.getElementById('cavePlayer');
-    if (cavePlayer) {
-        cavePlayer.style.left = `${cavePlayerX}px`;
-        cavePlayer.style.bottom = `${cavePlayerY}px`;
+    // Reset player position only if entering the cave for the first time
+    if (!document.getElementById('cavesScreen').style.display === 'flex') {
+        cavePlayerX = 240;
+        cavePlayerY = 0;
+        
+        // Reset visual positions
+        const cavePlayer = document.getElementById('cavePlayer');
+        if (cavePlayer) {
+            cavePlayer.style.left = '240px';
+            cavePlayer.style.bottom = '0px';
+        }
     }
     
     const caveImage = document.getElementById('caveImage');
@@ -5037,14 +4985,27 @@ function resetCaveState() {
         caveImage.style.transform = 'translateY(0)';
     }
 
-    // Reset camera and player object
-    if (caveCamera) {
-        caveCamera.xView = 0;
-        caveCamera.yView = 0;
+    // Reset camera and player object only if entering the cave for the first time
+    if (!document.getElementById('cavesScreen').style.display === 'flex') {
+        if (caveCamera) {
+            caveCamera.xView = 0;
+            caveCamera.yView = 0;
+        }
+        if (cavePlayerObj) {
+            cavePlayerObj.x = cavePlayerX;
+            cavePlayerObj.y = cavePlayerY;
+        }
     }
-    if (cavePlayerObj) {
-        cavePlayerObj.x = cavePlayerX;
-        cavePlayerObj.y = cavePlayerY;
+    
+    // Reset progress bar with transition disabled
+    const progressFill = document.querySelector('.cave-progress-fill');
+    if (progressFill) {
+        progressFill.style.transition = 'none';
+        progressFill.style.width = '0%';
+        // Re-enable transition after a brief delay
+        setTimeout(() => {
+            progressFill.style.transition = '';
+        }, 50);
     }
     
     // Hide the loss popup
@@ -5052,6 +5013,9 @@ function resetCaveState() {
     if (lossPopup) {
         lossPopup.style.display = 'none';
     }
+    
+    // Clear any queued animations
+    cancelAnimationFrame(continuousMove);
 }
 
 function startCaveCountdown() {
@@ -5062,7 +5026,6 @@ function startCaveCountdown() {
             console.log("1...");
             setTimeout(() => {
                 console.log("GO!");
-                isCountdownComplete = true;
                 startCaveScroll();
             }, 1000);
         }, 1000);
@@ -5073,6 +5036,14 @@ function startCaveScroll() {
     const caveImage = document.getElementById('caveImage');
     const cavePlayer = document.getElementById('cavePlayer');
     let scrollY = 0;
+
+    // Set game as active without resetting player position
+    isGameActive = true;
+    isCountdownComplete = true;
+
+    // Store current player position to prevent reset
+    const currentX = cavePlayerX;
+    const currentY = cavePlayerY;
 
     caveScrollInterval = setInterval(() => {
         if (!isGameActive) {
@@ -5091,80 +5062,150 @@ function startCaveScroll() {
         // Move the background image
         caveImage.style.transform = `translateY(${scrollY}px)`;
 
-        // Update player's visual position relative to scroll
-        const visualBottom = cavePlayerY - scrollY;
+        // Update player's visual position relative to scroll, using stored position
+        const visualBottom = currentY + (cavePlayerY - currentY) - scrollY;
         cavePlayer.style.bottom = `${visualBottom}px`;
+
+        // Update progress bar smoothly
+        const progress = (cavePlayerY / (CAVE_HEIGHT - VISIBLE_HEIGHT)) * 98;
+        const progressFill = document.querySelector('.cave-progress-fill');
+        if (progressFill) {
+            progressFill.style.setProperty('width', `${Math.min(98, Math.max(0, progress))}%`, 'important');
+        }
 
         // Check if player is below the camera view
         if (cavePlayerY < scrollY) {
             clearInterval(caveScrollInterval);
-            const lossPopup = document.getElementById('caveLossPopup');
-            if (lossPopup) {
-                lossPopup.style.display = 'block';
-            }
+            isGameActive = false;
+            isCountdownComplete = false;
+            showCaveLossPopup();
         }
     }, 16);
 }
 
 function startCaveGame() {
+    // Reset everything first
     resetCaveState();
+    
+    // Explicitly hide the loss popup and ensure it stays hidden
+    const lossPopup = document.getElementById('caveLossPopup');
+    if (lossPopup) {
+        lossPopup.style.display = 'none';
+    }
+    
+    // Immediately reset progress bar
+    const progressFill = document.querySelector('.cave-progress-fill');
+    if (progressFill) {
+        progressFill.style.transition = 'none';
+        progressFill.style.width = '0%';
+        // Re-enable transition after a brief delay
+        setTimeout(() => {
+            progressFill.style.transition = '';
+        }, 50);
+    }
+    
+    // Set initial game state flags
     isGameActive = true;
+    isCountdownComplete = false;
+    isCaveMoving = false;
+    
+    // Start the countdown for camera scroll
     startCaveCountdown();
 }
 
-// Remove all existing event listeners
-const cavesButton = document.getElementById("cavesButton");
-const cavesMenuButton = document.getElementById('cavesMenuButton');
-const caveLossMenuButton = document.getElementById('caveLossMenuButton');
-
-cavesButton.replaceWith(cavesButton.cloneNode(true));
-cavesMenuButton.replaceWith(cavesMenuButton.cloneNode(true));
-caveLossMenuButton.replaceWith(caveLossMenuButton.cloneNode(true));
-
-// Add back the event listeners
-document.getElementById("cavesButton").addEventListener("click", () => {
-    document.getElementById('startScreen').style.display = 'none';
-    document.getElementById('cavesScreen').style.display = 'flex';
-    startCaveGame();
-});
-
-document.getElementById('cavesMenuButton').addEventListener('click', function() {
-    resetCaveState();
-    document.getElementById('cavesScreen').style.display = 'none';
-    document.getElementById('startScreen').style.display = 'flex';
-});
-
-document.getElementById('caveLossMenuButton').addEventListener('click', function() {
-    resetCaveState();
-    document.getElementById('cavesScreen').style.display = 'none';
-    document.getElementById('startScreen').style.display = 'flex';
-});
-
 function showCaveLossPopup() {
     const lossPopup = document.getElementById('caveLossPopup');
-    lossPopup.style.display = 'block';
+    if (lossPopup) {
+        lossPopup.style.display = 'block';
+        isGameActive = false;
+        isCountdownComplete = false;
+        
+        // Clear any running intervals
+        if (caveScrollInterval) {
+            clearInterval(caveScrollInterval);
+            caveScrollInterval = null;
+        }
+    }
 }
 
 function hideCaveLossPopup() {
     const lossPopup = document.getElementById('caveLossPopup');
-    lossPopup.style.display = 'none';
+    if (lossPopup) {
+        lossPopup.style.display = 'none';
+    }
 }
 
-// Add event listener for the loss popup menu button
-document.getElementById('caveLossMenuButton').addEventListener('click', function() {
-    // Reset everything before leaving
+function resetCaveState() {
+    // First, clear any running intervals
     if (caveScrollInterval) {
         clearInterval(caveScrollInterval);
         caveScrollInterval = null;
     }
-    hideCaveLossPopup();
-    resetCaveState();
-    document.getElementById('cavesScreen').style.display = 'none';
-    document.getElementById('startScreen').style.display = 'flex';
-});
+
+    // Reset all state flags
+    isGameActive = false;
+    isCountdownComplete = false;
+    isCaveMoving = false;
+    
+    // Reset player position only if entering the cave for the first time
+    if (!document.getElementById('cavesScreen').style.display === 'flex') {
+        cavePlayerX = 240;
+        cavePlayerY = 0;
+        
+        // Reset visual positions
+        const cavePlayer = document.getElementById('cavePlayer');
+        if (cavePlayer) {
+            cavePlayer.style.left = '240px';
+            cavePlayer.style.bottom = '0px';
+        }
+    }
+    
+    const caveImage = document.getElementById('caveImage');
+    if (caveImage) {
+        caveImage.style.transform = 'translateY(0)';
+    }
+
+    // Reset camera and player object only if entering the cave for the first time
+    if (!document.getElementById('cavesScreen').style.display === 'flex') {
+        if (caveCamera) {
+            caveCamera.xView = 0;
+            caveCamera.yView = 0;
+        }
+        if (cavePlayerObj) {
+            cavePlayerObj.x = cavePlayerX;
+            cavePlayerObj.y = cavePlayerY;
+        }
+    }
+    
+    // Reset progress bar with transition disabled
+    const progressFill = document.querySelector('.cave-progress-fill');
+    if (progressFill) {
+        progressFill.style.transition = 'none';
+        progressFill.style.width = '0%';
+        // Re-enable transition after a brief delay
+        setTimeout(() => {
+            progressFill.style.transition = '';
+        }, 50);
+    }
+    
+    // Hide the loss popup
+    const lossPopup = document.getElementById('caveLossPopup');
+    if (lossPopup) {
+        lossPopup.style.display = 'none';
+    }
+    
+    // Clear any queued animations
+    cancelAnimationFrame(continuousMove);
+}
 
 function continuousMove(direction, onComplete) {
-    const step = 4;
+    // Don't allow movement if game is not active
+    if (!isGameActive) {
+        if (onComplete) onComplete();
+        return;
+    }
+
+    const step = 6;
     let newX = cavePlayerX;
     let newY = cavePlayerY;
 
@@ -5185,10 +5226,11 @@ function continuousMove(direction, onComplete) {
             return;
     }
 
-    // Check boundaries
+    // Check boundaries and collisions
     if (newX < 0 || newX + CAVE_PLAYER_SIZE > CAVE_WIDTH ||
-        newY < 0 || newY + CAVE_PLAYER_SIZE > CAVE_HEIGHT) {
-        isCaveMoving = false; // Release movement lock when hitting a wall
+        newY < 0 || newY + CAVE_PLAYER_SIZE > CAVE_HEIGHT ||
+        checkCaveCollision(newX, newY)) {
+        isCaveMoving = false;
         if (onComplete) onComplete();
         return;
     }
@@ -5209,36 +5251,100 @@ function continuousMove(direction, onComplete) {
     const visualBottom = cavePlayerY - currentScrollY;
     cavePlayer.style.bottom = `${visualBottom}px`;
 
-    // Continue moving in the same direction
+    // Update progress bar
+    const progress = (cavePlayerY / (CAVE_HEIGHT - VISIBLE_HEIGHT)) * 98;
+    const progressFill = document.querySelector('.cave-progress-fill');
+    if (progressFill) {
+        progressFill.style.setProperty('width', `${Math.min(98, Math.max(0, progress))}%`, 'important');
+    }
+
+    // Update camera target
+    cavePlayerObj.x = cavePlayerX;
+    cavePlayerObj.y = cavePlayerY;
+    caveCamera.update();
+
+    // Continue moving in the same direction only if game is still active
     if (isGameActive) {
         requestAnimationFrame(() => continuousMove(direction, onComplete));
-    } else {
+    } else if (onComplete) {
+        onComplete();
+    }
+}
+
+function resetCaveState() {
+    // First, clear any running intervals
+    if (caveScrollInterval) {
+        clearInterval(caveScrollInterval);
+        caveScrollInterval = null;
+    }
+
+    // Reset all state flags
+    isGameActive = false;
+    isCountdownComplete = false;
+    isCaveMoving = false;
+    
+    // Reset player position to initial values
+    cavePlayerX = 240;
+    cavePlayerY = 0;
+    
+    // Reset visual positions
+    const cavePlayer = document.getElementById('cavePlayer');
+    if (cavePlayer) {
+        cavePlayer.style.left = '240px';
+        cavePlayer.style.bottom = '0px';
+    }
+    
+    const caveImage = document.getElementById('caveImage');
+    if (caveImage) {
+        caveImage.style.transform = 'translateY(0)';
+    }
+
+    // Reset camera and player object
+    if (caveCamera) {
+        caveCamera.xView = 0;
+        caveCamera.yView = 0;
+    }
+    if (cavePlayerObj) {
+        cavePlayerObj.x = cavePlayerX;
+        cavePlayerObj.y = cavePlayerY;
+    }
+    
+    // Reset progress bar
+    const progressFill = document.querySelector('.cave-progress-fill');
+    if (progressFill) {
+        progressFill.style.width = '0%';
+        progressFill.style.transition = 'none';
+        // Re-enable transition after a brief delay
+        setTimeout(() => {
+            progressFill.style.transition = '';
+        }, 50);
+    }
+    
+    // Hide the loss popup
+    const lossPopup = document.getElementById('caveLossPopup');
+    if (lossPopup) {
+        lossPopup.style.display = 'none';
+    }
+    
+    // Clear any queued animations
+    cancelAnimationFrame(continuousMove);
+}
+
+function showCaveLossPopup() {
+    const lossPopup = document.getElementById('caveLossPopup');
+    if (lossPopup) {
+        lossPopup.style.display = 'block';
+        isGameActive = false;
+        isCountdownComplete = false;
         isCaveMoving = false;
-        if (onComplete) onComplete();
-    }
-}
-
-function moveCavePlayer(direction) {
-    if (!isCaveMoving && isGameActive && isCountdownComplete) {
-        isCaveMoving = true;
-        continuousMove(direction);
-    }
-}
-
-// Add keyboard event listener for player movement
-document.addEventListener('keydown', function(event) {
-    if (isGameActive && isCountdownComplete) {
-        switch (event.key) {
-            case 'ArrowUp':
-            case 'ArrowDown':
-            case 'ArrowLeft':
-            case 'ArrowRight':
-                event.preventDefault(); // Prevent page scrolling
-                moveCavePlayer(event.key);
-                break;
+        
+        // Clear any running intervals
+        if (caveScrollInterval) {
+            clearInterval(caveScrollInterval);
+            caveScrollInterval = null;
         }
     }
-});
+}
 
 // Create an offscreen canvas for collision detection
 const caveCollisionCanvas = document.createElement('canvas');
@@ -5276,74 +5382,5 @@ function checkCaveCollision(x, y) {
     } catch (error) {
         console.error('Collision check error:', error);
         return false; // Return false on error to prevent blocking movement
-    }
-}
-
-function continuousMove(direction, onComplete) {
-    const step = 4;
-    let newX = cavePlayerX;
-    let newY = cavePlayerY;
-
-    switch (direction) {
-        case 'ArrowUp':
-            newY = cavePlayerY + step;
-            break;
-        case 'ArrowDown':
-            newY = cavePlayerY - step;
-            break;
-        case 'ArrowLeft':
-            newX = cavePlayerX - step;
-            break;
-        case 'ArrowRight':
-            newX = cavePlayerX + step;
-            break;
-        default:
-            return;
-    }
-
-    // Check boundaries and collisions
-    if (newX < 0 || newX + CAVE_PLAYER_SIZE > CAVE_WIDTH ||
-        newY < 0 || newY + CAVE_PLAYER_SIZE > CAVE_HEIGHT ||
-        checkCaveCollision(newX, newY)) {
-        isCaveMoving = false; // Release movement lock when hitting a wall
-        if (onComplete) onComplete();
-        return;
-    }
-
-    // Update positions
-    cavePlayerX = newX;
-    cavePlayerY = newY;
-    
-    // Update player's horizontal position
-    const cavePlayer = document.getElementById('cavePlayer');
-    cavePlayer.style.left = `${cavePlayerX}px`;
-
-    // Get current scroll position from cave image transform
-    const caveImage = document.getElementById('caveImage');
-    const currentScrollY = parseFloat(caveImage.style.transform.replace('translateY(', '').replace('px)', '') || 0);
-    
-    // Update player's visual position relative to scroll
-    const visualBottom = cavePlayerY - currentScrollY;
-    cavePlayer.style.bottom = `${visualBottom}px`;
-
-    // Update camera target
-    cavePlayerObj.x = cavePlayerX;
-    cavePlayerObj.y = cavePlayerY;
-    caveCamera.update();
-
-    // Continue moving in the same direction
-    if (isGameActive) {
-        requestAnimationFrame(() => continuousMove(direction, onComplete));
-    } else {
-        isCaveMoving = false;
-        if (onComplete) onComplete();
-    }
-}
-
-function moveCavePlayer(direction) {
-    // Allow movement only if the game is active (not lost) and not already moving
-    if (!isCaveMoving && isGameActive) {
-        isCaveMoving = true;
-        continuousMove(direction);
     }
 }

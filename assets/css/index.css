@@ -654,6 +654,12 @@ input[type="range"] {
 
   /* Animation */
   animation: moveBackground 20s linear infinite;
+  opacity: 1;
+  transition: opacity 1s ease;
+}
+
+#startScreen.fade-out {
+  opacity: 0;
 }
 
 .hidden {
@@ -1442,6 +1448,12 @@ input[type="range"] {
   display: none;
   justify-content: center;
   align-items: center;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+
+#cavesScreen.fade-in {
+  opacity: 1;
 }
 
 #cavesSquare {
@@ -1528,4 +1540,20 @@ input[type="range"] {
 #caveLossPopup button:hover {
     background-color: #999999;
     color: #222222;
+}
+
+#cavesScreen .cave-progress-bar {
+    flex-grow: 1;
+    height: 20px;
+    background-color: #999999;
+    position: relative;
+    overflow: hidden;
+}
+
+#cavesScreen .cave-progress-fill {
+    background-color: #222222 !important;
+    left: 2px !important;
+    top: 2px !important;
+    height: calc(100% - 4px) !important;
+    width: 0% !important; /* Start at 0% */
 }

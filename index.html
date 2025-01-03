@@ -9,102 +9,45 @@
     <title>iwaslost</title>
     <link rel="stylesheet" href="assets/css/index.css">
     <link rel="stylesheet" href="assets/css/buttons.css">
+    <link rel="stylesheet" href="assets/css/cave.css">
     <style>
-        /*
-        body {
-          margin: 0; 
-          height: 100vh;
-          background-image: 
-            
-            linear-gradient(45deg, #252525 25%, transparent 25%),
-            linear-gradient(45deg, transparent 75%, #252525 75%),
-            
-            url('../assets/images/backgroundicon.svg');
-          background-size: 100px 100px; 
-          background-position: 0 0, 100px 100px, 0 0; 
-          background-repeat: repeat;
-        }
-        */
-
-        .trail-block {
-            position: fixed !important;
-            width: 20px;
-            height: 20px;
-            pointer-events: none;
-            z-index: 999999 !important;
-            transition: all 500ms ease;
-            transform: translate3d(0, 0, 0);
-            will-change: transform;
+        @font-face {
+            font-family: 'BIZUDMincho';
+            src: url('assets/fonts/BIZUDMincho-Regular.ttf') format('truetype');
         }
 
-        /* Make sure all controls and buttons stay below trail blocks */
-        .controls,
-        .controls button,
-        .reset-button,
-        .confirm-button,
-        .arrow,
-        [id^="duplicatedArrow"],
-        #gameCanvas,
-        .maze-container {
-            z-index: 1 !important;
+        #startScreen {
+            opacity: 1;
+            transition: opacity 1s ease;
         }
 
-        /* Ensure the controls wrapper doesn't interfere with trail blocks */
-        .controls-wrapper {
-            z-index: 1 !important;
+        #startScreen.fade-out {
+            opacity: 0;
         }
 
-        .buttons-container {
-            display: flex !important;
-            justify-content: flex-start !important;
-            gap: 5px;
-            align-items: center;
-            margin-left: 0px;
-            width: 100%;
-            box-sizing: border-box;
+        #cavesScreen {
+            opacity: 0;
+            transition: opacity 1s ease;
         }
 
-        .controls-wrapper {
-            display: flex;
-            justify-content: center;
-            flex-direction: column;
-            align-items: center;
-            gap: 0px;
-            margin-top: 5px;
-            width: 100%;
+        #cavesScreen.fade-in {
+            opacity: 1;
         }
 
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 5px;
-            margin-bottom: 5px;
-            position: relative;
-            z-index: 1;
+        .cave-progress-text {
+            font-family: 'BIZUDMincho' !important;
         }
 
-        .counter-box {
-            width: 100px;
-            height: 50px;
-            background-color: #222222;
-            border: 2px solid #999999;
-            color: #999999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 25px;
-            font-family: "CustomFont";
-            box-sizing: border-box;
-            margin: 0;
-            padding: 4px 0 0 0;
-            line-height: 1;
+        .cave-progress-bar {
+            background-color: #999999 !important;
         }
-
-        .maze-container {
-            position: relative !important;
-            transform-style: preserve-3d !important;
+        .cave-progress-fill {
+            background-color: #222222 !important;
+            left: 2px !important;
+            top: 2px !important;
+            height: calc(100% - 4px) !important;
         }
-      </style>
+    </style>
 </head>
 <body>
 
@@ -132,11 +75,19 @@
     </div>
 
     <div id="cavesScreen" style="display: none;">
-        <button id="cavesMenuButton" class="menu-button">Menu</button>
-        <div id="cavesSquare">
-            <img id="caveImage" src="assets/images/cave1.png" alt="Cave">
-            <div id="cavePlayer"></div>
+        <div style="position: relative; width: 480px;">
+            <div class="cave-progress-container">
+                <div class="cave-progress-text">PROGRESS</div>
+                <div class="cave-progress-bar" style="background-color: #999999;">
+                    <div class="cave-progress-fill" style="background-color: #222222; left: 2px; top: 2px; height: calc(100% - 4px); width: 0%;"></div>
+                </div>
+            </div>
+            <div id="cavesSquare">
+                <img id="caveImage" src="assets/images/cave1.png" alt="Cave">
+                <div id="cavePlayer"></div>
+            </div>
         </div>
+        <button id="cavesMenuButton" class="menu-button">Menu</button>
         <div id="caveLossPopup">
             <div>you lost</div>
             <button id="caveLossMenuButton">menu</button>
@@ -412,6 +363,93 @@
     </div>
 
     <script src="assets/js/index.js"></script>
+    <script>
+        document.getElementById("cavesButton").addEventListener("click", () => {
+            // Reset cave state immediately
+            resetCaveState();
+            
+            // Ensure the loss popup is hidden
+            const lossPopup = document.getElementById('caveLossPopup');
+            if (lossPopup) {
+                lossPopup.style.display = 'none';
+            }
+            
+            // Immediately reset progress bar
+            const progressFill = document.querySelector('.cave-progress-fill');
+            if (progressFill) {
+                progressFill.style.transition = 'none';
+                progressFill.style.width = '0%';
+                // Re-enable transition after a brief delay
+                setTimeout(() => {
+                    progressFill.style.transition = '';
+                }, 50);
+            }
+            
+            // Start fade out of start screen
+            const startScreen = document.getElementById('startScreen');
+            const cavesScreen = document.getElementById('cavesScreen');
+            
+            startScreen.classList.add('fade-out');
+            
+            // After start screen fades out, show caves screen
+            setTimeout(() => {
+                startScreen.style.display = 'none';
+                cavesScreen.style.display = 'flex';
+                
+                // Trigger fade in after a brief delay
+                requestAnimationFrame(() => {
+                    cavesScreen.classList.add('fade-in');
+                    
+                    // Start the game after fade in completes
+                    setTimeout(() => {
+                        startCaveGame();
+                    }, 1000);
+                });
+            }, 1000);
+        });
+
+        // Add event listeners for menu buttons
+        document.getElementById('cavesMenuButton').addEventListener('click', function() {
+            resetCaveState();
+            const cavesScreen = document.getElementById('cavesScreen');
+            const startScreen = document.getElementById('startScreen');
+            
+            // Reset the fade classes
+            cavesScreen.classList.remove('fade-in');
+            startScreen.classList.remove('fade-out');
+            
+            // Hide caves screen and show start screen
+            cavesScreen.style.display = 'none';
+            startScreen.style.display = 'flex';
+        });
+
+        document.getElementById('caveLossMenuButton').addEventListener('click', function() {
+            // Reset everything before leaving
+            if (caveScrollInterval) {
+                clearInterval(caveScrollInterval);
+                caveScrollInterval = null;
+            }
+            
+            // Hide the loss popup first
+            const lossPopup = document.getElementById('caveLossPopup');
+            if (lossPopup) {
+                lossPopup.style.display = 'none';
+            }
+            
+            // Reset cave state and return to menu
+            resetCaveState();
+            const cavesScreen = document.getElementById('cavesScreen');
+            const startScreen = document.getElementById('startScreen');
+            
+            // Reset the fade classes
+            cavesScreen.classList.remove('fade-in');
+            startScreen.classList.remove('fade-out');
+            
+            // Hide caves screen and show start screen
+            cavesScreen.style.display = 'none';
+            startScreen.style.display = 'flex';
+        });
+    </script>
 </body>
 
 </html>
