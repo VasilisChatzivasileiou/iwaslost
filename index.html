@@ -75,6 +75,7 @@
     </div>
 
     <div id="cavesScreen" style="display: none;">
+        <button id="cavesMenuButton" class="menu-button">Menu</button>
         <div style="position: relative; width: 480px;">
             <div class="cave-progress-container">
                 <div class="cave-progress-text">PROGRESS</div>
@@ -85,12 +86,16 @@
             <div id="cavesSquare">
                 <img id="caveImage" src="assets/images/cave1.png" alt="Cave">
                 <div id="cavePlayer"></div>
+                <div id="caveWinBlock"></div>
             </div>
         </div>
-        <button id="cavesMenuButton" class="menu-button">Menu</button>
         <div id="caveLossPopup">
             <div>you lost</div>
             <button id="caveLossMenuButton">menu</button>
+        </div>
+        <div id="caveWinPopup">
+            <div>cool, you won</div>
+            <button id="caveWinMenuButton">menu</button>
         </div>
     </div>
 
@@ -368,6 +373,22 @@
             // Reset cave state immediately
             resetCaveState();
             
+            // Hide logo container
+            const logoContainer = document.querySelector('.logo-container');
+            if (logoContainer) {
+                logoContainer.classList.add('hidden');
+            }
+            
+            // Hide win block immediately without transition
+            const winBlock = document.getElementById('caveWinBlock');
+            if (winBlock) {
+                winBlock.style.transition = 'none';
+                winBlock.style.opacity = '0';
+                setTimeout(() => {
+                    winBlock.style.transition = 'opacity 0.5s ease';
+                }, 50);
+            }
+            
             // Ensure the loss popup is hidden
             const lossPopup = document.getElementById('caveLossPopup');
             if (lossPopup) {
@@ -410,6 +431,19 @@
 
         // Add event listeners for menu buttons
         document.getElementById('cavesMenuButton').addEventListener('click', function() {
+            // Hide win block immediately without transition
+            const winBlock = document.getElementById('caveWinBlock');
+            if (winBlock) {
+                winBlock.style.transition = 'none';
+                winBlock.style.opacity = '0';
+            }
+            
+            // Show logo container
+            const logoContainer = document.querySelector('.logo-container');
+            if (logoContainer) {
+                logoContainer.classList.remove('hidden');
+            }
+            
             resetCaveState();
             const cavesScreen = document.getElementById('cavesScreen');
             const startScreen = document.getElementById('startScreen');
@@ -421,6 +455,13 @@
             // Hide caves screen and show start screen
             cavesScreen.style.display = 'none';
             startScreen.style.display = 'flex';
+            
+            // Re-enable win block transition after a brief delay
+            setTimeout(() => {
+                if (winBlock) {
+                    winBlock.style.transition = 'opacity 0.5s ease';
+                }
+            }, 50);
         });
 
         document.getElementById('caveLossMenuButton').addEventListener('click', function() {
@@ -434,6 +475,12 @@
             const lossPopup = document.getElementById('caveLossPopup');
             if (lossPopup) {
                 lossPopup.style.display = 'none';
+            }
+            
+            // Show logo container
+            const logoContainer = document.querySelector('.logo-container');
+            if (logoContainer) {
+                logoContainer.classList.remove('hidden');
             }
             
             // Reset cave state and return to menu

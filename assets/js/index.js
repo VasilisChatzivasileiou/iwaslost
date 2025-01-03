@@ -5035,15 +5035,12 @@ function startCaveCountdown() {
 function startCaveScroll() {
     const caveImage = document.getElementById('caveImage');
     const cavePlayer = document.getElementById('cavePlayer');
+    const winBlock = document.getElementById('caveWinBlock');
     let scrollY = 0;
 
     // Set game as active without resetting player position
     isGameActive = true;
     isCountdownComplete = true;
-
-    // Store current player position to prevent reset
-    const currentX = cavePlayerX;
-    const currentY = cavePlayerY;
 
     caveScrollInterval = setInterval(() => {
         if (!isGameActive) {
@@ -5056,17 +5053,30 @@ function startCaveScroll() {
         // Stop scrolling when reaching the end
         if (scrollY >= CAVE_HEIGHT - VISIBLE_HEIGHT) {
             clearInterval(caveScrollInterval);
+            // Add a small delay before showing the win block
+            setTimeout(() => {
+                winBlock.style.opacity = '1';
+            }, 500); // 500ms delay
             return;
         }
+
+        // Calculate target scroll position based on player position
+        const targetScrollY = Math.max(0, Math.min(cavePlayerY - VISIBLE_HEIGHT / 2, CAVE_HEIGHT - VISIBLE_HEIGHT));
+        
+        // Smoothly move towards target scroll position
+        scrollY = scrollY * 0.9 + targetScrollY * 0.1;
 
         // Move the background image
         caveImage.style.transform = `translateY(${scrollY}px)`;
 
-        // Update player's visual position relative to scroll, using stored position
-        const visualBottom = currentY + (cavePlayerY - currentY) - scrollY;
+        // Update player's visual position relative to scroll
+        const visualBottom = cavePlayerY - scrollY;
         cavePlayer.style.bottom = `${visualBottom}px`;
 
-        // Update progress bar smoothly
+        // Keep win block hidden while scrolling
+        winBlock.style.opacity = '0';
+
+        // Update progress bar
         const progress = (cavePlayerY / (CAVE_HEIGHT - VISIBLE_HEIGHT)) * 98;
         const progressFill = document.querySelector('.cave-progress-fill');
         if (progressFill) {
@@ -5383,4 +5393,221 @@ function checkCaveCollision(x, y) {
         console.error('Collision check error:', error);
         return false; // Return false on error to prevent blocking movement
     }
+}
+
+function checkCaveWin() {
+    // Get player's actual position (accounting for scroll)
+    const caveImage = document.getElementById('caveImage');
+    const currentScrollY = parseFloat(caveImage.style.transform.replace('translateY(', '').replace('px)', '') || 0);
+    const playerActualY = cavePlayerY;
+    
+    // Get positions for collision check
+    const playerRect = {
+        left: cavePlayerX,
+        right: cavePlayerX + CAVE_PLAYER_SIZE,
+        top: playerActualY,
+        bottom: playerActualY + CAVE_PLAYER_SIZE
+    };
+    
+    const winBlockRect = {
+        left: 216, // Fixed position
+        right: 216 + CAVE_PLAYER_SIZE,
+        top: CAVE_HEIGHT - CAVE_PLAYER_SIZE, // At the top of the cave map
+        bottom: CAVE_HEIGHT
+    };
+    
+    // Check for collision
+    if (playerRect.left < winBlockRect.right &&
+        playerRect.right > winBlockRect.left &&
+        playerRect.top < winBlockRect.bottom &&
+        playerRect.bottom > winBlockRect.top) {
+        showCaveWinPopup();
+    }
+}
+
+function showCaveWinPopup() {
+    const winPopup = document.getElementById('caveWinPopup');
+    if (winPopup) {
+        winPopup.style.display = 'block';
+        isGameActive = false;
+        isCountdownComplete = false;
+        isCaveMoving = false;
+        
+        // Clear any running intervals
+        if (caveScrollInterval) {
+            clearInterval(caveScrollInterval);
+            caveScrollInterval = null;
+        }
+    }
+}
+
+// Add win popup menu button handler
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('caveWinMenuButton').addEventListener('click', function() {
+        // Reset everything before leaving
+        if (caveScrollInterval) {
+            clearInterval(caveScrollInterval);
+            caveScrollInterval = null;
+        }
+        
+        // Hide the win popup
+        const winPopup = document.getElementById('caveWinPopup');
+        if (winPopup) {
+            winPopup.style.display = 'none';
+        }
+        
+        // Reset cave state and return to menu
+        resetCaveState();
+        const cavesScreen = document.getElementById('cavesScreen');
+        const startScreen = document.getElementById('startScreen');
+        
+        // Reset the fade classes
+        cavesScreen.classList.remove('fade-in');
+        startScreen.classList.remove('fade-out');
+        
+        // Hide caves screen and show start screen
+        cavesScreen.style.display = 'none';
+        startScreen.style.display = 'flex';
+    });
+});
+
+// Modify continuousMove to check for win condition
+function continuousMove(direction, onComplete) {
+    // Don't allow movement if game is not active
+    if (!isGameActive) {
+        if (onComplete) onComplete();
+        return;
+    }
+
+    const step = 6;
+    let newX = cavePlayerX;
+    let newY = cavePlayerY;
+
+    switch (direction) {
+        case 'ArrowUp':
+            newY = cavePlayerY + step;
+            break;
+        case 'ArrowDown':
+            newY = cavePlayerY - step;
+            break;
+        case 'ArrowLeft':
+            newX = cavePlayerX - step;
+            break;
+        case 'ArrowRight':
+            newX = cavePlayerX + step;
+            break;
+        default:
+            return;
+    }
+
+    // Check boundaries and collisions
+    if (newX < 0 || newX + CAVE_PLAYER_SIZE > CAVE_WIDTH ||
+        newY < 0 || newY + CAVE_PLAYER_SIZE > CAVE_HEIGHT ||
+        checkCaveCollision(newX, newY)) {
+        isCaveMoving = false;
+        if (onComplete) onComplete();
+        return;
+    }
+
+    // Update positions
+    cavePlayerX = newX;
+    cavePlayerY = newY;
+    
+    // Update player's horizontal position
+    const cavePlayer = document.getElementById('cavePlayer');
+    cavePlayer.style.left = `${cavePlayerX}px`;
+
+    // Get current scroll position from cave image transform
+    const caveImage = document.getElementById('caveImage');
+    const currentScrollY = parseFloat(caveImage.style.transform.replace('translateY(', '').replace('px)', '') || 0);
+    
+    // Update player's visual position relative to scroll
+    const visualBottom = cavePlayerY - currentScrollY;
+    cavePlayer.style.bottom = `${visualBottom}px`;
+
+    // Update progress bar
+    const progress = (cavePlayerY / (CAVE_HEIGHT - VISIBLE_HEIGHT)) * 98;
+    const progressFill = document.querySelector('.cave-progress-fill');
+    if (progressFill) {
+        progressFill.style.setProperty('width', `${Math.min(98, Math.max(0, progress))}%`, 'important');
+    }
+
+    // Update camera target
+    cavePlayerObj.x = cavePlayerX;
+    cavePlayerObj.y = cavePlayerY;
+    caveCamera.update();
+
+    // Check for win condition
+    checkCaveWin();
+
+    // Continue moving in the same direction only if game is still active
+    if (isGameActive) {
+        requestAnimationFrame(() => continuousMove(direction, onComplete));
+    } else if (onComplete) {
+        onComplete();
+    }
+}
+
+// Add win popup reset to resetCaveState
+function resetCaveState() {
+    // First, clear any running intervals
+    if (caveScrollInterval) {
+        clearInterval(caveScrollInterval);
+        caveScrollInterval = null;
+    }
+
+    // Reset all state flags
+    isGameActive = false;
+    isCountdownComplete = false;
+    isCaveMoving = false;
+    
+    // Reset player position to initial values
+    cavePlayerX = 240;
+    cavePlayerY = 0;
+    
+    // Reset visual positions
+    const cavePlayer = document.getElementById('cavePlayer');
+    if (cavePlayer) {
+        cavePlayer.style.left = '240px';
+        cavePlayer.style.bottom = '0px';
+    }
+    
+    const caveImage = document.getElementById('caveImage');
+    if (caveImage) {
+        caveImage.style.transform = 'translateY(0)';
+    }
+
+    // Reset camera and player object
+    if (caveCamera) {
+        caveCamera.xView = 0;
+        caveCamera.yView = 0;
+    }
+    if (cavePlayerObj) {
+        cavePlayerObj.x = cavePlayerX;
+        cavePlayerObj.y = cavePlayerY;
+    }
+    
+    // Reset progress bar
+    const progressFill = document.querySelector('.cave-progress-fill');
+    if (progressFill) {
+        progressFill.style.width = '0%';
+        progressFill.style.transition = 'none';
+        // Re-enable transition after a brief delay
+        setTimeout(() => {
+            progressFill.style.transition = '';
+        }, 50);
+    }
+    
+    // Hide both loss and win popups
+    const lossPopup = document.getElementById('caveLossPopup');
+    if (lossPopup) {
+        lossPopup.style.display = 'none';
+    }
+    const winPopup = document.getElementById('caveWinPopup');
+    if (winPopup) {
+        winPopup.style.display = 'none';
+    }
+    
+    // Clear any queued animations
+    cancelAnimationFrame(continuousMove);
 }

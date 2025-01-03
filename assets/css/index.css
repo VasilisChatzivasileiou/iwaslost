@@ -51,14 +51,18 @@ body {
 }
 
 .logo-container {
-  position: absolute;
-  top: 20px; /* Stick to the top of the screen */
+  position: fixed;
+  top: 20px;
   left: 0;
-  width: 100%; /* Full width */
+  width: 100%;
   text-align: center;
-  padding: 20px 0; /* Optional spacing between logo and instructions */
-  background-color: transparent; /* Transparent background */
+  padding: 20px 0;
+  background-color: transparent;
   box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
 .menu-button {
@@ -1481,7 +1485,7 @@ input[type="range"] {
 }
 
 #cavesMenuButton {
-  position: absolute;
+  position: fixed;
   top: 13px;
   right: 10px;
   background-color: #333;
@@ -1492,6 +1496,7 @@ input[type="range"] {
   padding: 10px 5px;
   cursor: pointer;
   border: none;
+  z-index: 1000;
 }
 
 #cavesMenuButton:hover {
@@ -1556,4 +1561,56 @@ input[type="range"] {
     top: 2px !important;
     height: calc(100% - 4px) !important;
     width: 0% !important; /* Start at 0% */
+}
+
+#caveWinBlock {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    background-color: rgb(76, 175, 80);
+    z-index: 9;
+    user-select: none;
+    -webkit-user-drag: none;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    top: 0px;
+    left: 216px;
+}
+
+/* Hide win block when caves screen is not active */
+#cavesScreen:not(.fade-in) #caveWinBlock,
+#cavesScreen[style*="display: none"] #caveWinBlock {
+    opacity: 0 !important;
+    transition: none !important;
+}
+
+#caveWinPopup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #222222;
+    color: #999999;
+    padding: 20px;
+    text-align: center;
+    font-family: "CustomFont", sans-serif;
+    font-size: 30px;
+    z-index: 1000;
+}
+
+#caveWinPopup button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #222222;
+    color: #999999;
+    border: 2px solid #999999;
+    font-family: "CustomFont", sans-serif;
+    font-size: 25px;
+    cursor: pointer;
+}
+
+#caveWinPopup button:hover {
+    background-color: #999999;
+    color: #222222;
 }
