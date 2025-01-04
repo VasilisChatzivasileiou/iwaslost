@@ -131,4 +131,23 @@
 
 .cave-dots-countdown.visible {
     display: flex;
+}
+
+#caveImage {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 480px;
+    height: 4800px;
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    z-index: 1;
+    user-select: none;
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    pointer-events: none;
 } 
