@@ -5023,7 +5023,7 @@ function startCaveScroll() {
             // Add a small delay before showing the win block
             setTimeout(() => {
                 winBlock.style.opacity = '1';
-            }, 500); // 500ms delay
+            }, 500);
             return;
         }
 
@@ -5039,6 +5039,21 @@ function startCaveScroll() {
         // Update player's visual position relative to scroll
         const visualBottom = cavePlayerY - scrollY;
         cavePlayer.style.bottom = `${visualBottom}px`;
+
+        // Update trail block positions
+        const trailBlocks = document.querySelectorAll('.trail-block');
+        trailBlocks.forEach(block => {
+            const blockY = parseInt(block.dataset.y || cavePlayerY);
+            block.style.bottom = `${blockY - scrollY}px`;
+        });
+
+        // Update checkpoint positions
+        CAVE_CHECKPOINTS.forEach((checkpointData, index) => {
+            const checkpoint = document.getElementById(`caveCheckpoint${index}`);
+            if (checkpoint) {
+                checkpoint.style.bottom = `${checkpointData.y - scrollY}px`;
+            }
+        });
 
         // Keep win block hidden while scrolling
         winBlock.style.opacity = '0';
@@ -5113,11 +5128,15 @@ function continuousMove(direction, onComplete) {
         return;
     }
 
+    // Get current scroll position
+    const caveImage = document.getElementById('caveImage');
+    const currentScrollY = parseFloat(caveImage.style.transform.replace('translateY(', '').replace('px)', '') || 0);
+
     // Add current position to trail
     caveTrailPositions.push({
         x: cavePlayerX,
         y: cavePlayerY,
-        scrollY: parseFloat(document.getElementById('caveImage').style.transform.replace('translateY(', '').replace('px)', '') || 0)
+        scrollY: currentScrollY
     });
 
     // Keep only the last CAVE_TRAIL_LENGTH positions
@@ -5142,13 +5161,19 @@ function continuousMove(direction, onComplete) {
     trailBlock.style.height = '24px';
     trailBlock.style.position = 'absolute';
     trailBlock.style.left = `${cavePlayerX}px`;
-    trailBlock.style.bottom = `${cavePlayerY - parseFloat(document.getElementById('caveImage').style.transform.replace('translateY(', '').replace('px)', '') || 0)}px`;
+    
+    // Calculate the visual position relative to the current scroll
+    const visualBottom = cavePlayerY - currentScrollY;
+    trailBlock.style.bottom = `${visualBottom}px`;
+    // Store the actual Y position for scrolling updates
+    trailBlock.dataset.y = cavePlayerY.toString();
+    
     trailBlock.style.opacity = '0.5';
     trailBlock.style.transition = 'opacity 0.5s ease';
     cavesScreen.appendChild(trailBlock);
 
     // Fade out and remove the trail block
-            setTimeout(() => {
+    setTimeout(() => {
         if (trailBlock) {
             trailBlock.style.opacity = '0';
             setTimeout(() => trailBlock.remove(), 500);
@@ -5162,13 +5187,8 @@ function continuousMove(direction, onComplete) {
     // Update player's horizontal position
     const cavePlayer = document.getElementById('cavePlayer');
     cavePlayer.style.left = `${cavePlayerX}px`;
-
-    // Get current scroll position from cave image transform
-    const caveImage = document.getElementById('caveImage');
-    const currentScrollY = parseFloat(caveImage.style.transform.replace('translateY(', '').replace('px)', '') || 0);
     
     // Update player's visual position relative to scroll
-    const visualBottom = cavePlayerY - currentScrollY;
     cavePlayer.style.bottom = `${visualBottom}px`;
 
     // Update progress bar
