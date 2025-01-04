@@ -33,6 +33,23 @@
     z-index: 2;
 }
 
+.cave-stars-container {
+    position: absolute;
+    top: -95px;
+    left: -3px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 65px;
+    z-index: 2;
+}
+
+.cave-progress-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .cave-progress-text {
     font-family: 'BIZUDMincho';
     font-size: 24px;
@@ -57,4 +74,33 @@
     width: 0% !important;
     background-color: #222222;
     transition: width 0.3s ease;
+}
+
+.cave-stars-text {
+    font-family: 'BIZUDMincho';
+    font-size: 60px;
+    color: #999999;
+    text-transform: uppercase;
+    white-space: nowrap;
+    margin-right: 10px;
+}
+
+.cave-stars-counter {
+    display: flex;
+    gap: 55px;
+    font-size: 60px;
+}
+
+.cave-star {
+    color: #4A4A4A;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+    position: relative;
+    top: 19px;
+}
+
+.cave-star.collected {
+    color: #cccccc;
+    text-shadow: 0 0 10px rgba(204, 204, 204, 0.7),
+                 0 0 20px rgba(204, 204, 204, 0.5),
+                 0 0 30px rgba(204, 204, 204, 0.3);
 } 

@@ -4955,20 +4955,25 @@ const cavePlayerObj = {
     height: CAVE_PLAYER_SIZE
 };
 
-
+// Add at the top with other global variables
+let countdownTimeouts = [];
 
 function startCaveCountdown() {
+    // Clear any existing timeouts first
+    countdownTimeouts.forEach(timeout => clearTimeout(timeout));
+    countdownTimeouts = [];
+
     console.log("3...");
-    setTimeout(() => {
+    countdownTimeouts.push(setTimeout(() => {
         console.log("2...");
-        setTimeout(() => {
+        countdownTimeouts.push(setTimeout(() => {
             console.log("1...");
-            setTimeout(() => {
+            countdownTimeouts.push(setTimeout(() => {
                 console.log("GO!");
                 startCaveScroll();
-            }, 1000);
-        }, 1000);
-    }, 1000);
+            }, 1000));
+        }, 1000));
+    }, 1000));
 }
 
 function startCaveScroll() {
@@ -5030,36 +5035,6 @@ function startCaveScroll() {
             showCaveLossPopup();
         }
     }, 16);
-}
-
-function startCaveGame() {
-    // Reset everything first
-    resetCaveState();
-    
-    // Explicitly hide the loss popup and ensure it stays hidden
-    const lossPopup = document.getElementById('caveLossPopup');
-    if (lossPopup) {
-        lossPopup.style.display = 'none';
-    }
-    
-    // Immediately reset progress bar
-    const progressFill = document.querySelector('.cave-progress-fill');
-    if (progressFill) {
-        progressFill.style.transition = 'none';
-        progressFill.style.width = '0%';
-        // Re-enable transition after a brief delay
-        setTimeout(() => {
-            progressFill.style.transition = '';
-        }, 50);
-    }
-    
-    // Set initial game state flags
-    isGameActive = true;
-    isCountdownComplete = false;
-    isCaveMoving = false;
-    
-    // Start the countdown for camera scroll
-    startCaveCountdown();
 }
 
 function showCaveLossPopup() {
@@ -5412,7 +5387,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 500);
 });
 });
-
 // Add win popup reset to resetCaveState
 function resetCaveState() {
     // First, clear any running intervals
@@ -5420,6 +5394,10 @@ function resetCaveState() {
         clearInterval(caveScrollInterval);
         caveScrollInterval = null;
     }
+
+    // Clear any countdown timeouts
+    countdownTimeouts.forEach(timeout => clearTimeout(timeout));
+    countdownTimeouts = [];
 
     // Reset all state flags
     isGameActive = false;
@@ -5462,7 +5440,7 @@ function resetCaveState() {
             progressFill.style.transition = '';
         }, 50);
     }
-    
+
     // Hide both loss and win popups
     const lossPopup = document.getElementById('caveLossPopup');
     if (lossPopup) {
@@ -5473,9 +5451,17 @@ function resetCaveState() {
         winPopup.style.display = 'none';
     }
     
+    // Reset all checkpoints
+    CAVE_CHECKPOINTS.forEach((checkpoint, index) => {
+        checkpoint.isFound = false;
+        const checkpointElement = document.getElementById(`caveCheckpoint${index}`);
+        if (checkpointElement) {
+            checkpointElement.style.opacity = '1';
+        }
+    });
+    
     // Clear any queued animations
     cancelAnimationFrame(continuousMove);
-    CAVE_CHECKPOINT.isFound = false;
 }
 
 // Add at the top with other global variables
@@ -5485,84 +5471,214 @@ const CAVE_TRAIL_LENGTH = 6;
 
 
 // Add at the top with other global variables
-const CAVE_CHECKPOINT = {
-    x: 216,  // Same x position as win block
-    y: 2400, // Middle of the cave (4800/2)
-    size: 24,
-    isVisible: true,
-    isFound: false
-};
+const CAVE_CHECKPOINTS = [
+    {
+        x: 216,  // First star
+        y: 2360, // Middle of the cave
+        size: 24,
+        isVisible: true,
+        isFound: false,
+        symbol: '*',
+        message: 'found star1'
+    },
+    {
+        x: 169,  // Second star, left side
+        y: 1585, // One third of the cave
+        size: 24,
+        isVisible: true,
+        isFound: false,
+        symbol: '*',
+        message: 'found star2'
+    },
+    {
+        x: 336,  // Third star, right side
+        y: 3200, // Two thirds of the cave
+        size: 24,
+        isVisible: true,
+        isFound: false,
+        symbol: '*',
+        message: 'found star3'
+    }
+];
 
-// Add function to check if checkpoint should be visible
 function updateCaveCheckpoint() {
-    let checkpoint = document.getElementById('caveCheckpoint');
-    if (!checkpoint) {
-        // Create checkpoint element if it doesn't exist
-        checkpoint = document.createElement('div');
-        checkpoint.id = 'caveCheckpoint';
-        checkpoint.style.position = 'absolute';
-        checkpoint.style.width = '24px';
-        checkpoint.style.height = '24px';
-        checkpoint.style.color = '#222222';  // Change to darker color
-        checkpoint.style.left = `${CAVE_CHECKPOINT.x}px`;
-        checkpoint.style.opacity = CAVE_CHECKPOINT.isFound ? '0' : '1';
-        checkpoint.style.transition = 'opacity 0.5s ease';
-        checkpoint.style.zIndex = '8';
-        checkpoint.style.fontSize = '32px';  // Make the star bigger
-        checkpoint.style.lineHeight = '24px';  // Center vertically
-        checkpoint.style.textAlign = 'center';  // Center horizontally
-        checkpoint.innerHTML = '★';  // Use a filled star symbol
-        document.getElementById('cavesSquare').appendChild(checkpoint);
+    // Update all checkpoints
+    CAVE_CHECKPOINTS.forEach((checkpointData, index) => {
+        if (!checkpointData.isFound) {
+            const checkpointElement = document.getElementById(`caveCheckpoint${index}`);
+            if (!checkpointElement) {
+                // Create checkpoint if it doesn't exist
+                const newCheckpoint = document.createElement('div');
+                newCheckpoint.id = `caveCheckpoint${index}`;
+                newCheckpoint.style.cssText = `
+                    position: absolute;
+                    width: ${checkpointData.size}px;
+                    height: ${checkpointData.size}px;
+                    left: ${checkpointData.x}px;
+                    color: #222222;
+                    font-size: 54px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    user-select: none;
+                    -webkit-user-drag: none;
+                    z-index: 9;
+                `;
+                newCheckpoint.textContent = checkpointData.symbol;
+                document.getElementById('cavesSquare').appendChild(newCheckpoint);
+            }
+
+            // Get cave image for scroll position
+            const caveImage = document.getElementById('caveImage');
+            if (!caveImage || !caveImage.style.transform) return;
+            
+            const currentScrollY = parseFloat(caveImage.style.transform.replace('translateY(', '').replace('px)', '') || 0);
+            
+            // Update checkpoint position relative to scroll
+            const currentCheckpoint = document.getElementById(`caveCheckpoint${index}`);
+            if (currentCheckpoint) {
+                currentCheckpoint.style.bottom = `${checkpointData.y - currentScrollY}px`;
+            }
+            
+            // Check for collision with player
+            const playerRect = {
+                left: cavePlayerX,
+                right: cavePlayerX + CAVE_PLAYER_SIZE,
+                top: cavePlayerY,
+                bottom: cavePlayerY + CAVE_PLAYER_SIZE
+            };
+            
+            const checkpointRect = {
+                left: checkpointData.x,
+                right: checkpointData.x + checkpointData.size,
+                top: checkpointData.y,
+                bottom: checkpointData.y + checkpointData.size
+            };
+            
+            // Check for collision
+            if (playerRect.left < checkpointRect.right &&
+                playerRect.right > checkpointRect.left &&
+                playerRect.top < checkpointRect.bottom &&
+                playerRect.bottom > checkpointRect.top) {
+                // Player found the checkpoint
+                console.log(checkpointData.message);
+                checkpointData.isFound = true;
+                if (currentCheckpoint) {
+                    currentCheckpoint.style.opacity = '0';
+                }
+                
+                // Update star counter
+                const starElement = document.querySelector(`.cave-star[data-star-index="${index}"]`);
+                if (starElement) {
+                    starElement.classList.add('collected');
+                }
+                
+                // Flash effect
+                const cavesSquare = document.getElementById('cavesSquare');
+                cavesSquare.classList.add('flash');
+                setTimeout(() => {
+                    cavesSquare.classList.remove('flash');
+                }, 50);
+            }
+        }
+    });
+}
+
+function resetCaveState() {
+    // First, clear any running intervals
+    if (caveScrollInterval) {
+        clearInterval(caveScrollInterval);
+        caveScrollInterval = null;
     }
 
-    // Get current scroll position
-    const caveImage = document.getElementById('caveImage');
-    if (!caveImage || !caveImage.style.transform) return;
+    // Clear any countdown timeouts
+    countdownTimeouts.forEach(timeout => clearTimeout(timeout));
+    countdownTimeouts = [];
+
+    // Reset all state flags
+    isGameActive = false;
+    isCountdownComplete = false;
+    isCaveMoving = false;
     
-    const currentScrollY = parseFloat(caveImage.style.transform.replace('translateY(', '').replace('px)', '') || 0);
+    // Reset player position to initial values
+    cavePlayerX = 240;
+    cavePlayerY = 0;
     
-    // Update checkpoint position relative to scroll
-    checkpoint.style.bottom = `${CAVE_CHECKPOINT.y - currentScrollY}px`;
-    
-    // Check if player has reached the checkpoint
-    if (!CAVE_CHECKPOINT.isFound) {
-        const playerRect = {
-            left: cavePlayerX,
-            right: cavePlayerX + CAVE_PLAYER_SIZE,
-            top: cavePlayerY,
-            bottom: cavePlayerY + CAVE_PLAYER_SIZE
-        };
-        
-        const checkpointRect = {
-            left: CAVE_CHECKPOINT.x,
-            right: CAVE_CHECKPOINT.x + CAVE_CHECKPOINT.size,
-            top: CAVE_CHECKPOINT.y,
-            bottom: CAVE_CHECKPOINT.y + CAVE_CHECKPOINT.size
-        };
-        
-        // Check for collision with checkpoint
-        if (playerRect.left < checkpointRect.right &&
-            playerRect.right > checkpointRect.left &&
-            playerRect.top < checkpointRect.bottom &&
-            playerRect.bottom > checkpointRect.top) {
-            // Player found the checkpoint
-            console.log('Found something!');
-            CAVE_CHECKPOINT.isFound = true;
-            checkpoint.style.opacity = '0';
-            
-            // Optional: Add a flash effect when found
-            const cavesSquare = document.getElementById('cavesSquare');
-            cavesSquare.classList.add('flash');
-            setTimeout(() => {
-                cavesSquare.classList.remove('flash');
-            }, 50);
-        }
+    // Reset visual positions
+    const cavePlayer = document.getElementById('cavePlayer');
+    if (cavePlayer) {
+        cavePlayer.style.left = '240px';
+        cavePlayer.style.bottom = '0px';
     }
+    
+    const caveImage = document.getElementById('caveImage');
+    if (caveImage) {
+        caveImage.style.transform = 'translateY(0)';
+    }
+
+    // Reset camera and player object
+    if (caveCamera) {
+        caveCamera.xView = 0;
+        caveCamera.yView = 0;
+    }
+    if (cavePlayerObj) {
+        cavePlayerObj.x = cavePlayerX;
+        cavePlayerObj.y = cavePlayerY;
+    }
+    
+    // Reset progress bar
+    const progressFill = document.querySelector('.cave-progress-fill');
+    if (progressFill) {
+        progressFill.style.width = '0%';
+        progressFill.style.transition = 'none';
+        // Re-enable transition after a brief delay
+        setTimeout(() => {
+            progressFill.style.transition = '';
+        }, 50);
+    }
+
+    // Hide both loss and win popups
+    const lossPopup = document.getElementById('caveLossPopup');
+    if (lossPopup) {
+        lossPopup.style.display = 'none';
+    }
+    const winPopup = document.getElementById('caveWinPopup');
+    if (winPopup) {
+        winPopup.style.display = 'none';
+    }
+    
+    // Reset all checkpoints and stars
+    CAVE_CHECKPOINTS.forEach((checkpointData, index) => {
+        checkpointData.isFound = false;
+        const currentCheckpoint = document.getElementById(`caveCheckpoint${index}`);
+        if (currentCheckpoint) {
+            currentCheckpoint.style.opacity = '1';
+        }
+        // Reset star counter
+        const starElement = document.querySelector(`.cave-star[data-star-index="${index}"]`);
+        if (starElement) {
+            starElement.classList.remove('collected');
+        }
+    });
+    
+    // Clear any queued animations
+    cancelAnimationFrame(continuousMove);
 }
 
 function startCaveGame() {
     // Reset everything first
     resetCaveState();
+    
+    // Hide win block explicitly
+    const winBlock = document.getElementById('caveWinBlock');
+    if (winBlock) {
+        winBlock.style.opacity = '0';
+        winBlock.style.transition = 'none';
+        // Re-enable transition after a brief delay
+        setTimeout(() => {
+            winBlock.style.transition = 'opacity 0.5s ease';
+        }, 50);
+    }
     
     // Create checkpoint immediately
     updateCaveCheckpoint();
@@ -5596,116 +5712,162 @@ function startCaveGame() {
     isCaveMoving = false;
     
     startCaveCountdown();
-    CAVE_CHECKPOINT.isFound = false;
+    // Reset all checkpoints
+    CAVE_CHECKPOINTS.forEach((checkpointData, index) => {
+        checkpointData.isFound = false;
+        const currentCheckpoint = document.getElementById(`caveCheckpoint${index}`);
+        if (currentCheckpoint) {
+            currentCheckpoint.style.opacity = '1';
+        }
+    });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     // Add caves button listener
-    document.getElementById('cavesButton').addEventListener('click', function() {
-        const startScreen = document.getElementById('startScreen');
-        const cavesScreen = document.getElementById('cavesScreen');
-        
-        // Hide logo container
-        const logoContainer = document.querySelector('.logo-container');
-        if (logoContainer) {
-            logoContainer.classList.add('hidden');
+    document.getElementById('cavesButton').addEventListener('click', transitionToCavesScreen);
+
+    // Menu button - exit caves
+    document.getElementById('cavesMenuButton').addEventListener('click', () => {
+        if (caveScrollInterval) {
+            clearInterval(caveScrollInterval);
+            caveScrollInterval = null;
         }
-        
-        // First make caves screen visible but transparent
-        cavesScreen.style.display = 'flex';
-        cavesScreen.style.opacity = '0';
-        
-        // Start fading out the start screen
-        startScreen.style.opacity = '0';
-        startScreen.style.transition = 'opacity 0.5s ease-in-out';
-        
-        // After a brief delay, start fading in the caves screen
-        setTimeout(() => {
-            cavesScreen.style.opacity = '1';
-            cavesScreen.style.transition = 'opacity 0.5s ease-in-out';
-            startScreen.style.display = 'none';
-            
-            // Start the cave game
-            startCaveGame();
-        }, 500);
+        transitionToStartScreen();
+    });
+
+    // Loss menu button - exit caves
+    document.getElementById('caveLossMenuButton').addEventListener('click', () => {
+        if (caveScrollInterval) {
+            clearInterval(caveScrollInterval);
+            caveScrollInterval = null;
+        }
+        const lossPopup = document.getElementById('caveLossPopup');
+        if (lossPopup) {
+            lossPopup.style.display = 'none';
+        }
+        transitionToStartScreen();
+    });
+
+    // Win menu button - exit caves
+    document.getElementById('caveWinMenuButton').addEventListener('click', () => {
+        if (caveScrollInterval) {
+            clearInterval(caveScrollInterval);
+            caveScrollInterval = null;
+        }
+        const winPopup = document.getElementById('caveWinPopup');
+        if (winPopup) {
+            winPopup.style.display = 'none';
+        }
+        transitionToStartScreen();
     });
 });
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Add caves menu button handler
-    document.getElementById('cavesMenuButton').addEventListener('click', function() {
-      // Reset everything before leaving
-      if (caveScrollInterval) {
-          clearInterval(caveScrollInterval);
-          caveScrollInterval = null;
-      }
-      
-      // Show logo container and start screen
-      const logoContainer = document.querySelector('.logo-container');
-      const startScreen = document.getElementById('startScreen');
-      const cavesScreen = document.getElementById('cavesScreen');
-      
-      // Reset cave state
-      resetCaveState();
-      
-      // First fade out caves screen
-      cavesScreen.style.opacity = '0';
-      cavesScreen.style.transition = 'opacity 0.5s ease-in-out';
-      
-      // After a brief delay, show start screen and logo
-      setTimeout(() => {
-          // Hide caves screen and show start screen
-          cavesScreen.style.display = 'none';
-          startScreen.style.display = 'flex';
-          startScreen.style.opacity = '1';
-          startScreen.style.transition = 'opacity 0.5s ease-in-out';
-          
-          // Show logo container
-          if (logoContainer) {
-              logoContainer.classList.remove('hidden');
-          }
-      }, 500);
-  });
+// Add this function before the event listeners
+function transitionToCavesScreen() {
+    const startScreen = document.getElementById('startScreen');
+    const cavesScreen = document.getElementById('cavesScreen');
+    const winBlock = document.getElementById('caveWinBlock');
+    const logoContainer = document.querySelector('.logo-container');
+    
+    // Hide win block
+    if (winBlock) {
+        winBlock.style.opacity = '0';
+        winBlock.style.transition = 'none';
+    }
+    
+    // Hide logo
+    if (logoContainer) {
+        logoContainer.classList.add('hidden');
+    }
+    
+    // Setup caves screen
+    cavesScreen.style.display = 'flex';
+    cavesScreen.style.opacity = '0';
+    
+    // Fade out start screen
+    startScreen.style.opacity = '0';
+    startScreen.style.transition = 'opacity 0.5s ease-in-out';
+    
+    // After delay, fade in caves screen
+    setTimeout(() => {
+        cavesScreen.style.opacity = '1';
+        cavesScreen.style.transition = 'opacity 0.5s ease-in-out';
+        startScreen.style.display = 'none';
+        
+        // Re-enable win block transition
+        if (winBlock) {
+            setTimeout(() => {
+                winBlock.style.transition = 'opacity 0.5s ease';
+            }, 50);
+        }
+        
+        // Start the game
+        startCaveGame();
+    }, 500);
+}
 
-    // Add caves loss menu button handler
-    document.getElementById('caveLossMenuButton').addEventListener('click', function() {
-      // Reset everything before leaving
-      if (caveScrollInterval) {
-          clearInterval(caveScrollInterval);
-          caveScrollInterval = null;
-      }
-      
-      // Hide the loss popup first
-      const lossPopup = document.getElementById('caveLossPopup');
-      if (lossPopup) {
-          lossPopup.style.display = 'none';
-      }
-      
-      // Show logo container and start screen
-      const logoContainer = document.querySelector('.logo-container');
-      const startScreen = document.getElementById('startScreen');
-      const cavesScreen = document.getElementById('cavesScreen');
-      
-      // Reset cave state
-      resetCaveState();
-      
-      // First fade out caves screen
-      cavesScreen.style.opacity = '0';
-      cavesScreen.style.transition = 'opacity 0.5s ease-in-out';
-      
-      // After a brief delay, show start screen and logo
-      setTimeout(() => {
-          // Hide caves screen and show start screen
-          cavesScreen.style.display = 'none';
-          startScreen.style.display = 'flex';
-          startScreen.style.opacity = '1';
-          startScreen.style.transition = 'opacity 0.5s ease-in-out';
-          
-          // Show logo container
-          if (logoContainer) {
-              logoContainer.classList.remove('hidden');
-          }
-      }, 500);
-  });
+function transitionToStartScreen() {
+    const startScreen = document.getElementById('startScreen');
+    const cavesScreen = document.getElementById('cavesScreen');
+    const logoContainer = document.querySelector('.logo-container');
+    
+    // Reset cave state first
+    resetCaveState();
+    
+    // Fade out caves screen
+    cavesScreen.classList.remove('fade-in');
+    cavesScreen.style.opacity = '0';
+    cavesScreen.style.transition = 'opacity 0.5s ease-in-out';
+    
+    // After delay, switch screens
+    setTimeout(() => {
+        // Hide caves screen
+        cavesScreen.style.display = 'none';
+        
+        // Setup start screen for fade in
+        startScreen.style.display = 'flex';
+        startScreen.style.opacity = '0';
+        startScreen.style.transition = 'opacity 0.5s ease-in-out';
+        
+        // Show logo
+        if (logoContainer) {
+            logoContainer.classList.remove('hidden');
+        }
+        
+        // Force browser to process display change before starting fade
+        requestAnimationFrame(() => {
+            startScreen.style.opacity = '1';
+        });
+    }, 500);
+}
+
+// Add at the top with other event listeners
+window.addEventListener('blur', () => {
+    // Clear any pressed keys when window loses focus
+    if (isGameActive) {
+        isCaveMoving = false;
+    }
+});
+
+window.addEventListener('focus', () => {
+    // Re-enable movement when window gains focus
+    if (isGameActive && isCountdownComplete) {
+        isCaveMoving = false;
+    }
+});
+
+// Add this to the DOMContentLoaded event listener
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        // Clear movement state when tab becomes hidden
+        if (isGameActive) {
+            isCaveMoving = false;
+        }
+    } else {
+        // Re-enable movement when tab becomes visible
+        if (isGameActive && isCountdownComplete) {
+            isCaveMoving = false;
+        }
+    }
 });
 

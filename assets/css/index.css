@@ -1586,8 +1586,8 @@ input[type="range"] {
 /* Hide win block when caves screen is not active */
 #cavesScreen:not(.fade-in) #caveWinBlock,
 #cavesScreen[style*="display: none"] #caveWinBlock {
-    opacity: 0 !important;
-    transition: none !important;
+    opacity: 0;
+    transition: none;
 }
 
 #caveWinPopup {
