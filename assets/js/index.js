@@ -4839,6 +4839,13 @@ let caveScrollSpeed = 0.95; // Middle value between 0.5 and 1.5
 let isCountdownComplete = false;
 let caveScrollInterval = null;
 
+// Wandering block properties
+let wanderingX = 216;
+let wanderingY = 600; // Starting position
+const WANDERING_SPEED = 3;
+let wanderingDirection = 'ArrowRight';
+let wanderingInterval = null;
+
 // Game namespace and utility classes
 window.Game = {};
 
@@ -5039,6 +5046,12 @@ function startCaveScroll() {
         // Update player's visual position relative to scroll
         const visualBottom = cavePlayerY - scrollY;
         cavePlayer.style.bottom = `${visualBottom}px`;
+
+        // Update wandering block position
+        const wanderingBlock = document.getElementById('wanderingBlock');
+        if (wanderingBlock) {
+            wanderingBlock.style.bottom = `${wanderingY - scrollY}px`;
+        }
 
         // Update trail block positions
         const trailBlocks = document.querySelectorAll('.trail-block');
@@ -5712,6 +5725,27 @@ function startCaveGame() {
     // Reset everything first
     resetCaveState();
     
+    // Create wandering block if it doesn't exist
+    let wanderingBlock = document.getElementById('wanderingBlock');
+    if (!wanderingBlock) {
+        wanderingBlock = document.createElement('div');
+        wanderingBlock.id = 'wanderingBlock';
+        wanderingBlock.style.cssText = `
+            position: absolute;
+            width: ${CAVE_PLAYER_SIZE}px;
+            height: ${CAVE_PLAYER_SIZE}px;
+            background-color: #FFA500;
+            z-index: 9;
+            left: ${wanderingX}px;
+            bottom: ${wanderingY}px;
+        `;
+        document.getElementById('cavesSquare').appendChild(wanderingBlock);
+    }
+
+    // Start wandering block movement
+    clearInterval(wanderingInterval);
+    wanderingInterval = setInterval(moveWanderingBlock, 16);
+
     // Hide win block explicitly
     const winBlock = document.getElementById('caveWinBlock');
     if (winBlock) {
@@ -5733,14 +5767,15 @@ function startCaveGame() {
         } else {
             clearInterval(updateCheckpointInterval);
         }
-    }, 16); // Update at ~60fps
-    
-    // Rest of the existing startCaveGame code...
+    }, 16);
+
+    // Hide loss popup
     const lossPopup = document.getElementById('caveLossPopup');
     if (lossPopup) {
         lossPopup.style.display = 'none';
     }
     
+    // Reset progress bar
     const progressFill = document.querySelector('.cave-progress-fill');
     if (progressFill) {
         progressFill.style.transition = 'none';
@@ -5754,7 +5789,6 @@ function startCaveGame() {
     isCountdownComplete = false;
     isCaveMoving = false;
     
-    startCaveCountdown();
     // Reset all checkpoints
     CAVE_CHECKPOINTS.forEach((checkpointData, index) => {
         checkpointData.isFound = false;
@@ -5763,6 +5797,9 @@ function startCaveGame() {
             currentCheckpoint.style.opacity = '1';
         }
     });
+    
+    // Start the countdown sequence
+    startCaveCountdown();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -5913,4 +5950,56 @@ document.addEventListener('visibilitychange', () => {
         }
     }
 });
+
+function moveWanderingBlock() {
+    if (!isGameActive) return;
+
+    let newX = wanderingX;
+    let newY = wanderingY;
+
+    // Randomly change direction occasionally
+    if (Math.random() < 0.02) {
+        const directions = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+        wanderingDirection = directions[Math.floor(Math.random() * directions.length)];
+    }
+
+    // Move in current direction
+    switch (wanderingDirection) {
+        case 'ArrowUp':
+            newY += WANDERING_SPEED;
+            break;
+        case 'ArrowDown':
+            newY -= WANDERING_SPEED;
+            break;
+        case 'ArrowLeft':
+            newX -= WANDERING_SPEED;
+            break;
+        case 'ArrowRight':
+            newX += WANDERING_SPEED;
+            break;
+    }
+
+    // Check boundaries and collisions
+    if (newX < 0 || newX + CAVE_PLAYER_SIZE > CAVE_WIDTH ||
+        newY < 0 || newY + CAVE_PLAYER_SIZE > CAVE_HEIGHT ||
+        checkCaveCollision(newX, newY)) {
+        // Change to a random different direction when hitting a wall
+        const directions = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']
+            .filter(dir => dir !== wanderingDirection);
+        wanderingDirection = directions[Math.floor(Math.random() * directions.length)];
+        return;
+    }
+
+    // Update position
+    wanderingX = newX;
+    wanderingY = newY;
+
+    // Update visual position
+    const wanderingBlock = document.getElementById('wanderingBlock');
+    if (wanderingBlock) {
+        const currentScrollY = parseFloat(document.getElementById('caveImage').style.transform.replace('translateY(', '').replace('px)', '') || 0);
+        wanderingBlock.style.left = `${wanderingX}px`;
+        wanderingBlock.style.bottom = `${wanderingY - currentScrollY}px`;
+    }
+}
 
