@@ -5010,41 +5010,32 @@ function startCaveCountdown() {
 }
 
 function startCaveScroll() {
+    if (caveScrollInterval) {
+        clearInterval(caveScrollInterval);
+    }
+
     const caveImage = document.getElementById('caveImage');
-    const cavePlayer = document.getElementById('cavePlayer');
-    const winBlock = document.getElementById('caveWinBlock');
     let scrollY = 0;
+    const normalSpeed = 1; // Normal scroll speed
+    const slowSpeed = 0.5; // Slower scroll speed for when player is in bottom half
 
-    // Start scrolling but don't enable movement yet
     caveScrollInterval = setInterval(() => {
-        if (!isGameActive) {
-            clearInterval(caveScrollInterval);
-            return;
-        }
+        if (!isGameActive) return;
 
-        scrollY += caveScrollSpeed;
+        // Calculate player's position relative to the visible area
+        const visualBottom = cavePlayerY - scrollY;
+        const middleY = VISIBLE_HEIGHT / 2;
         
-        // Stop scrolling when reaching the end
-        if (scrollY >= CAVE_HEIGHT - VISIBLE_HEIGHT) {
-            clearInterval(caveScrollInterval);
-            // Add a small delay before showing the win block
-            setTimeout(() => {
-                winBlock.style.opacity = '1';
-            }, 500);
-            return;
-        }
+        // Use slower speed if player is below middle, normal speed if above
+        const currentSpeed = visualBottom < middleY ? slowSpeed : normalSpeed;
 
-        // Calculate target scroll position based on player position
-        const targetScrollY = Math.max(0, Math.min(cavePlayerY - VISIBLE_HEIGHT / 2, CAVE_HEIGHT - VISIBLE_HEIGHT));
-        
-        // Smoothly move towards target scroll position
-        scrollY = scrollY * 0.9 + targetScrollY * 0.1;
-
-        // Move the background image
+        // Update scroll position, but don't exceed the maximum scroll
+        const maxScroll = CAVE_HEIGHT - VISIBLE_HEIGHT;
+        scrollY = Math.min(scrollY + currentSpeed, maxScroll);
         caveImage.style.transform = `translateY(${scrollY}px)`;
 
-        // Update player's visual position relative to scroll
-        const visualBottom = cavePlayerY - scrollY;
+        // Update all elements that need to move with the scroll
+        const cavePlayer = document.getElementById('cavePlayer');
         cavePlayer.style.bottom = `${visualBottom}px`;
 
         // Update wandering block position
@@ -5068,24 +5059,31 @@ function startCaveScroll() {
             }
         });
 
-        // Keep win block hidden while scrolling
-        winBlock.style.opacity = '0';
+        // Show win block with fade in when reaching the top
+        const winBlock = document.getElementById('caveWinBlock');
+        if (scrollY >= maxScroll) {
+            winBlock.style.opacity = '1';
+            winBlock.style.transition = 'opacity 0.5s ease';
+        } else {
+            winBlock.style.opacity = '0';
+        }
 
         // Update progress bar
-        const progress = (cavePlayerY / (CAVE_HEIGHT - VISIBLE_HEIGHT)) * 98;
+        const progress = (scrollY / (CAVE_HEIGHT - VISIBLE_HEIGHT)) * 98;
         const progressFill = document.querySelector('.cave-progress-fill');
         if (progressFill) {
             progressFill.style.setProperty('width', `${Math.min(98, Math.max(0, progress))}%`, 'important');
         }
 
         // Check if player is below the camera view
-        if (cavePlayerY < scrollY) {
+        const playerBottomY = cavePlayerY - scrollY;
+        if (playerBottomY < -CAVE_PLAYER_SIZE) {
             clearInterval(caveScrollInterval);
             isGameActive = false;
             isCountdownComplete = false;
             showCaveLossPopup();
         }
-    }, 16);
+    }, 16); // ~60fps
 }
 
 function showCaveLossPopup() {
@@ -5247,7 +5245,7 @@ caveCollisionCtx.imageSmoothingEnabled = false; // Disable smoothing for pixel-p
 
 // Load the cave image for collision detection
 const caveCollisionImage = new Image();
-caveCollisionImage.src = 'assets/images/cave1(3).png';
+caveCollisionImage.src = 'assets/images/cave1(4).png';
 caveCollisionImage.onload = function() {
     // Create a temporary canvas
     const tempCanvas = document.createElement('canvas');
