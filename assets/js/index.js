@@ -4971,11 +4971,7 @@ function startCaveCountdown() {
     const dotsLabel = document.querySelector('.cave-dots-countdown');
     dotsLabel.innerHTML = '<span class="dot">.</span> <span class="dot">.</span> <span class="dot">.</span>';
     dotsLabel.style.display = 'flex';
-    
-    // Reset all dots to initial color
-    Array.from(dotsLabel.children).forEach(dot => {
-        dot.style.color = '#111111';
-    });
+    dotsLabel.classList.add('visible');
 
     // First dot transition
     countdownTimeouts.push(setTimeout(() => {
@@ -4995,9 +4991,9 @@ function startCaveCountdown() {
                     isGameActive = true;
                     isCountdownComplete = true;
                     
-                    setTimeout(() => {
+    setTimeout(() => {
                         if (isGameActive) {
-                            startCaveScroll();
+                startCaveScroll();
                         }
                     }, 1500);
                 }, 1000));
@@ -5227,7 +5223,7 @@ caveCollisionCtx.imageSmoothingEnabled = false; // Disable smoothing for pixel-p
 
 // Load the cave image for collision detection
 const caveCollisionImage = new Image();
-caveCollisionImage.src = 'assets/images/cave1.png';
+caveCollisionImage.src = 'assets/images/cave1(2).png';
 caveCollisionImage.onload = function() {
     // Create a temporary canvas
     const tempCanvas = document.createElement('canvas');
@@ -5467,7 +5463,7 @@ function resetCaveState() {
             progressFill.style.transition = '';
         }, 50);
     }
-
+    
     // Hide both loss and win popups
     const lossPopup = document.getElementById('caveLossPopup');
     if (lossPopup) {
@@ -5502,8 +5498,8 @@ const CAVE_CHECKPOINTS = [
     {
         x: 216,  // First star
         y: 2360, // Middle of the cave
-        size: 24,
-        isVisible: true,
+    size: 24,
+    isVisible: true,
         isFound: false,
         symbol: '*',
         message: 'found star1'
@@ -5556,26 +5552,26 @@ function updateCaveCheckpoint() {
             }
 
             // Get cave image for scroll position
-            const caveImage = document.getElementById('caveImage');
-            if (!caveImage || !caveImage.style.transform) return;
-            
-            const currentScrollY = parseFloat(caveImage.style.transform.replace('translateY(', '').replace('px)', '') || 0);
-            
-            // Update checkpoint position relative to scroll
+    const caveImage = document.getElementById('caveImage');
+    if (!caveImage || !caveImage.style.transform) return;
+    
+    const currentScrollY = parseFloat(caveImage.style.transform.replace('translateY(', '').replace('px)', '') || 0);
+    
+    // Update checkpoint position relative to scroll
             const currentCheckpoint = document.getElementById(`caveCheckpoint${index}`);
             if (currentCheckpoint) {
                 currentCheckpoint.style.bottom = `${checkpointData.y - currentScrollY}px`;
             }
-            
+    
             // Check for collision with player
-            const playerRect = {
-                left: cavePlayerX,
-                right: cavePlayerX + CAVE_PLAYER_SIZE,
-                top: cavePlayerY,
-                bottom: cavePlayerY + CAVE_PLAYER_SIZE
-            };
-            
-            const checkpointRect = {
+        const playerRect = {
+            left: cavePlayerX,
+            right: cavePlayerX + CAVE_PLAYER_SIZE,
+            top: cavePlayerY,
+            bottom: cavePlayerY + CAVE_PLAYER_SIZE
+        };
+        
+        const checkpointRect = {
                 left: checkpointData.x,
                 right: checkpointData.x + checkpointData.size,
                 top: checkpointData.y,
@@ -5583,11 +5579,11 @@ function updateCaveCheckpoint() {
             };
             
             // Check for collision
-            if (playerRect.left < checkpointRect.right &&
-                playerRect.right > checkpointRect.left &&
-                playerRect.top < checkpointRect.bottom &&
-                playerRect.bottom > checkpointRect.top) {
-                // Player found the checkpoint
+        if (playerRect.left < checkpointRect.right &&
+            playerRect.right > checkpointRect.left &&
+            playerRect.top < checkpointRect.bottom &&
+            playerRect.bottom > checkpointRect.top) {
+            // Player found the checkpoint
                 console.log(checkpointData.message);
                 checkpointData.isFound = true;
                 if (currentCheckpoint) {
@@ -5601,13 +5597,13 @@ function updateCaveCheckpoint() {
                 }
                 
                 // Flash effect
-                const cavesSquare = document.getElementById('cavesSquare');
-                cavesSquare.classList.add('flash');
-                setTimeout(() => {
-                    cavesSquare.classList.remove('flash');
-                }, 50);
-            }
+            const cavesSquare = document.getElementById('cavesSquare');
+            cavesSquare.classList.add('flash');
+            setTimeout(() => {
+                cavesSquare.classList.remove('flash');
+            }, 50);
         }
+    }
     });
 }
 
@@ -5791,10 +5787,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Add this function before the event listeners
 function transitionToCavesScreen() {
-    const startScreen = document.getElementById('startScreen');
-    const cavesScreen = document.getElementById('cavesScreen');
+        const startScreen = document.getElementById('startScreen');
+        const cavesScreen = document.getElementById('cavesScreen');
     const winBlock = document.getElementById('caveWinBlock');
-    const logoContainer = document.querySelector('.logo-container');
+        const logoContainer = document.querySelector('.logo-container');
     
     // Hide win block
     if (winBlock) {
@@ -5803,24 +5799,24 @@ function transitionToCavesScreen() {
     }
     
     // Hide logo
-    if (logoContainer) {
-        logoContainer.classList.add('hidden');
-    }
-    
-    // Setup caves screen
-    cavesScreen.style.display = 'flex';
-    cavesScreen.style.opacity = '0';
-    
-    // Fade out start screen
-    startScreen.style.opacity = '0';
-    startScreen.style.transition = 'opacity 0.5s ease-in-out';
-    
-    // After delay, fade in caves screen
-    setTimeout(() => {
-        cavesScreen.style.opacity = '1';
-        cavesScreen.style.transition = 'opacity 0.5s ease-in-out';
-        startScreen.style.display = 'none';
+        if (logoContainer) {
+            logoContainer.classList.add('hidden');
+        }
         
+    // Setup caves screen
+        cavesScreen.style.display = 'flex';
+        cavesScreen.style.opacity = '0';
+        
+    // Fade out start screen
+        startScreen.style.opacity = '0';
+        startScreen.style.transition = 'opacity 0.5s ease-in-out';
+        
+    // After delay, fade in caves screen
+        setTimeout(() => {
+            cavesScreen.style.opacity = '1';
+            cavesScreen.style.transition = 'opacity 0.5s ease-in-out';
+            startScreen.style.display = 'none';
+            
         // Re-enable win block transition
         if (winBlock) {
             setTimeout(() => {
@@ -5829,37 +5825,37 @@ function transitionToCavesScreen() {
         }
         
         // Start the game
-        startCaveGame();
-    }, 500);
+            startCaveGame();
+        }, 500);
 }
 
 function transitionToStartScreen() {
-    const startScreen = document.getElementById('startScreen');
-    const cavesScreen = document.getElementById('cavesScreen');
+      const startScreen = document.getElementById('startScreen');
+      const cavesScreen = document.getElementById('cavesScreen');
     const logoContainer = document.querySelector('.logo-container');
-    
+      
     // Reset cave state first
-    resetCaveState();
-    
+      resetCaveState();
+      
     // Fade out caves screen
     cavesScreen.classList.remove('fade-in');
-    cavesScreen.style.opacity = '0';
-    cavesScreen.style.transition = 'opacity 0.5s ease-in-out';
-    
+      cavesScreen.style.opacity = '0';
+      cavesScreen.style.transition = 'opacity 0.5s ease-in-out';
+      
     // After delay, switch screens
-    setTimeout(() => {
+      setTimeout(() => {
         // Hide caves screen
-        cavesScreen.style.display = 'none';
+          cavesScreen.style.display = 'none';
         
         // Setup start screen for fade in
-        startScreen.style.display = 'flex';
+          startScreen.style.display = 'flex';
         startScreen.style.opacity = '0';
-        startScreen.style.transition = 'opacity 0.5s ease-in-out';
-        
+          startScreen.style.transition = 'opacity 0.5s ease-in-out';
+          
         // Show logo
-        if (logoContainer) {
-            logoContainer.classList.remove('hidden');
-        }
+          if (logoContainer) {
+              logoContainer.classList.remove('hidden');
+          }
         
         // Force browser to process display change before starting fade
         requestAnimationFrame(() => {
