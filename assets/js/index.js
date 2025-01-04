@@ -5016,6 +5016,7 @@ function startCaveScroll() {
 
     const caveImage = document.getElementById('caveImage');
     let scrollY = 0;
+    const fastSpeed = 1.5; // Fast scroll speed for top 20%
     const normalSpeed = 1; // Normal scroll speed
     const slowSpeed = 0.5; // Slower scroll speed for when player is in bottom half
 
@@ -5025,9 +5026,17 @@ function startCaveScroll() {
         // Calculate player's position relative to the visible area
         const visualBottom = cavePlayerY - scrollY;
         const middleY = VISIBLE_HEIGHT / 2;
+        const topThreshold = VISIBLE_HEIGHT * 0.8; // Top 20% threshold
         
-        // Use slower speed if player is below middle, normal speed if above
-        const currentSpeed = visualBottom < middleY ? slowSpeed : normalSpeed;
+        // Determine scroll speed based on player position
+        let currentSpeed;
+        if (visualBottom > topThreshold) {
+            currentSpeed = fastSpeed; // Fast speed in top 20%
+        } else if (visualBottom < middleY) {
+            currentSpeed = slowSpeed; // Slow speed in bottom half
+        } else {
+            currentSpeed = normalSpeed; // Normal speed in middle section
+        }
 
         // Update scroll position, but don't exceed the maximum scroll
         const maxScroll = CAVE_HEIGHT - VISIBLE_HEIGHT;
@@ -5245,7 +5254,7 @@ caveCollisionCtx.imageSmoothingEnabled = false; // Disable smoothing for pixel-p
 
 // Load the cave image for collision detection
 const caveCollisionImage = new Image();
-caveCollisionImage.src = 'assets/images/cave1(4).png';
+caveCollisionImage.src = 'assets/images/cave1(5).png';
 caveCollisionImage.onload = function() {
     // Create a temporary canvas
     const tempCanvas = document.createElement('canvas');
