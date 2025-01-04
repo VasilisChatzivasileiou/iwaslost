@@ -5074,7 +5074,7 @@ function startCaveScroll() {
             winBlock.style.opacity = '1';
             winBlock.style.transition = 'opacity 0.5s ease';
         } else {
-            winBlock.style.opacity = '0';
+        winBlock.style.opacity = '0';
         }
 
         // Update progress bar
@@ -5202,7 +5202,7 @@ function continuousMove(direction, onComplete) {
     cavesScreen.appendChild(trailBlock);
 
     // Fade out and remove the trail block
-    setTimeout(() => {
+            setTimeout(() => {
         if (trailBlock) {
             trailBlock.style.opacity = '0';
             setTimeout(() => trailBlock.remove(), 500);
@@ -5766,7 +5766,7 @@ function startCaveGame() {
             clearInterval(updateCheckpointInterval);
         }
     }, 16);
-
+    
     // Hide loss popup
     const lossPopup = document.getElementById('caveLossPopup');
     if (lossPopup) {
@@ -5916,7 +5916,7 @@ function transitionToStartScreen() {
         requestAnimationFrame(() => {
             startScreen.style.opacity = '1';
         });
-    }, 500);
+      }, 500);
 }
 
 // Add at the top with other event listeners
@@ -6000,4 +6000,26 @@ function moveWanderingBlock() {
         wanderingBlock.style.bottom = `${wanderingY - currentScrollY}px`;
     }
 }
+
+// Handle intro animation
+document.addEventListener('DOMContentLoaded', () => {
+    const introScreen = document.getElementById('introScreen');
+    const startScreen = document.getElementById('startScreen');
+    
+    // Show start screen but keep it transparent
+    startScreen.style.display = 'flex';
+    startScreen.style.opacity = '0';
+
+    // Wait for animation to play (let's say 2 seconds) plus half second delay
+    setTimeout(() => {
+        // Fade out intro
+        introScreen.classList.add('fade-out');
+        
+        // As intro fades out, fade in the start screen
+        setTimeout(() => {
+            startScreen.style.opacity = '1';
+            introScreen.style.display = 'none';
+        }, 500);
+    }, 2500); // 2 seconds for animation + 500ms delay
+});
 
