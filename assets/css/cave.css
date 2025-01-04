@@ -103,4 +103,25 @@
     text-shadow: 0 0 10px rgba(204, 204, 204, 0.7),
                  0 0 20px rgba(204, 204, 204, 0.5),
                  0 0 30px rgba(204, 204, 204, 0.3);
+}
+
+.cave-dots-countdown {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'BIZUDMincho';
+    font-size: 72px;
+    color: #999999;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    background-color: #222222;
+    padding: 20px 40px;
+    min-width: 200px;
+    text-align: center;
+}
+
+.cave-dots-countdown.visible {
+    opacity: 1;
 } 

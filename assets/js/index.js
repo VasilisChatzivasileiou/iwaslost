@@ -4963,14 +4963,34 @@ function startCaveCountdown() {
     countdownTimeouts.forEach(timeout => clearTimeout(timeout));
     countdownTimeouts = [];
 
-    console.log("3...");
+    // Make sure player can't move during countdown
+    isGameActive = false;
+    isCountdownComplete = false;
+    isCaveMoving = false;
+
+    const dotsLabel = document.querySelector('.cave-dots-countdown');
+    dotsLabel.textContent = '.';
+    dotsLabel.classList.add('visible');
+
+    // First dot is already shown
     countdownTimeouts.push(setTimeout(() => {
-        console.log("2...");
+        // Add second dot
+        dotsLabel.textContent = '. .';
+        
         countdownTimeouts.push(setTimeout(() => {
-            console.log("1...");
+            // Add third dot
+            dotsLabel.textContent = '. . .';
+            
             countdownTimeouts.push(setTimeout(() => {
-                console.log("GO!");
-                startCaveScroll();
+                // Hide dots and enable player movement first
+                dotsLabel.classList.remove('visible');
+                isGameActive = true;
+                isCountdownComplete = true;
+                
+                // Give player a moment to start moving before camera starts
+                setTimeout(() => {
+                    startCaveScroll();
+                }, 1000);
             }, 1000));
         }, 1000));
     }, 1000));
@@ -4982,10 +5002,7 @@ function startCaveScroll() {
     const winBlock = document.getElementById('caveWinBlock');
     let scrollY = 0;
 
-    // Set game as active without resetting player position
-    isGameActive = true;
-    isCountdownComplete = true;
-
+    // Start scrolling but don't enable movement yet
     caveScrollInterval = setInterval(() => {
         if (!isGameActive) {
             clearInterval(caveScrollInterval);
