@@ -4969,31 +4969,41 @@ function startCaveCountdown() {
     isCaveMoving = false;
 
     const dotsLabel = document.querySelector('.cave-dots-countdown');
-    dotsLabel.textContent = '.';
-    dotsLabel.classList.add('visible');
+    dotsLabel.innerHTML = '<span class="dot">.</span> <span class="dot">.</span> <span class="dot">.</span>';
+    dotsLabel.style.display = 'flex';
+    
+    // Reset all dots to initial color
+    Array.from(dotsLabel.children).forEach(dot => {
+        dot.style.color = '#111111';
+    });
 
-    // First dot is already shown
+    // First dot transition
     countdownTimeouts.push(setTimeout(() => {
-        // Add second dot
-        dotsLabel.textContent = '. .';
+        dotsLabel.children[0].style.color = '#999999';
         
+        // Second dot transition
         countdownTimeouts.push(setTimeout(() => {
-            // Add third dot
-            dotsLabel.textContent = '. . .';
+            dotsLabel.children[1].style.color = '#999999';
             
+            // Third dot transition
             countdownTimeouts.push(setTimeout(() => {
-                // Hide dots and enable player movement first
-                dotsLabel.classList.remove('visible');
-                isGameActive = true;
-                isCountdownComplete = true;
+                dotsLabel.children[2].style.color = '#999999';
                 
-                // Give player a moment to start moving before camera starts
-                setTimeout(() => {
-                    startCaveScroll();
-                }, 1000);
+                // Hide dots and enable player movement
+                countdownTimeouts.push(setTimeout(() => {
+                    dotsLabel.style.display = 'none';
+                    isGameActive = true;
+                    isCountdownComplete = true;
+                    
+                    setTimeout(() => {
+                        if (isGameActive) {
+                            startCaveScroll();
+                        }
+                    }, 1500);
+                }, 1000));
             }, 1000));
         }, 1000));
-    }, 1000));
+    }, 0));
 }
 
 function startCaveScroll() {
