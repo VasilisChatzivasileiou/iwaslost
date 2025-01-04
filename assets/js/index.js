@@ -5105,8 +5105,8 @@ function showCaveLossPopup() {
 
 
 function continuousMove(direction, onComplete) {
-    // Don't allow movement if game is not active
-    if (!isGameActive) {
+    // Don't allow movement if countdown is not complete
+    if (!isCountdownComplete) {
         if (onComplete) onComplete();
         return;
     }
@@ -5144,6 +5144,15 @@ function continuousMove(direction, onComplete) {
     // Get current scroll position
     const caveImage = document.getElementById('caveImage');
     const currentScrollY = parseFloat(caveImage.style.transform.replace('translateY(', '').replace('px)', '') || 0);
+
+    // Update positions
+    cavePlayerX = newX;
+    cavePlayerY = newY;
+    
+    // Update player's visual position
+    const cavePlayer = document.getElementById('cavePlayer');
+    cavePlayer.style.left = `${cavePlayerX}px`;
+    cavePlayer.style.bottom = `${cavePlayerY - currentScrollY}px`;
 
     // Add current position to trail
     caveTrailPositions.push({
@@ -5193,24 +5202,6 @@ function continuousMove(direction, onComplete) {
         }
     }, 100);
 
-    // Update positions
-    cavePlayerX = newX;
-    cavePlayerY = newY;
-    
-    // Update player's horizontal position
-    const cavePlayer = document.getElementById('cavePlayer');
-    cavePlayer.style.left = `${cavePlayerX}px`;
-    
-    // Update player's visual position relative to scroll
-    cavePlayer.style.bottom = `${visualBottom}px`;
-
-    // Update progress bar
-    const progress = (cavePlayerY / (CAVE_HEIGHT - VISIBLE_HEIGHT)) * 98;
-    const progressFill = document.querySelector('.cave-progress-fill');
-    if (progressFill) {
-        progressFill.style.setProperty('width', `${Math.min(98, Math.max(0, progress))}%`, 'important');
-    }
-
     // Update camera target
     cavePlayerObj.x = cavePlayerX;
     cavePlayerObj.y = cavePlayerY;
@@ -5256,7 +5247,7 @@ caveCollisionCtx.imageSmoothingEnabled = false; // Disable smoothing for pixel-p
 
 // Load the cave image for collision detection
 const caveCollisionImage = new Image();
-caveCollisionImage.src = 'assets/images/cave1(2).png';
+caveCollisionImage.src = 'assets/images/cave1(3).png';
 caveCollisionImage.onload = function() {
     // Create a temporary canvas
     const tempCanvas = document.createElement('canvas');
@@ -5734,7 +5725,7 @@ function startCaveGame() {
             position: absolute;
             width: ${CAVE_PLAYER_SIZE}px;
             height: ${CAVE_PLAYER_SIZE}px;
-            background-color: #FFA500;
+            background-color: #D1406E;
             z-index: 9;
             left: ${wanderingX}px;
             bottom: ${wanderingY}px;
