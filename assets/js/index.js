@@ -4097,7 +4097,10 @@ function executeMoves() {
 document.addEventListener("keydown", (event) => {
   // Handle cave movement
   if (document.getElementById('cavesScreen').style.display === 'flex') {
-    // Allow movement without checking game state flags
+    // Reset player stun when they press any direction key
+    isPlayerStunned = false;
+    
+    // Allow movement if not currently moving
     if (!isCaveMoving) {
         isCaveMoving = true;
         continuousMove(event.key, () => {
@@ -5116,11 +5119,14 @@ function showCaveLossPopup() {
 
 
 function continuousMove(direction, onComplete) {
-    // Don't allow movement if countdown is not complete
-    if (!isCountdownComplete) {
+    // Don't allow movement if countdown is not complete or player is stunned
+    if (!isCountdownComplete || isPlayerStunned) {
         if (onComplete) onComplete();
         return;
     }
+
+    // Reset player stun when they try to move in a new direction
+    isPlayerStunned = false;
 
     const step = 6;
     let newX = cavePlayerX;
@@ -5147,6 +5153,31 @@ function continuousMove(direction, onComplete) {
     if (newX < 0 || newX + CAVE_PLAYER_SIZE > CAVE_WIDTH ||
         newY < 0 || newY + CAVE_PLAYER_SIZE > CAVE_HEIGHT ||
         checkCaveCollision(newX, newY)) {
+        isCaveMoving = false;
+        if (onComplete) onComplete();
+        return;
+    }
+
+    // Check collision with wandering block
+    const playerRect = {
+        left: newX,
+        right: newX + CAVE_PLAYER_SIZE,
+        top: newY,
+        bottom: newY + CAVE_PLAYER_SIZE
+    };
+
+    const blockRect = {
+        left: wanderingX,
+        right: wanderingX + CAVE_PLAYER_SIZE,
+        top: wanderingY,
+        bottom: wanderingY + CAVE_PLAYER_SIZE
+    };
+
+    // If colliding with wandering block, treat it like a wall
+    if (playerRect.left < blockRect.right &&
+        playerRect.right > blockRect.left &&
+        playerRect.top < blockRect.bottom &&
+        playerRect.bottom > blockRect.top) {
         isCaveMoving = false;
         if (onComplete) onComplete();
         return;
@@ -5206,7 +5237,7 @@ function continuousMove(direction, onComplete) {
     cavesScreen.appendChild(trailBlock);
 
     // Fade out and remove the trail block
-            setTimeout(() => {
+    setTimeout(() => {
         if (trailBlock) {
             trailBlock.style.opacity = '0';
             setTimeout(() => trailBlock.remove(), 500);
@@ -5224,8 +5255,8 @@ function continuousMove(direction, onComplete) {
     // Check for win condition
     checkCaveWin();
 
-    // Continue moving in the same direction only if game is still active
-    if (isGameActive) {
+    // Continue moving in the same direction only if game is active and not stunned
+    if (isGameActive && !isPlayerStunned) {
         requestAnimationFrame(() => continuousMove(direction, onComplete));
     } else if (onComplete) {
         onComplete();
@@ -5447,83 +5478,73 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 // Add win popup reset to resetCaveState
 function resetCaveState() {
-    // First, clear any running intervals
+    // Reset player position
+    cavePlayerX = 240;
+    cavePlayerY = 0;
+    
+    // Reset game state flags
+    isGameActive = false;
+    isCountdownComplete = false;
+    isCaveMoving = false;
+    isPlayerStunned = false;
+    isWanderingBlockStunned = false;
+    
+    // Reset wandering block
+    wanderingX = 216;
+    wanderingY = 600;
+    wanderingDirection = 'ArrowRight';
+    
+    // Clear intervals
     if (caveScrollInterval) {
         clearInterval(caveScrollInterval);
         caveScrollInterval = null;
     }
-
-    // Clear any countdown timeouts
-    countdownTimeouts.forEach(timeout => clearTimeout(timeout));
-    countdownTimeouts = [];
-
-    // Reset all state flags
-    isGameActive = false;
-    isCountdownComplete = false;
-    isCaveMoving = false;
+    if (wanderingInterval) {
+        clearInterval(wanderingInterval);
+        wanderingInterval = null;
+    }
     
-    // Reset player position to initial values
-    cavePlayerX = 240;
-    cavePlayerY = 0;
-    
-    // Reset visual positions
+    // Reset visual elements
     const cavePlayer = document.getElementById('cavePlayer');
     if (cavePlayer) {
-        cavePlayer.style.left = '240px';
+        cavePlayer.style.left = `${cavePlayerX}px`;
         cavePlayer.style.bottom = '0px';
     }
     
     const caveImage = document.getElementById('caveImage');
     if (caveImage) {
-        caveImage.style.transform = 'translateY(0)';
+        caveImage.style.transform = 'translateY(0px)';
     }
-
-    // Reset camera and player object
-    if (caveCamera) {
-        caveCamera.xView = 0;
-        caveCamera.yView = 0;
+    
+    // Remove existing wandering block
+    const existingWanderingBlock = document.getElementById('wanderingBlock');
+    if (existingWanderingBlock) {
+        existingWanderingBlock.remove();
     }
-    if (cavePlayerObj) {
-        cavePlayerObj.x = cavePlayerX;
-        cavePlayerObj.y = cavePlayerY;
-    }
+    
+    // Clear any existing trail blocks
+    const trailBlocks = document.querySelectorAll('.trail-block');
+    trailBlocks.forEach(block => block.remove());
+    caveTrailPositions = [];
+    
+    // Reset checkpoints
+    CAVE_CHECKPOINTS.forEach((checkpoint, index) => {
+        checkpoint.isFound = false;
+        const starElement = document.querySelector(`.cave-star[data-star-index="${index}"]`);
+        if (starElement) {
+            starElement.classList.remove('collected');
+        }
+    });
     
     // Reset progress bar
     const progressFill = document.querySelector('.cave-progress-fill');
     if (progressFill) {
-        progressFill.style.width = '0%';
-        progressFill.style.transition = 'none';
-        // Re-enable transition after a brief delay
-        setTimeout(() => {
-            progressFill.style.transition = '';
-        }, 50);
+        progressFill.style.setProperty('width', '0%', 'important');
     }
-    
-    // Hide both loss and win popups
-    const lossPopup = document.getElementById('caveLossPopup');
-    if (lossPopup) {
-        lossPopup.style.display = 'none';
-    }
-    const winPopup = document.getElementById('caveWinPopup');
-    if (winPopup) {
-        winPopup.style.display = 'none';
-    }
-    
-    // Reset all checkpoints
-    CAVE_CHECKPOINTS.forEach((checkpoint, index) => {
-        checkpoint.isFound = false;
-        const checkpointElement = document.getElementById(`caveCheckpoint${index}`);
-        if (checkpointElement) {
-            checkpointElement.style.opacity = '1';
-        }
-    });
-    
-    // Clear any queued animations
-    cancelAnimationFrame(continuousMove);
 }
 
-// Add at the top with other global variables
-const caveTrailPositions = [];
+// Change from const to let for caveTrailPositions
+let caveTrailPositions = [];
 const CAVE_TRAIL_LENGTH = 6;
 
 
@@ -5643,84 +5664,69 @@ function updateCaveCheckpoint() {
 }
 
 function resetCaveState() {
-    // First, clear any running intervals
+    // Reset player position
+    cavePlayerX = 240;
+    cavePlayerY = 0;
+    
+    // Reset game state flags
+    isGameActive = false;
+    isCountdownComplete = false;
+    isCaveMoving = false;
+    isPlayerStunned = false;
+    isWanderingBlockStunned = false;
+    
+    // Reset wandering block
+    wanderingX = 216;
+    wanderingY = 600;
+    wanderingDirection = 'ArrowRight';
+    
+    // Clear intervals
     if (caveScrollInterval) {
         clearInterval(caveScrollInterval);
         caveScrollInterval = null;
     }
-
-    // Clear any countdown timeouts
-    countdownTimeouts.forEach(timeout => clearTimeout(timeout));
-    countdownTimeouts = [];
-
-    // Reset all state flags
-    isGameActive = false;
-    isCountdownComplete = false;
-    isCaveMoving = false;
+    if (wanderingInterval) {
+        clearInterval(wanderingInterval);
+        wanderingInterval = null;
+    }
     
-    // Reset player position to initial values
-    cavePlayerX = 240;
-    cavePlayerY = 0;
-    
-    // Reset visual positions
+    // Reset visual elements
     const cavePlayer = document.getElementById('cavePlayer');
     if (cavePlayer) {
-        cavePlayer.style.left = '240px';
+        cavePlayer.style.left = `${cavePlayerX}px`;
         cavePlayer.style.bottom = '0px';
     }
     
     const caveImage = document.getElementById('caveImage');
     if (caveImage) {
-        caveImage.style.transform = 'translateY(0)';
-    }
-
-    // Reset camera and player object
-    if (caveCamera) {
-        caveCamera.xView = 0;
-        caveCamera.yView = 0;
-    }
-    if (cavePlayerObj) {
-        cavePlayerObj.x = cavePlayerX;
-        cavePlayerObj.y = cavePlayerY;
+        caveImage.style.transform = 'translateY(0px)';
     }
     
-    // Reset progress bar
-    const progressFill = document.querySelector('.cave-progress-fill');
-    if (progressFill) {
-        progressFill.style.width = '0%';
-        progressFill.style.transition = 'none';
-        // Re-enable transition after a brief delay
-        setTimeout(() => {
-            progressFill.style.transition = '';
-        }, 50);
-    }
-
-    // Hide both loss and win popups
-    const lossPopup = document.getElementById('caveLossPopup');
-    if (lossPopup) {
-        lossPopup.style.display = 'none';
-    }
-    const winPopup = document.getElementById('caveWinPopup');
-    if (winPopup) {
-        winPopup.style.display = 'none';
+    // Remove existing wandering block
+    const existingWanderingBlock = document.getElementById('wanderingBlock');
+    if (existingWanderingBlock) {
+        existingWanderingBlock.remove();
     }
     
-    // Reset all checkpoints and stars
-    CAVE_CHECKPOINTS.forEach((checkpointData, index) => {
-        checkpointData.isFound = false;
-        const currentCheckpoint = document.getElementById(`caveCheckpoint${index}`);
-        if (currentCheckpoint) {
-            currentCheckpoint.style.opacity = '1';
-        }
-        // Reset star counter
+    // Clear any existing trail blocks
+    const trailBlocks = document.querySelectorAll('.trail-block');
+    trailBlocks.forEach(block => block.remove());
+    caveTrailPositions = [];
+    
+    // Reset checkpoints
+    CAVE_CHECKPOINTS.forEach((checkpoint, index) => {
+        checkpoint.isFound = false;
         const starElement = document.querySelector(`.cave-star[data-star-index="${index}"]`);
         if (starElement) {
             starElement.classList.remove('collected');
         }
     });
     
-    // Clear any queued animations
-    cancelAnimationFrame(continuousMove);
+    // Reset progress bar
+    const progressFill = document.querySelector('.cave-progress-fill');
+    if (progressFill) {
+        progressFill.style.setProperty('width', '0%', 'important');
+    }
 }
 
 function startCaveGame() {
@@ -5955,8 +5961,52 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
+// Handle intro animation
+document.addEventListener('DOMContentLoaded', () => {
+    const introScreen = document.getElementById('introScreen');
+      const startScreen = document.getElementById('startScreen');
+    
+    // Show start screen but keep it transparent
+    startScreen.style.display = 'flex';
+    startScreen.style.opacity = '0';
+
+    // Add shop button event listeners
+    const shopButton = document.getElementById('shopButton');
+    const shopScreen = document.getElementById('shopScreen');
+    const shopBackButton = document.getElementById('shopBackButton');
+    const logoContainer = document.querySelector('.logo-container');
+
+    shopButton.addEventListener('click', () => {
+        startScreen.style.display = 'none';
+        shopScreen.style.display = 'block';
+        logoContainer.style.display = 'none';
+    });
+
+    shopBackButton.addEventListener('click', () => {
+        shopScreen.style.display = 'none';
+          startScreen.style.display = 'flex';
+        logoContainer.style.display = 'flex';
+    });
+
+    // Wait for animation to play (let's say 2 seconds) plus half second delay
+    setTimeout(() => {
+        // Fade out intro
+        introScreen.classList.add('fade-out');
+        
+        // As intro fades out, fade in the start screen
+      setTimeout(() => {
+          startScreen.style.opacity = '1';
+            introScreen.style.display = 'none';
+      }, 500);
+    }, 2500); // 2 seconds for animation + 500ms delay
+});
+
+// Add these variables at the top with other cave system constants
+let isWanderingBlockStunned = false;
+let isPlayerStunned = false;
+
 function moveWanderingBlock() {
-    if (!isGameActive) return;
+    if (!isGameActive || isWanderingBlockStunned) return;
 
     let newX = wanderingX;
     let newY = wanderingY;
@@ -5994,6 +6044,55 @@ function moveWanderingBlock() {
         return;
     }
 
+    // Check for collision with player
+    const playerRect = {
+        left: cavePlayerX,
+        right: cavePlayerX + CAVE_PLAYER_SIZE,
+        top: cavePlayerY,
+        bottom: cavePlayerY + CAVE_PLAYER_SIZE
+    };
+
+    const blockRect = {
+        left: newX,
+        right: newX + CAVE_PLAYER_SIZE,
+        top: newY,
+        bottom: newY + CAVE_PLAYER_SIZE
+    };
+
+    if (playerRect.left < blockRect.right &&
+        playerRect.right > blockRect.left &&
+        playerRect.top < blockRect.bottom &&
+        playerRect.bottom > blockRect.top) {
+        // Collision detected - stun both player and block
+        isWanderingBlockStunned = true;
+        isPlayerStunned = true;
+
+        // Unstun the wandering block after 1 second
+        setTimeout(() => {
+            isWanderingBlockStunned = false;
+        }, 1000);
+
+        // Flash effect on collision for both cave and block
+        const cavesSquare = document.getElementById('cavesSquare');
+        const wanderingBlock = document.getElementById('wanderingBlock');
+        
+        // Store original colors
+        const originalCaveColor = cavesSquare.style.backgroundColor;
+        const originalBlockColor = wanderingBlock.style.backgroundColor;
+
+        // Flash both elements
+        cavesSquare.style.backgroundColor = '#222222';
+        wanderingBlock.style.backgroundColor = '#cccccc';
+
+        // Reset colors after 500ms
+        setTimeout(() => {
+            cavesSquare.style.backgroundColor = originalCaveColor;
+            wanderingBlock.style.backgroundColor = originalBlockColor;
+        }, 100);
+
+        return;
+    }
+
     // Update position
     wanderingX = newX;
     wanderingY = newY;
@@ -6006,44 +6105,4 @@ function moveWanderingBlock() {
         wanderingBlock.style.bottom = `${wanderingY - currentScrollY}px`;
     }
 }
-
-// Handle intro animation
-document.addEventListener('DOMContentLoaded', () => {
-    const introScreen = document.getElementById('introScreen');
-    const startScreen = document.getElementById('startScreen');
-    
-    // Show start screen but keep it transparent
-    startScreen.style.display = 'flex';
-    startScreen.style.opacity = '0';
-
-    // Add shop button event listeners
-    const shopButton = document.getElementById('shopButton');
-    const shopScreen = document.getElementById('shopScreen');
-    const shopBackButton = document.getElementById('shopBackButton');
-    const logoContainer = document.querySelector('.logo-container');
-
-    shopButton.addEventListener('click', () => {
-        startScreen.style.display = 'none';
-        shopScreen.style.display = 'block';
-        logoContainer.style.display = 'none';
-    });
-
-    shopBackButton.addEventListener('click', () => {
-        shopScreen.style.display = 'none';
-        startScreen.style.display = 'flex';
-        logoContainer.style.display = 'flex';
-    });
-
-    // Wait for animation to play (let's say 2 seconds) plus half second delay
-    setTimeout(() => {
-        // Fade out intro
-        introScreen.classList.add('fade-out');
-        
-        // As intro fades out, fade in the start screen
-      setTimeout(() => {
-          startScreen.style.opacity = '1';
-            introScreen.style.display = 'none';
-      }, 500);
-    }, 2500); // 2 seconds for animation + 500ms delay
-});
 
