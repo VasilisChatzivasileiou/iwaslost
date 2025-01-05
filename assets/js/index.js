@@ -2831,11 +2831,35 @@ function preStartGame(level) {
     currentLevel = level; // Set current level
     showLevelAnnouncement(level);
 
+    // Reset game state
+    moveCount = 0;
+    playerSteps = [];
+    playerLastPositions = [];
+    lastCorrectStep = 0;
+    isMoving = false;
+    isExecutingMoves = false;
+    currentDirection = null;
+    nextDirection = null;
+    lastDirection = null;
+    moveQueue.length = 0;
+
+    // Clear the tracker list
+    const trackerList = document.getElementById("trackerList");
+    if (trackerList) {
+        trackerList.innerHTML = "";
+    }
+
     // Clear the restart counter
     const restartCounter = document.getElementById('restartCounter');
     if (restartCounter) {
         restartCounter.textContent = '';
     }
+
+    // Clear any existing gaps
+    gaps.length = 0;
+    // Remove any existing gap elements from the DOM
+    const existingGaps = document.querySelectorAll('.maze-gap');
+    existingGaps.forEach(gap => gap.remove());
 
     // Initialize gaps if it's level 6
     if (level === 6) {
@@ -2871,6 +2895,12 @@ function showLevelSelector() {
     trackerList.innerHTML = "";
   }
 
+  // Clear any existing gaps
+  gaps.length = 0;
+  // Remove any existing gap elements from the DOM
+  const existingGaps = document.querySelectorAll('.maze-gap');
+  existingGaps.forEach(gap => gap.remove());
+
   document.getElementById("levelSelection").style.display = "flex";
   document.getElementById("gameContainer").style.display = "none";
   menuButton.style.display = "none"; // Hide the Menu button
@@ -2880,7 +2910,6 @@ function showLevelSelector() {
   if (tipText) {
     tipText.style.display = "block";
   }
-  gaps.length = 0; // Reset gaps to an empty array
   currentLevel = null; // Ensure no lingering currentLevel
   console.log("Gaps cleared when entering the level selector.");
 }
