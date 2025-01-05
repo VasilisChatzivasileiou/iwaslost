@@ -5763,6 +5763,12 @@ function startCaveGame() {
     // Reset everything first
     resetCaveState();
     
+    // Create collision bars if they don't exist
+    if (!document.getElementById('collisionOuterBar')) {
+        createCollisionBars();
+    }
+    resetCollisionBars();
+    
     // Create first wandering block if it doesn't exist
     let wanderingBlock = document.getElementById('wanderingBlock');
     if (!wanderingBlock) {
@@ -6051,42 +6057,53 @@ document.addEventListener('DOMContentLoaded', () => {
 // Add these variables at the top with other cave system constants
 let isWanderingBlockStunned = false;
 let isPlayerStunned = false;
+let collisionCounter = 0; // Track number of collisions
 
-function moveWanderingBlock() {
-    if (!isGameActive) return;
+function createCollisionBars() {
+    // Create outer bar container
+    const outerBar = document.createElement('div');
+    outerBar.id = 'collisionOuterBar';
+    outerBar.style.cssText = `
+        position: fixed;
+        left: 50%;
+        margin-left: -${CAVE_WIDTH / 2 + 100}px;
+        top: ${(window.innerHeight - 480) / 2}px;
+        width: 90px;
+        height: 20px;
+        background-color: #999999;
+        display: flex;
+        gap: 2px;
+        padding: 2px;
+        z-index: 10;
+    `;
 
-    // Update first block
-    if (!isWanderingBlockStunned) {
-        moveBlock(wanderingX, wanderingY, wanderingDirection, 'wanderingBlock', (newX, newY, newDir) => {
-            wanderingX = newX;
-            wanderingY = newY;
-            wanderingDirection = newDir;
-        });
-    } else {
-        // Even when stunned, update visual position for scrolling
-        updateBlockVisualPosition('wanderingBlock', wanderingX, wanderingY);
+    // Create three inner bar segments
+    for (let i = 0; i < 3; i++) {
+        const innerBar = document.createElement('div');
+        innerBar.className = 'collisionInnerBar';
+        innerBar.style.cssText = `
+            flex: 1;
+            background-color: #222222;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        `;
+        outerBar.appendChild(innerBar);
     }
 
-    // Update second block
-    if (!isWanderingBlockStunned) {
-        moveBlock(wandering2X, wandering2Y, wandering2Direction, 'wanderingBlock2', (newX, newY, newDir) => {
-            wandering2X = newX;
-            wandering2Y = newY;
-            wandering2Direction = newDir;
-        });
-    } else {
-        // Even when stunned, update visual position for scrolling
-        updateBlockVisualPosition('wanderingBlock2', wandering2X, wandering2Y);
-    }
+    // Add to caves screen
+    document.getElementById('cavesScreen').appendChild(outerBar);
 }
 
-function updateBlockVisualPosition(blockId, x, y) {
-    const blockElement = document.getElementById(blockId);
-    if (blockElement) {
-        const currentScrollY = parseFloat(document.getElementById('caveImage').style.transform.replace('translateY(', '').replace('px)', '') || 0);
-        blockElement.style.left = `${x}px`;
-        blockElement.style.bottom = `${y - currentScrollY}px`;
-    }
+function updateCollisionBars() {
+    const innerBars = document.querySelectorAll('.collisionInnerBar');
+    innerBars.forEach((bar, index) => {
+        bar.style.opacity = index < collisionCounter ? '1' : '0';
+    });
+}
+
+function resetCollisionBars() {
+    collisionCounter = 0;
+    updateCollisionBars();
 }
 
 function moveBlock(x, y, direction, blockId, updatePosition) {
@@ -6171,12 +6188,16 @@ function moveBlock(x, y, direction, blockId, updatePosition) {
         isWanderingBlockStunned = true;
         isPlayerStunned = true;
 
+        // Update collision counter
+        collisionCounter = (collisionCounter % 3) + 1;
+        updateCollisionBars();
+
         // Unstun the wandering block after 1 second
         setTimeout(() => {
             isWanderingBlockStunned = false;
         }, 1000);
 
-        // Flash effect on collision for both cave and block
+        // Flash effect for collision
         const cavesSquare = document.getElementById('cavesSquare');
         const blockElement = document.getElementById(blockId);
         
@@ -6202,5 +6223,42 @@ function moveBlock(x, y, direction, blockId, updatePosition) {
 
     // Update visual position
     updateBlockVisualPosition(blockId, newX, newY);
+}
+
+function moveWanderingBlock() {
+    if (!isGameActive) return;
+
+    // Update first block
+    if (!isWanderingBlockStunned) {
+        moveBlock(wanderingX, wanderingY, wanderingDirection, 'wanderingBlock', (newX, newY, newDir) => {
+            wanderingX = newX;
+            wanderingY = newY;
+            wanderingDirection = newDir;
+        });
+    } else {
+        // Even when stunned, update visual position for scrolling
+        updateBlockVisualPosition('wanderingBlock', wanderingX, wanderingY);
+    }
+
+    // Update second block
+    if (!isWanderingBlockStunned) {
+        moveBlock(wandering2X, wandering2Y, wandering2Direction, 'wanderingBlock2', (newX, newY, newDir) => {
+            wandering2X = newX;
+            wandering2Y = newY;
+            wandering2Direction = newDir;
+        });
+    } else {
+        // Even when stunned, update visual position for scrolling
+        updateBlockVisualPosition('wanderingBlock2', wandering2X, wandering2Y);
+    }
+}
+
+function updateBlockVisualPosition(blockId, x, y) {
+    const blockElement = document.getElementById(blockId);
+    if (blockElement) {
+        const currentScrollY = parseFloat(document.getElementById('caveImage').style.transform.replace('translateY(', '').replace('px)', '') || 0);
+        blockElement.style.left = `${x}px`;
+        blockElement.style.bottom = `${y - currentScrollY}px`;
+    }
 }
 
