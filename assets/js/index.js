@@ -153,6 +153,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   closeButton.addEventListener('click', () => {
     achievementsModal.classList.remove('active');
+    document.querySelector('.logo-container').style.display = 'block';
     clearAchievementAnimation();
   });
 
@@ -381,6 +382,7 @@ function trackedSetInterval(callback, interval) {
 
 
 document.getElementById("achievementsButton").addEventListener("click", () => {
+  document.querySelector('.logo-container').style.display = 'none';
   console.log("Loading progress before opening achievements...");
   loadAchievementProgress(); // Load progress into memory
 
@@ -540,10 +542,12 @@ unlockablesButton.addEventListener('click', () => {
   const unlockablesCenterWindow = document.getElementById('unlockablesCenterWindow');
   unlockablesCenterWindow.scrollTop = 0; // Reset scroll position to top
   unlockablesScreen.style.display = 'flex';
+  document.querySelector('.logo-container').style.display = 'none';
 });
 
 unlockablesBackButton.addEventListener('click', () => {
   unlockablesScreen.style.display = 'none';
+  document.querySelector('.logo-container').style.display = 'block';
 });
 
 let checkpointsTouched = { first: false, second: false };
@@ -565,7 +569,7 @@ function initializeCheckpoints() {
         const checkpoint2 = { x: 60, y: 0, size: 20, touched: false, solid: false };
         checkpoints.push(checkpoint1, checkpoint2);
     } else if (currentLevel === 9) {
-        const level9Checkpoint = { x: 120, y: 320, size: 20, touched: false, solid: false };
+        const level9Checkpoint = { x: 120, y: 320, size: 20, touched: false, solid: false, color: "#FF6A00" };
         checkpoints.push(level9Checkpoint);
     } else if (currentLevel === "6secret") {
         const secretCheckpoint = { x: 340, y: 200, size: 20, touched: false, solid: false, color: "#00FF00" }; // Key checkpoint
@@ -2209,9 +2213,9 @@ function startGame(mazeImageSrc, exitPosition, playerPosition) {
             console.log("Gaps initialized for level 6:", gaps);
         } else if (currentLevel === 7) {
             initializeLevel7Blocks();
-        } else if (currentLevel === 8) {
+        } else if (currentLevel === 8 || currentLevel === 9) {
             initializeCheckpoints();
-            console.log("Checkpoint initialized for level 8:", checkpoints);
+            console.log("Checkpoints initialized for level:", currentLevel, checkpoints);
         }
 
         // Initial draw of all elements
@@ -5856,6 +5860,7 @@ function transitionToCavesScreen() {
     // Hide logo
         if (logoContainer) {
             logoContainer.classList.add('hidden');
+            logoContainer.style.display = 'none';
         }
         
     // Setup caves screen
@@ -5910,6 +5915,7 @@ function transitionToStartScreen() {
         // Show logo
           if (logoContainer) {
               logoContainer.classList.remove('hidden');
+              logoContainer.style.display = 'block';
           }
         
         // Force browser to process display change before starting fade
@@ -6004,7 +6010,7 @@ function moveWanderingBlock() {
 // Handle intro animation
 document.addEventListener('DOMContentLoaded', () => {
     const introScreen = document.getElementById('introScreen');
-    const startScreen = document.getElementById('startScreen');
+      const startScreen = document.getElementById('startScreen');
     
     // Show start screen but keep it transparent
     startScreen.style.display = 'flex';
@@ -6016,10 +6022,10 @@ document.addEventListener('DOMContentLoaded', () => {
         introScreen.classList.add('fade-out');
         
         // As intro fades out, fade in the start screen
-        setTimeout(() => {
-            startScreen.style.opacity = '1';
+      setTimeout(() => {
+          startScreen.style.opacity = '1';
             introScreen.style.display = 'none';
-        }, 500);
+      }, 500);
     }, 2500); // 2 seconds for animation + 500ms delay
 });
 
