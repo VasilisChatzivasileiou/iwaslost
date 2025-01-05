@@ -547,6 +547,7 @@ input[type="range"] {
 #cavesButton,
 #achievementsButton,
 #unlockablesButton,
+#shopButton,
 #optionsButton,
 #leaveButton {
   font-size: 25px;
@@ -567,6 +568,7 @@ input[type="range"] {
 #cavesButton:hover,
 #achievementsButton:hover,
 #unlockablesButton:hover,
+#shopButton:hover,
 #optionsButton:hover,
 #leaveButton:hover {
   background-color: #cccccc; /* Darker background */
@@ -579,6 +581,7 @@ input[type="range"] {
 #cavesButton:active,
 #achievementsButton:active,
 #unlockablesButton:active,
+#shopButton:active,
 #optionsButton:active,
 #leaveButton:active {
   transform: scale(0.95); /* Shrink slightly when clicked */
@@ -603,8 +606,8 @@ input[type="range"] {
 /* Button container */
 #buttonBackground {
   position: relative;
-  width: 575px;
-  height: 190px;
+  width: 666px;
+  height: 220px;
   z-index: 1;
   display: flex;
   flex-direction: column;
@@ -979,7 +982,6 @@ input[type="range"] {
   font-size: 20px;
   font-family: "CustomFont", Arial, sans-serif;
 }
-
 
 @keyframes moveAcross {
   0% {

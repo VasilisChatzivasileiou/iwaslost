@@ -6010,11 +6010,29 @@ function moveWanderingBlock() {
 // Handle intro animation
 document.addEventListener('DOMContentLoaded', () => {
     const introScreen = document.getElementById('introScreen');
-      const startScreen = document.getElementById('startScreen');
+    const startScreen = document.getElementById('startScreen');
     
     // Show start screen but keep it transparent
     startScreen.style.display = 'flex';
     startScreen.style.opacity = '0';
+
+    // Add shop button event listeners
+    const shopButton = document.getElementById('shopButton');
+    const shopScreen = document.getElementById('shopScreen');
+    const shopBackButton = document.getElementById('shopBackButton');
+    const logoContainer = document.querySelector('.logo-container');
+
+    shopButton.addEventListener('click', () => {
+        startScreen.style.display = 'none';
+        shopScreen.style.display = 'block';
+        logoContainer.style.display = 'none';
+    });
+
+    shopBackButton.addEventListener('click', () => {
+        shopScreen.style.display = 'none';
+        startScreen.style.display = 'flex';
+        logoContainer.style.display = 'flex';
+    });
 
     // Wait for animation to play (let's say 2 seconds) plus half second delay
     setTimeout(() => {
