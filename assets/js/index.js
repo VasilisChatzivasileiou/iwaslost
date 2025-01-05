@@ -4853,6 +4853,11 @@ const WANDERING_SPEED = 3;
 let wanderingDirection = 'ArrowRight';
 let wanderingInterval = null;
 
+// Second wandering block properties
+let wandering2X = 336;
+let wandering2Y = 1200; // Different starting position
+let wandering2Direction = 'ArrowLeft';
+
 // Game namespace and utility classes
 window.Game = {};
 
@@ -5023,9 +5028,9 @@ function startCaveScroll() {
 
     const caveImage = document.getElementById('caveImage');
     let scrollY = 0;
-    const fastSpeed = 1.5; // Fast scroll speed for top 20%
-    const normalSpeed = 1; // Normal scroll speed
-    const slowSpeed = 0.5; // Slower scroll speed for when player is in bottom half
+    const fastSpeed = 2; // Fast scroll speed for top 20%
+    const normalSpeed = 1.5; // Normal scroll speed
+    const slowSpeed = 1; // Slower scroll speed for when player is in bottom half
 
     caveScrollInterval = setInterval(() => {
         if (!isGameActive) return;
@@ -5158,7 +5163,7 @@ function continuousMove(direction, onComplete) {
         return;
     }
 
-    // Check collision with wandering block
+    // Check collision with wandering blocks
     const playerRect = {
         left: newX,
         right: newX + CAVE_PLAYER_SIZE,
@@ -5166,18 +5171,29 @@ function continuousMove(direction, onComplete) {
         bottom: newY + CAVE_PLAYER_SIZE
     };
 
-    const blockRect = {
+    const block1Rect = {
         left: wanderingX,
         right: wanderingX + CAVE_PLAYER_SIZE,
         top: wanderingY,
         bottom: wanderingY + CAVE_PLAYER_SIZE
     };
 
-    // If colliding with wandering block, treat it like a wall
-    if (playerRect.left < blockRect.right &&
-        playerRect.right > blockRect.left &&
-        playerRect.top < blockRect.bottom &&
-        playerRect.bottom > blockRect.top) {
+    const block2Rect = {
+        left: wandering2X,
+        right: wandering2X + CAVE_PLAYER_SIZE,
+        top: wandering2Y,
+        bottom: wandering2Y + CAVE_PLAYER_SIZE
+    };
+
+    // If colliding with either wandering block, treat it like a wall
+    if ((playerRect.left < block1Rect.right &&
+        playerRect.right > block1Rect.left &&
+        playerRect.top < block1Rect.bottom &&
+        playerRect.bottom > block1Rect.top) ||
+        (playerRect.left < block2Rect.right &&
+        playerRect.right > block2Rect.left &&
+        playerRect.top < block2Rect.bottom &&
+        playerRect.bottom > block2Rect.top)) {
         isCaveMoving = false;
         if (onComplete) onComplete();
         return;
@@ -5237,7 +5253,7 @@ function continuousMove(direction, onComplete) {
     cavesScreen.appendChild(trailBlock);
 
     // Fade out and remove the trail block
-    setTimeout(() => {
+            setTimeout(() => {
         if (trailBlock) {
             trailBlock.style.opacity = '0';
             setTimeout(() => trailBlock.remove(), 500);
@@ -5478,21 +5494,16 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 // Add win popup reset to resetCaveState
 function resetCaveState() {
-    // Reset player position
-    cavePlayerX = 240;
-    cavePlayerY = 0;
-    
-    // Reset game state flags
+    // Reset game state
     isGameActive = false;
     isCountdownComplete = false;
     isCaveMoving = false;
     isPlayerStunned = false;
     isWanderingBlockStunned = false;
     
-    // Reset wandering block
-    wanderingX = 216;
-    wanderingY = 600;
-    wanderingDirection = 'ArrowRight';
+    // Reset player position
+    cavePlayerX = 240;
+    cavePlayerY = 0;
     
     // Clear intervals
     if (caveScrollInterval) {
@@ -5516,11 +5527,23 @@ function resetCaveState() {
         caveImage.style.transform = 'translateY(0px)';
     }
     
-    // Remove existing wandering block
+    // Remove existing wandering blocks
     const existingWanderingBlock = document.getElementById('wanderingBlock');
     if (existingWanderingBlock) {
         existingWanderingBlock.remove();
     }
+    const existingWanderingBlock2 = document.getElementById('wanderingBlock2');
+    if (existingWanderingBlock2) {
+        existingWanderingBlock2.remove();
+    }
+    
+    // Reset wandering block positions
+    wanderingX = 216;
+    wanderingY = 600;
+    wanderingDirection = 'ArrowRight';
+    wandering2X = 336;
+    wandering2Y = 1200;
+    wandering2Direction = 'ArrowLeft';
     
     // Clear any existing trail blocks
     const trailBlocks = document.querySelectorAll('.trail-block');
@@ -5664,21 +5687,16 @@ function updateCaveCheckpoint() {
 }
 
 function resetCaveState() {
-    // Reset player position
-    cavePlayerX = 240;
-    cavePlayerY = 0;
-    
-    // Reset game state flags
+    // Reset game state
     isGameActive = false;
     isCountdownComplete = false;
     isCaveMoving = false;
     isPlayerStunned = false;
     isWanderingBlockStunned = false;
     
-    // Reset wandering block
-    wanderingX = 216;
-    wanderingY = 600;
-    wanderingDirection = 'ArrowRight';
+    // Reset player position
+    cavePlayerX = 240;
+    cavePlayerY = 0;
     
     // Clear intervals
     if (caveScrollInterval) {
@@ -5702,11 +5720,23 @@ function resetCaveState() {
         caveImage.style.transform = 'translateY(0px)';
     }
     
-    // Remove existing wandering block
+    // Remove existing wandering blocks
     const existingWanderingBlock = document.getElementById('wanderingBlock');
     if (existingWanderingBlock) {
         existingWanderingBlock.remove();
     }
+    const existingWanderingBlock2 = document.getElementById('wanderingBlock2');
+    if (existingWanderingBlock2) {
+        existingWanderingBlock2.remove();
+    }
+    
+    // Reset wandering block positions
+    wanderingX = 216;
+    wanderingY = 600;
+    wanderingDirection = 'ArrowRight';
+    wandering2X = 336;
+    wandering2Y = 1200;
+    wandering2Direction = 'ArrowLeft';
     
     // Clear any existing trail blocks
     const trailBlocks = document.querySelectorAll('.trail-block');
@@ -5733,7 +5763,7 @@ function startCaveGame() {
     // Reset everything first
     resetCaveState();
     
-    // Create wandering block if it doesn't exist
+    // Create first wandering block if it doesn't exist
     let wanderingBlock = document.getElementById('wanderingBlock');
     if (!wanderingBlock) {
         wanderingBlock = document.createElement('div');
@@ -5748,6 +5778,23 @@ function startCaveGame() {
             bottom: ${wanderingY}px;
         `;
         document.getElementById('cavesSquare').appendChild(wanderingBlock);
+    }
+
+    // Create second wandering block if it doesn't exist
+    let wanderingBlock2 = document.getElementById('wanderingBlock2');
+    if (!wanderingBlock2) {
+        wanderingBlock2 = document.createElement('div');
+        wanderingBlock2.id = 'wanderingBlock2';
+        wanderingBlock2.style.cssText = `
+            position: absolute;
+            width: ${CAVE_PLAYER_SIZE}px;
+            height: ${CAVE_PLAYER_SIZE}px;
+            background-color: #D1406E;
+            z-index: 9;
+            left: ${wandering2X}px;
+            bottom: ${wandering2Y}px;
+        `;
+        document.getElementById('cavesSquare').appendChild(wanderingBlock2);
     }
 
     // Start wandering block movement
@@ -6006,19 +6053,54 @@ let isWanderingBlockStunned = false;
 let isPlayerStunned = false;
 
 function moveWanderingBlock() {
-    if (!isGameActive || isWanderingBlockStunned) return;
+    if (!isGameActive) return;
 
-    let newX = wanderingX;
-    let newY = wanderingY;
+    // Update first block
+    if (!isWanderingBlockStunned) {
+        moveBlock(wanderingX, wanderingY, wanderingDirection, 'wanderingBlock', (newX, newY, newDir) => {
+            wanderingX = newX;
+            wanderingY = newY;
+            wanderingDirection = newDir;
+        });
+    } else {
+        // Even when stunned, update visual position for scrolling
+        updateBlockVisualPosition('wanderingBlock', wanderingX, wanderingY);
+    }
+
+    // Update second block
+    if (!isWanderingBlockStunned) {
+        moveBlock(wandering2X, wandering2Y, wandering2Direction, 'wanderingBlock2', (newX, newY, newDir) => {
+            wandering2X = newX;
+            wandering2Y = newY;
+            wandering2Direction = newDir;
+        });
+    } else {
+        // Even when stunned, update visual position for scrolling
+        updateBlockVisualPosition('wanderingBlock2', wandering2X, wandering2Y);
+    }
+}
+
+function updateBlockVisualPosition(blockId, x, y) {
+    const blockElement = document.getElementById(blockId);
+    if (blockElement) {
+        const currentScrollY = parseFloat(document.getElementById('caveImage').style.transform.replace('translateY(', '').replace('px)', '') || 0);
+        blockElement.style.left = `${x}px`;
+        blockElement.style.bottom = `${y - currentScrollY}px`;
+    }
+}
+
+function moveBlock(x, y, direction, blockId, updatePosition) {
+    let newX = x;
+    let newY = y;
 
     // Randomly change direction occasionally
     if (Math.random() < 0.02) {
         const directions = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
-        wanderingDirection = directions[Math.floor(Math.random() * directions.length)];
+        direction = directions[Math.floor(Math.random() * directions.length)];
     }
 
     // Move in current direction
-    switch (wanderingDirection) {
+    switch (direction) {
         case 'ArrowUp':
             newY += WANDERING_SPEED;
             break;
@@ -6039,8 +6121,9 @@ function moveWanderingBlock() {
         checkCaveCollision(newX, newY)) {
         // Change to a random different direction when hitting a wall
         const directions = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']
-            .filter(dir => dir !== wanderingDirection);
-        wanderingDirection = directions[Math.floor(Math.random() * directions.length)];
+            .filter(dir => dir !== direction);
+        direction = directions[Math.floor(Math.random() * directions.length)];
+        updatePosition(x, y, direction);
         return;
     }
 
@@ -6059,6 +6142,27 @@ function moveWanderingBlock() {
         bottom: newY + CAVE_PLAYER_SIZE
     };
 
+    // Check collision with other wandering block
+    const otherBlockRect = {
+        left: blockId === 'wanderingBlock' ? wandering2X : wanderingX,
+        right: blockId === 'wanderingBlock' ? wandering2X + CAVE_PLAYER_SIZE : wanderingX + CAVE_PLAYER_SIZE,
+        top: blockId === 'wanderingBlock' ? wandering2Y : wanderingY,
+        bottom: blockId === 'wanderingBlock' ? wandering2Y + CAVE_PLAYER_SIZE : wanderingY + CAVE_PLAYER_SIZE
+    };
+
+    // If colliding with other block, change direction
+    if (blockRect.left < otherBlockRect.right &&
+        blockRect.right > otherBlockRect.left &&
+        blockRect.top < otherBlockRect.bottom &&
+        blockRect.bottom > otherBlockRect.top) {
+        // Change to a random different direction
+        const directions = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']
+            .filter(dir => dir !== direction);
+        direction = directions[Math.floor(Math.random() * directions.length)];
+        updatePosition(x, y, direction);
+        return;
+    }
+
     if (playerRect.left < blockRect.right &&
         playerRect.right > blockRect.left &&
         playerRect.top < blockRect.bottom &&
@@ -6074,35 +6178,29 @@ function moveWanderingBlock() {
 
         // Flash effect on collision for both cave and block
         const cavesSquare = document.getElementById('cavesSquare');
-        const wanderingBlock = document.getElementById('wanderingBlock');
+        const blockElement = document.getElementById(blockId);
         
         // Store original colors
         const originalCaveColor = cavesSquare.style.backgroundColor;
-        const originalBlockColor = wanderingBlock.style.backgroundColor;
+        const originalBlockColor = blockElement.style.backgroundColor;
 
         // Flash both elements
         cavesSquare.style.backgroundColor = '#222222';
-        wanderingBlock.style.backgroundColor = '#cccccc';
+        blockElement.style.backgroundColor = '#cccccc';
 
         // Reset colors after 500ms
         setTimeout(() => {
             cavesSquare.style.backgroundColor = originalCaveColor;
-            wanderingBlock.style.backgroundColor = originalBlockColor;
+            blockElement.style.backgroundColor = originalBlockColor;
         }, 100);
 
         return;
     }
 
     // Update position
-    wanderingX = newX;
-    wanderingY = newY;
+    updatePosition(newX, newY, direction);
 
     // Update visual position
-    const wanderingBlock = document.getElementById('wanderingBlock');
-    if (wanderingBlock) {
-        const currentScrollY = parseFloat(document.getElementById('caveImage').style.transform.replace('translateY(', '').replace('px)', '') || 0);
-        wanderingBlock.style.left = `${wanderingX}px`;
-        wanderingBlock.style.bottom = `${wanderingY - currentScrollY}px`;
-    }
+    updateBlockVisualPosition(blockId, newX, newY);
 }
 
