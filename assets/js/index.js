@@ -2211,6 +2211,9 @@ function startGame(mazeImageSrc, exitPosition, playerPosition) {
                 color: gapColor
             });
             console.log("Gaps initialized for level 6:", gaps);
+        } else if (currentLevel === 5) {
+            initializeLevel5Gap();
+            console.log("Gaps initialized for level 5:", gaps);
         } else if (currentLevel === 7) {
             initializeLevel7Blocks();
         } else if (currentLevel === 8 || currentLevel === 9) {
@@ -2221,7 +2224,7 @@ function startGame(mazeImageSrc, exitPosition, playerPosition) {
         // Initial draw of all elements
         recolorMaze();
         
-        if (currentLevel === 6) {
+        if (currentLevel === 6 || currentLevel === 5) {
             renderMazeWithGaps(ctx, gaps);
         }
         
@@ -2708,6 +2711,11 @@ function goToNextLevel() {
       nextLevelButton.style.display = "none"; // Hide the button when no more levels are available
     }
   } else {
+    // Hide the win popup
+    const winPopup = document.getElementById("winPopup");
+    if (winPopup) {
+      winPopup.style.display = "none";
+    }
     preStartGame(currentLevel + 1);
   }
 }
@@ -2808,7 +2816,7 @@ const stupidLevels = [
   { src: "level2(4).png", s: { x: 180, y: 40 }, f: { x: 180, y: 380 } },
   { src: "level3(3).png", s: { x: 180, y: 0 }, f: { x: 180, y: 340 } },
   { src: "level4(1).png", s: { x: 180, y: 0 }, f: { x: 180, y: 320 } },
-  { src: "level5(2).png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
+  { src: "level5(3).png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
   { src: "level6(3).png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
   { src: "level7test1.png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
   { src: "level8(1).png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
@@ -2827,10 +2835,21 @@ const timerColors = {
   9: "#999999",
 };
 
+function initializeLevel5Gap() {
+    gaps.push({
+        level: 5,
+        x: 15,
+        y: 243,
+        width: 20,
+        height: 20,
+        color: "#ff0000"  // Same color as the walls
+    });
+    console.log("Initialized level 5 gap:", gaps);
+}
+
 function preStartGame(level) {
     currentLevel = level; // Set current level
     showLevelAnnouncement(level);
-
     // Reset game state
     moveCount = 0;
     playerSteps = [];
@@ -2859,10 +2878,13 @@ function preStartGame(level) {
         restartCounter.textContent = '';
     }
 
-    // Initialize gaps if it's level 6
+    // Initialize gaps for specific levels
     if (level === 6) {
         console.log("Initializing level 6 gaps");
         initializeLevel6Gap();
+    } else if (level === 5) {
+        console.log("Initializing level 5 gaps");
+        initializeLevel5Gap();
     }
 
     const getStupidLevel = stupidLevels[level - 1];
@@ -3646,6 +3668,9 @@ function isCollision(newX, newY, pPlayer) {
                     transitionToSecretLevel(currentMovement);
                 }
             }
+        } else if (currentLevel === 5) {
+            // Allow movement through level 5 gaps
+            return false;
         }
         return false; // Allow movement in gaps
     }
@@ -3696,7 +3721,7 @@ function checkStandardCollisions(newX, newY, cPlayer) {
   const mazeX = Math.floor(newX / scale);
   const mazeY = Math.floor(newY / scale);
 
-  const corners = [
+  const collisionPoints = [
       { x: mazeX, y: mazeY },
       { x: mazeX + cPlayer.size / scale - 1, y: mazeY },
       { x: mazeX, y: mazeY + cPlayer.size / scale - 1 },
@@ -3708,13 +3733,27 @@ function checkStandardCollisions(newX, newY, cPlayer) {
 
   const scaledWidth = canvas.width / scale;
 
-  for (const corner of corners) {
-      const index = (corner.y * scaledWidth + corner.x) * 4 + 3;
-      if (mazeData[index] !== 0) {
-          console.log(
-              `Collision detected at (${corner.x}, ${corner.y})`
-          );
-          return true; // Collision with wall
+  // For each collision point, check if it's in a gap
+  for (const point of collisionPoints) {
+      const pointX = point.x * scale;
+      const pointY = point.y * scale;
+      const inGap = gaps.length > 0 && gaps.some(
+          (gap) =>
+              gap.level === currentLevel &&
+              pointX >= gap.x &&
+              pointX <= gap.x + gap.width &&
+              pointY >= gap.y &&
+              pointY <= gap.y + gap.height
+      );
+
+      if (!inGap) {
+          const index = (point.y * scaledWidth + point.x) * 4 + 3;
+          if (mazeData[index] !== 0) {
+              console.log(
+                  `Collision detected at (${point.x}, ${point.y})`
+              );
+              return true; // Collision with wall
+          }
       }
   }
   return false; // No collision
