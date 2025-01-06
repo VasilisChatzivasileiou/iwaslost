@@ -6345,9 +6345,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function typeShopkeepText(text, speed = 50) {
     const shopkeepText = document.getElementById('shopkeepText');
+    const shopkeepImg = document.querySelector('#shopWindow img');
     shopkeepText.innerHTML = ''; // Clear existing text
     let index = 0;
     let displayText = '';
+    let isFrame2 = false;
+
+    // Start the shopkeeper animation
+    const animateShopkeep = setInterval(() => {
+        isFrame2 = !isFrame2;
+        shopkeepImg.src = isFrame2 ? 'assets/images/shopkeep2.png' : 'assets/images/shopkeep1.png';
+    }, 150); // Switch every 200ms
 
     function type() {
         if (index < text.length) {
@@ -6359,6 +6367,10 @@ function typeShopkeepText(text, speed = 50) {
             shopkeepText.innerHTML = displayText;
             index++;
             setTimeout(type, speed);
+        } else {
+            // Stop animation and reset to default frame when typing is done
+            clearInterval(animateShopkeep);
+            shopkeepImg.src = 'assets/images/shopkeep1.png';
         }
     }
 
