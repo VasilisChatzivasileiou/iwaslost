@@ -6343,19 +6343,33 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// Add the messages array and current message index
+const shopkeepMessages = [
+    '"most of these are expired,\n    but im sure they get the job done"',
+    '"yea the prices ain\'t fair but\n    ... in life, nothing is"',
+    '"we got a second-hand section btw\n    cuz we care bout the environment"'
+];
+let currentMessageIndex = 0;
+
 function typeShopkeepText(text, speed = 50) {
     const shopkeepText = document.getElementById('shopkeepText');
     const shopkeepImg = document.querySelector('#shopWindow img');
+    const okButton = document.getElementById('shopkeepOkButton');
     shopkeepText.innerHTML = ''; // Clear existing text
     let index = 0;
     let displayText = '';
     let isFrame2 = false;
 
+    // Disable the button and reduce opacity at start
+    okButton.disabled = true;
+    okButton.style.opacity = '0.5';
+    okButton.style.cursor = 'default';
+
     // Start the shopkeeper animation
     const animateShopkeep = setInterval(() => {
         isFrame2 = !isFrame2;
         shopkeepImg.src = isFrame2 ? 'assets/images/shopkeep2.png' : 'assets/images/shopkeep1.png';
-    }, 150); // Switch every 200ms
+    }, 150);
 
     function type() {
         if (index < text.length) {
@@ -6371,6 +6385,10 @@ function typeShopkeepText(text, speed = 50) {
             // Stop animation and reset to default frame when typing is done
             clearInterval(animateShopkeep);
             shopkeepImg.src = 'assets/images/shopkeep1.png';
+            // Enable the button and restore opacity
+            okButton.disabled = false;
+            okButton.style.opacity = '1';
+            okButton.style.cursor = 'pointer';
         }
     }
 
@@ -6380,6 +6398,13 @@ function typeShopkeepText(text, speed = 50) {
 // Add event listener for shop button
 document.getElementById('shopButton').addEventListener('click', function() {
     document.getElementById('shopScreen').style.display = 'block';
-    // Start typing animation with quotes and line break
-    typeShopkeepText('"most of these are expired,\nbut im sure they get the job done"');
+    currentMessageIndex = 0; // Reset to first message
+    typeShopkeepText(shopkeepMessages[currentMessageIndex]);
+});
+
+// Add event listener for the OK button
+document.getElementById('shopkeepOkButton').addEventListener('click', function() {
+    if (this.disabled) return; // Extra safety check
+    currentMessageIndex = (currentMessageIndex + 1) % shopkeepMessages.length;
+    typeShopkeepText(shopkeepMessages[currentMessageIndex]);
 });
