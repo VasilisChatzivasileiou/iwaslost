@@ -2907,6 +2907,12 @@ function showLevelSelector() {
   resetHints();
   enableHintButton();
 
+  // Hide the win popup
+  const winPopup = document.getElementById("winPopup");
+  if (winPopup) {
+    winPopup.style.display = "none";
+  }
+
   // Clear the tracker list
   const trackerList = document.getElementById("trackerList");
   if (trackerList) {
