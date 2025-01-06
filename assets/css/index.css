@@ -1048,12 +1048,12 @@ input[type="range"] {
 
   #hintButton {
     position: absolute;
-    top: 209.5px; /* Adjust vertical position */
-    left: -103px; /* Place the button to the left of the maze */
+    top: 0px; /* Adjust vertical position */
+    left: -64px; /* Place the button to the left of the maze */
     transform: translateY(0); /* Fine-tune alignment if needed */
   }
   #hintButton:disabled {
-    left: -143px;
+    left: -105px;
   }
 
 }

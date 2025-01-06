@@ -135,12 +135,19 @@
     </div>
 
     <div id="shopScreen" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #222222; z-index: 1000;">
-        <div style="position: absolute; top: 13%; left: 50%; transform: translateX(-50%); color: #D9D9D9; font-family: 'BIZUDMincho'; font-size: 40px; letter-spacing: 4px;">
+        <div style="position: absolute; top: 11%; left: 50%; transform: translateX(-50%); color: #D9D9D9; font-family: 'BIZUDMincho'; font-size: 40px; letter-spacing: 4px;">
             shop&nbsp;&nbsp;&nbsp;&nbsp;( early version )
         </div>
-        <div id="shopWindow" style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 90%; height: 69%; background-color: #D9D9D9; border-radius: 0px;">
-            <div style="position: absolute; top: 30%; left: 0; width: 100%; height: 10px; background-color: #222222;"></div>
-            <div style="position: absolute; top: 46%; left: 3%; width: 94%; height: 47%; background-color: #111111;"></div>
+        <div id="shopWindow" style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 90%; height: 74%; background-color: #D9D9D9; border-radius: 0px;">
+            <img src="assets/images/shopkeep1.png" style="position: absolute; top: 5%; left: 50px; width: 200px; height: 200px; image-rendering: pixelated;">
+            <div style="position: absolute; top: 37%; left: 0; width: 100%; height: 10px; background-color: #222222;"></div>
+            <div id="shopText" style="position: absolute; top: 39.7%; left: 50px; color: #111111; font-family: 'BIZUDMincho'; font-size: 50px; cursor: pointer;">shop <span class="indicator" style="display: inline;">&lt;</span></div>
+            <div style="position: absolute; top: 39.7%; left: 50%; transform: translateX(-50%); color: #111111; font-family: 'BIZUDMincho'; font-size: 50px;">||</div>
+            <div id="inventoryText" style="position: absolute; top: 39.7%; right: 50px; color: #111111; font-family: 'BIZUDMincho'; font-size: 50px; cursor: pointer;">inventory <span class="indicator" style="display: none;">&lt;</span></div>
+            <div id="shopContent" style="position: absolute; top: 48%; left: 3%; width: 94%; height: 47%; background-color: #111111;"></div>
+            <div id="inventoryContent" style="position: absolute; top: 48%; left: 3%; width: 94%; height: 47%; background-color: #111111; display: none;">
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #D1D1D1; font-family: 'BIZUDMincho'; font-size: 28px;">empty</div>
+            </div>
         </div>
         <button id="shopBackButton" style="position: absolute; top: 43px; right: calc(5vw); background-color: #D1D1D1; color: #111111; font-size: 28px; font-family: 'BIZUDMincho'; border: none; border-radius: 0px; padding: 10px 5px; cursor: pointer; transition: all 0.2s ease;">back</button>
     </div>
@@ -309,7 +316,6 @@
     </div>
 
     <div class="logo-container">
-        <button id="hintButton" class="hint-button">Hint</button>
         <img id="logo" src="iwaslost01.png" alt="Logo" style="cursor: pointer;">
         <button id="menuButton" class="menu-button" onclick="showLevelSelector()">Menu</button>
     </div>
@@ -407,11 +413,11 @@
             </div>
         </div>
         <div class="main-container">
-
-            <!-- Maze and tracker in a flex container -->
             <div class="content-container">
+                
                 <div>
                     <div class="maze-container">
+                        <button id="hintButton" class="hint-button">Hint</button>
                         <canvas id="mazeCanvas"></canvas>
                     </div>
                     <div class="controls-wrapper" style="align-items: flex-start !important;">

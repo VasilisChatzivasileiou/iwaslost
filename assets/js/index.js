@@ -6314,3 +6314,26 @@ function updateBlockVisualPosition(blockId, x, y) {
     }
 }
 
+document.addEventListener('DOMContentLoaded', function() {
+    const shopText = document.getElementById('shopText');
+    const inventoryText = document.getElementById('inventoryText');
+    const shopContent = document.getElementById('shopContent');
+    const inventoryContent = document.getElementById('inventoryContent');
+    const shopIndicator = shopText.querySelector('.indicator');
+    const inventoryIndicator = inventoryText.querySelector('.indicator');
+
+    shopText.addEventListener('click', function() {
+        shopContent.style.display = 'block';
+        inventoryContent.style.display = 'none';
+        shopIndicator.style.display = 'inline';
+        inventoryIndicator.style.display = 'none';
+    });
+
+    inventoryText.addEventListener('click', function() {
+        shopContent.style.display = 'none';
+        inventoryContent.style.display = 'block';
+        shopIndicator.style.display = 'none';
+        inventoryIndicator.style.display = 'inline';
+    });
+});
+
