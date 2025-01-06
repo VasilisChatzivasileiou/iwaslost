@@ -2840,7 +2840,7 @@ function initializeLevel5Gap() {
         y: 243,
         width: 20,
         height: 20,
-        color: "#ff0000"  // Same color as the walls
+        color: "transparent"
     });
     console.log("Initialized level 5 gap:", gaps);
 }
@@ -2963,13 +2963,11 @@ const player = {
   color: "#d1406e", // Add a color property
   
 };
-
 const exit = {
   x: 180,
   y: 0,
   size: 20,
 };
-
 let mazeData;
 let movingInterval = null;
 let currentDirection = null;
@@ -3012,7 +3010,6 @@ function recolorMaze() {
     } else {
         return Promise.resolve(performRecolor());
     }
-
     function performRecolor() {
         const isEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
 
