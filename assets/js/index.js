@@ -6343,3 +6343,31 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+function typeShopkeepText(text, speed = 50) {
+    const shopkeepText = document.getElementById('shopkeepText');
+    shopkeepText.innerHTML = ''; // Clear existing text
+    let index = 0;
+    let displayText = '';
+
+    function type() {
+        if (index < text.length) {
+            if (text[index] === '\n') {
+                displayText += '<br>&nbsp;&nbsp;&nbsp;&nbsp;';  // Add 4 non-breaking spaces for indentation
+            } else {
+                displayText += text[index];
+            }
+            shopkeepText.innerHTML = displayText;
+            index++;
+            setTimeout(type, speed);
+        }
+    }
+
+    type();
+}
+
+// Add event listener for shop button
+document.getElementById('shopButton').addEventListener('click', function() {
+    document.getElementById('shopScreen').style.display = 'block';
+    // Start typing animation with quotes and line break
+    typeShopkeepText('"most of these are expired,\nbut im sure they get the job done"');
+});
