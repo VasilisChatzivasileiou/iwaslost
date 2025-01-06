@@ -2695,8 +2695,6 @@ document.addEventListener("DOMContentLoaded", () => {
   startFlickeringEffect();
   startCentralSpotEffect();
 });
-
-
 function updateCanvasBorder() {
   const isEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
   const mazeBorderColor = isEquipped ? "#8A314E" : "#222222"; // Choose color based on equip state
