@@ -5769,47 +5769,61 @@ const shopkeepMessages = [
 ];
 let currentMessageIndex = 0;
 
+// Add a variable to track the typing timeout
+let currentTypingTimeout;
+let currentShopkeeperAnimation;
+
 function typeShopkeepText(text, speed = 50) {
     const shopkeepText = document.getElementById('shopkeepText');
     const shopkeepImg = document.querySelector('#shopWindow img');
     const okButton = document.getElementById('shopkeepOkButton');
-    shopkeepText.innerHTML = ''; // Clear existing text
-    let index = 0;
-    let displayText = '';
-    let isFrame2 = false;
-
-    // Disable the button and reduce opacity at start
+    
+    // Clear any ongoing typing animation
+    if (currentTypingTimeout) {
+        clearTimeout(currentTypingTimeout);
+    }
+    
+    // Clear any ongoing shopkeeper animation
+    if (currentShopkeeperAnimation) {
+        clearInterval(currentShopkeeperAnimation);
+    }
+    
+    // Clear existing text immediately
+    shopkeepText.innerHTML = '';
     okButton.disabled = true;
     okButton.style.opacity = '0.5';
     okButton.style.cursor = 'default';
-
+    
+    let i = 0;
+    let isFrame2 = false;
+    
     // Start the shopkeeper animation
-    const animateShopkeep = setInterval(() => {
+    currentShopkeeperAnimation = setInterval(() => {
         isFrame2 = !isFrame2;
         shopkeepImg.src = isFrame2 ? 'assets/images/shopkeep2.png' : 'assets/images/shopkeep1.png';
     }, 150);
-
+    
     function type() {
-        if (index < text.length) {
-            if (text[index] === '\n') {
-                displayText += '<br>&nbsp;&nbsp;&nbsp;&nbsp;';  // Add 4 non-breaking spaces for indentation
+        if (i < text.length) {
+            if (text[i] === '\n') {
+                shopkeepText.innerHTML += '<br>&nbsp;&nbsp;&nbsp;&nbsp;';
             } else {
-                displayText += text[index];
+                shopkeepText.innerHTML += text[i];
             }
-            shopkeepText.innerHTML = displayText;
-            index++;
-            setTimeout(type, speed);
+            i++;
+            currentTypingTimeout = setTimeout(type, speed);
         } else {
             // Stop animation and reset to default frame when typing is done
-            clearInterval(animateShopkeep);
+            clearInterval(currentShopkeeperAnimation);
             shopkeepImg.src = 'assets/images/shopkeep1.png';
             // Enable the button and restore opacity
             okButton.disabled = false;
             okButton.style.opacity = '1';
             okButton.style.cursor = 'pointer';
+            currentTypingTimeout = null;
+            currentShopkeeperAnimation = null;
         }
     }
-
     type();
 }
 
@@ -5945,11 +5959,15 @@ document.addEventListener("DOMContentLoaded", () => {
     miniaturizerItem.addEventListener("click", () => {
         shopDetailWindow.style.display = "block";
         miniaturizerTitle.style.textDecoration = "underline";
+        // Interrupt any ongoing typing and start new text
+        typeShopkeepText('"you could probably use that to get into tight spaces"');
     });
 
     closeDetailButton.addEventListener("click", () => {
         shopDetailWindow.style.display = "none";
         miniaturizerTitle.style.textDecoration = "none";
+        // Interrupt any ongoing typing and reset to default text
+        typeShopkeepText('"welcome to my shop! take a look around..."');
     });
 
     // Add hover effect for close button
@@ -5962,7 +5980,6 @@ document.addEventListener("DOMContentLoaded", () => {
         closeDetailButton.style.backgroundColor = "#D1D1D1";
         closeDetailButton.style.color = "#111111";
     });
-    
 });
 
 document.getElementById("shopBackButton").addEventListener("click", () => {
