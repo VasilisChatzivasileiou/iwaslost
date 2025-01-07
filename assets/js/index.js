@@ -2105,6 +2105,14 @@ function startGame(mazeImageSrc, exitPosition, playerPosition) {
     clearLevel7Blocks();
     gaps.length = 0;
 
+    // Initialize shadow trail canvas if it exists
+    if (shadowTrailCanvas && shadowTrailCtx) {
+        shadowTrailCanvas.width = mazeCanvas.width;
+        shadowTrailCanvas.height = mazeCanvas.height;
+        shadowTrailCtx.clearRect(0, 0, shadowTrailCanvas.width, shadowTrailCanvas.height);
+        shadowTrailCtx.fillStyle = "#222222";
+    }
+
     console.log("Current Level:", currentLevel);
     console.log("Gaps:", gaps);
 
@@ -3080,78 +3088,77 @@ let isTrailAnimating = false;
 let trailTimeout = null;
 
 function drawPlayer(cPlayer) {
-  const isTailEquipped = localStorage.getItem("isTailEffectEquipped") === "true";
-  const isSoulEquipped = localStorage.getItem("isSoulAppearanceEquipped") === "true";
+    const currentPlayer = cPlayer || player;
+    const isTailEquipped = localStorage.getItem("isTailEffectEquipped") === "true";
+    const isSoulEquipped = localStorage.getItem("isSoulAppearanceEquipped") === "true";
 
-  // Draw everything except trail blocks first
-  recolorMaze();
-  drawExit();
-  drawCheckpoints();
-  if (currentLevel === 7) {
-    drawLevel7Blocks(ctx);
-  }
-  if (currentLevel === 6) {
-    renderMazeWithGaps(ctx, gaps);
-  }
-
-  if (cPlayer) {
-    ctx.fillStyle = "rgba(255, 255, 0, 0.5)";
-    ctx.fillRect(cPlayer.x, cPlayer.y, cPlayer.size, cPlayer.size);
-  }
-
-  // Draw trail blocks
-  if (isTailEquipped && !isTrailAnimating) {
-    // Clear the trail canvas first
-    trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
-    
-    // Draw all trail blocks, only skipping current position if soul is equipped
-    trailCtx.fillStyle = player.color;
-    trailBlocks.forEach(block => {
-      // Only skip current position if soul is equipped
-      if (!isSoulEquipped || (block.x !== player.x || block.y !== player.y)) {
-        trailCtx.fillRect(block.x, block.y, player.size, player.size);
-      }
-    });
-    
-    // Draw the trail
-    ctx.drawImage(trailCanvas, 0, 0);
-  }
-
-  // Draw the player with soul image or default square
-  if (isSoulEquipped && (soulImage.complete || soulImage2.complete)) {
-    const currentImage = currentSoulFrame === 1 ? soulImage : soulImage2;
-    
-    // Save the current context state
-    ctx.save();
-    
-    // Translate to the player's position
-    ctx.translate(player.x + player.size/2, player.y + player.size/2);
-    
-    // Rotate based on direction
-    switch(currentDirection) {
-      case "ArrowDown":
-        ctx.rotate(Math.PI); // 180 degrees
-        break;
-      case "ArrowLeft":
-        ctx.rotate(-Math.PI/2); // -90 degrees
-        break;
-      case "ArrowRight":
-        ctx.rotate(Math.PI/2); // 90 degrees
-        break;
-      default: // ArrowUp or no direction
-        // No rotation needed
-        break;
+    // Draw everything except trail blocks first
+    recolorMaze();
+    drawExit();
+    drawCheckpoints();
+    if (currentLevel === 7) {
+        drawLevel7Blocks(ctx);
     }
-    
-    // Draw the image centered at the rotation point
-    ctx.drawImage(currentImage, -player.size/2, -player.size/2, player.size, player.size);
-    
-    // Restore the context state
-    ctx.restore();
-  } else {
-    ctx.fillStyle = player.color;
-    ctx.fillRect(player.x, player.y, player.size, player.size);
-  }
+    if (currentLevel === 6) {
+        renderMazeWithGaps(ctx, gaps);
+    }
+
+    // Draw trail blocks
+    if (isTailEquipped && !isTrailAnimating) {
+        // Clear the trail canvas first
+        trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+        
+        // Draw all trail blocks, only skipping current position if soul is equipped
+        trailCtx.fillStyle = player.color;
+        trailBlocks.forEach(block => {
+            // Only skip current position if soul is equipped
+            if (!isSoulEquipped || (block.x !== player.x || block.y !== player.y)) {
+                trailCtx.fillRect(block.x, block.y, player.size, player.size);
+            }
+        });
+        
+        // Draw the trail
+        ctx.drawImage(trailCanvas, 0, 0);
+    }
+
+    // Draw the player with soul image or default square
+    if (isSoulEquipped && (soulImage.complete || soulImage2.complete)) {
+        const currentImage = currentSoulFrame === 1 ? soulImage : soulImage2;
+        ctx.save();
+        ctx.translate(currentPlayer.x + currentPlayer.size/2, currentPlayer.y + currentPlayer.size/2);
+        
+        switch(currentDirection) {
+            case "ArrowDown":
+                ctx.rotate(Math.PI);
+                break;
+            case "ArrowLeft":
+                ctx.rotate(-Math.PI/2);
+                break;
+            case "ArrowRight":
+                ctx.rotate(Math.PI/2);
+                break;
+            default:
+                break;
+        }
+        
+        ctx.drawImage(currentImage, -currentPlayer.size/2, -currentPlayer.size/2, currentPlayer.size, currentPlayer.size);
+        ctx.restore();
+    } else {
+        ctx.fillStyle = currentPlayer.color || player.color;
+        ctx.fillRect(currentPlayer.x, currentPlayer.y, currentPlayer.size, currentPlayer.size);
+    }
+
+    // Draw shadow trail at current position if context exists
+    if (shadowTrailCtx) {
+        const shadowSize = currentPlayer.size + 6; // Make shadow slightly larger
+        const shadowOffset = (shadowSize - currentPlayer.size) / 2;
+        shadowTrailCtx.fillRect(
+            currentPlayer.x - shadowOffset,
+            currentPlayer.y - shadowOffset,
+            shadowSize,
+            shadowSize
+        );
+    }
 }
 
 function animateTrailMerge() {
@@ -3446,7 +3453,7 @@ function renderMazeWithGaps(context, gaps = []) {
           gapElement.style.width = `${gap.width}px`;
           gapElement.style.height = `${gap.height}px`;
           gapElement.style.backgroundColor = gap?.color ||'rgb(153, 153, 153)';
-          gapElement.style.zIndex = '-2';
+          gapElement.style.zIndex = '1';
           
           gapElement.style.pointerEvents = 'none'; // Prevent interaction
 
@@ -5914,4 +5921,16 @@ document.getElementById("menuButton").addEventListener("click", () => {
     showLevelSelector();
     backgroundMusic.pause();
     backgroundMusic.currentTime = 0;
+});
+
+// Initialize shadow trail canvas
+let shadowTrailCanvas;
+let shadowTrailCtx;
+
+document.addEventListener("DOMContentLoaded", () => {
+    shadowTrailCanvas = document.getElementById("shadowTrailCanvas");
+    shadowTrailCtx = shadowTrailCanvas.getContext("2d");
+    shadowTrailCanvas.width = mazeCanvas.width;
+    shadowTrailCanvas.height = mazeCanvas.height;
+    shadowTrailCtx.fillStyle = "#222222";
 });

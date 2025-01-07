@@ -187,13 +187,20 @@ body {
 }
 
 canvas {
-  z-index: -2;
+  z-index: 1;
   position: absolute;
   top: 0;
   left: 0;
   border: 1px solid #222222;
   image-rendering: pixelated;
   transform: translate(2.5%, 2.5%); /* Center the canvas within the container */
+}
+
+#shadowTrailCanvas {
+  z-index: -1;
+  border: none;
+  opacity: 0.49;
+  filter: blur(4px);
 }
 
 .tracker-container {
@@ -645,7 +652,7 @@ input[type="range"] {
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  /*justify-content: center;*/
   align-items: center;
   width: 100vw; /* Full width */
   height: 100vh; /* Full height */
