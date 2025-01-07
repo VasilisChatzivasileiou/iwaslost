@@ -2793,7 +2793,7 @@ const stupidLevels = [
   { src: "level2(4).png", s: { x: 180, y: 40 }, f: { x: 180, y: 380 } },
   { src: "level3(3).png", s: { x: 180, y: 0 }, f: { x: 180, y: 340 } },
   { src: "level4(1).png", s: { x: 180, y: 0 }, f: { x: 180, y: 320 } },
-  { src: "level5(3).png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
+  { src: "level5(4).png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
   { src: "level6(3).png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
   { src: "level7test1.png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
   { src: "level8(1).png", s: { x: 180, y: 0 }, f: { x: 180, y: 380 } },
@@ -5936,8 +5936,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-    // ... existing code ...
-
     // Shop item detail view handlers
     const miniaturizerItem = document.getElementById("miniaturizerItem");
     const miniaturizerTitle = miniaturizerItem.querySelector("div:last-child");
@@ -5965,5 +5963,31 @@ document.addEventListener("DOMContentLoaded", () => {
         closeDetailButton.style.color = "#111111";
     });
     
-    // ... rest of the existing code ...
+});
+
+document.getElementById("shopBackButton").addEventListener("click", () => {
+    // Reset shop state
+    document.getElementById("shopContent").style.display = "block";
+    document.getElementById("inventoryContent").style.display = "none";
+    document.getElementById("shopDetailWindow").style.display = "none";
+    document.querySelector("#shopText .indicator").style.display = "inline";
+    document.querySelector("#inventoryText .indicator").style.display = "none";
+    
+    // Hide shop screen
+    document.getElementById("shopScreen").style.display = "none";
+    document.getElementById("startScreen").style.display = "flex";
+});
+
+// Update shop button click handler
+document.getElementById("shopButton").addEventListener("click", () => {
+    // Show shop screen with default state
+    document.getElementById("shopScreen").style.display = "block";
+    document.getElementById("startScreen").style.display = "none";
+    
+    // Reset to default shop view
+    document.getElementById("shopContent").style.display = "block";
+    document.getElementById("inventoryContent").style.display = "none";
+    document.getElementById("shopDetailWindow").style.display = "none";
+    document.querySelector("#shopText .indicator").style.display = "inline";
+    document.querySelector("#inventoryText .indicator").style.display = "none";
 });
