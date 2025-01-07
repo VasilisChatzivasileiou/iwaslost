@@ -64,6 +64,15 @@ const closeButton = achievementsModal.querySelector('.close-btn');
 const animationContainer = document.getElementById('animationContainer');
 
 const soundEffect = new Audio('blockhit3.mp3'); // Replace with your sound file path
+const levelEnterSound = new Audio('assets/audio/levelenter.wav');
+const backgroundMusic = new Audio("./assets/audio/i careOST.mp3"); // Background music
+const volumeSlider = document.getElementById("volumeSlider"); // Slider
+const volumeValueDisplay = document.getElementById("volumeValue"); // Display value
+console.log(document.getElementById("levelAnnouncement")); // Log the element
+
+// Initialize audio settings
+backgroundMusic.loop = true;
+backgroundMusic.volume = 0.1; // Set initial volume to match slider
 
 // Add soul image loading at the top with other global variables
 const soulImage = new Image();
@@ -79,9 +88,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const startScreen = document.getElementById("startScreen");
   const levelSelection = document.getElementById("levelSelection"); // Declare this variable
   const startGameButton = document.getElementById("startGameButton");
-  const backgroundMusic = new Audio("./assets/audio/i careOST.mp3"); // Background music
-  const volumeSlider = document.getElementById("volumeSlider"); // Slider
-  const volumeValueDisplay = document.getElementById("volumeValue"); // Display value
   console.log(document.getElementById("levelAnnouncement")); // Log the element
 
   const unlockablesButton = document.getElementById("unlockablesButton")
@@ -112,16 +118,16 @@ document.addEventListener("DOMContentLoaded", () => {
     // Show level selection screen
     levelSelection.style.display = "flex";
 
-    // Play background music
-    backgroundMusic.play().catch((e) => {
-      console.warn("Autoplay prevented", e);
-    });
+    // Remove background music autoplay from here
   });
 
-  volumeSlider.addEventListener("input", () => {
-    const volume = parseFloat(volumeSlider.value);
+  volumeSlider.addEventListener("input", (e) => {
+    const volume = parseFloat(e.target.value);
+    // Update all audio elements with the new volume
     backgroundMusic.volume = volume;
-
+    soundEffect.volume = volume;
+    levelEnterSound.volume = volume;
+    
     // Update volume display
     volumeValueDisplay.textContent = Math.round(volume * 100) + "%";
   });
@@ -2895,6 +2901,14 @@ function initializeLevel5Gap() {
 }
 
 function preStartGame(level) {
+    // Play level enter sound
+    levelEnterSound.currentTime = 0; // Reset sound to start
+    levelEnterSound.play().catch(e => console.warn("Could not play level enter sound:", e));
+    
+    // Start background music when entering a level
+    backgroundMusic.currentTime = 0; // Reset music to start
+    backgroundMusic.play().catch(e => console.warn("Could not play background music:", e));
+    
     currentLevel = level; // Set current level
     console.log('Starting level:', level);
     if (level === 9) {
@@ -6531,4 +6545,29 @@ document.getElementById('inventoryText').addEventListener('click', function() {
     document.querySelector('#shopText .indicator').style.display = 'none';
     document.querySelector('#inventoryText .indicator').style.display = 'inline';
     updateInventoryDisplay();
+});
+
+// Add function to stop music when returning to menu
+function returnToMainMenu() {
+    document.getElementById("levelSelection").style.display = "none";
+    document.getElementById("startScreen").style.display = "flex";
+    document.getElementById("gameContainer").style.display = "none";
+    
+    // Stop the background music
+    backgroundMusic.pause();
+    backgroundMusic.currentTime = 0;
+    
+    // Reset the timer display
+    document.getElementById("timerDisplay").textContent = "Time: 00:00";
+    stopTimer();
+}
+
+// Update the mainMenuButton click handler
+document.getElementById("mainMenuButton").addEventListener("click", returnToMainMenu);
+
+// Also stop music when clicking menu button during gameplay
+document.getElementById("menuButton").addEventListener("click", () => {
+    showLevelSelector();
+    backgroundMusic.pause();
+    backgroundMusic.currentTime = 0;
 });
