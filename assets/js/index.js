@@ -484,90 +484,6 @@ function updateAchievementDisplay() {
     }
 }
 
-function updateAchievementUIAnimated() {
-  console.log("Updating UI with:", achievementProgress);
-
-  const brainProgressFill = document.querySelector(".progressFill.theBrain");
-  const brainProgressPercentage = document.querySelector(".progressPercentage.theBrain");
-  const brainAchievementStatus = document.querySelector(".achievementStatus.theBrain");
-
-  const tailProgressFill = document.querySelector(".progressFill.theTail");
-  const tailProgressPercentage = document.querySelector(".progressPercentage.theTail");
-  const tailAchievementStatus = document.querySelector(".achievementStatus.theTail");
-
-  const soulProgressFill = document.querySelector(".progressFill.theSoul");
-  const soulProgressPercentage = document.querySelector(".progressPercentage.theSoul");
-  const soulAchievementStatus = document.querySelector(".achievementStatus.theSoul");
-
-  const bodyProgressFill = document.querySelector(".progressFill.theBody");
-  const bodyProgressPercentage = document.querySelector(".progressPercentage.theBody");
-  const bodyAchievementStatus = document.querySelector(".achievementStatus.theBody");
-
-  // Reset all progress bars to 0
-  if (brainProgressFill) brainProgressFill.style.width = '0%';
-  if (tailProgressFill) tailProgressFill.style.width = '0%';
-  if (soulProgressFill) soulProgressFill.style.width = '0%';
-  if (bodyProgressFill) bodyProgressFill.style.width = '0%';
-
-  if (brainProgressPercentage) brainProgressPercentage.textContent = '0%';
-  if (tailProgressPercentage) tailProgressPercentage.textContent = '0%';
-  if (soulProgressPercentage) soulProgressPercentage.textContent = '0%';
-  if (bodyProgressPercentage) bodyProgressPercentage.textContent = '0%';
-
-  // Update each achievement's progress
-  if (achievementProgress.theBrain) {
-    const progress = achievementProgress.theBrain.progress;
-    if (brainProgressFill) {
-      animateProgressUpdate(progress, (value) => {
-        brainProgressFill.style.width = `${value}%`;
-        brainProgressPercentage.textContent = `${Math.round(value)}%`;
-      });
-    }
-    if (brainAchievementStatus) {
-      brainAchievementStatus.textContent = achievementProgress.theBrain.status;
-    }
-  }
-
-  if (achievementProgress.theTail) {
-    const progress = achievementProgress.theTail.progress;
-    if (tailProgressFill) {
-      animateProgressUpdate(progress, (value) => {
-        tailProgressFill.style.width = `${value}%`;
-        tailProgressPercentage.textContent = `${Math.round(value)}%`;
-      });
-    }
-    if (tailAchievementStatus) {
-      tailAchievementStatus.textContent = achievementProgress.theTail.status;
-    }
-  }
-
-  if (achievementProgress.theSoul) {
-    const progress = achievementProgress.theSoul.progress;
-    if (soulProgressFill) {
-      animateProgressUpdate(progress, (value) => {
-        soulProgressFill.style.width = `${value}%`;
-        soulProgressPercentage.textContent = `${Math.round(value)}%`;
-      });
-    }
-    if (soulAchievementStatus) {
-      soulAchievementStatus.textContent = achievementProgress.theSoul.status;
-    }
-  }
-
-  if (achievementProgress.theBody) {
-    const progress = achievementProgress.theBody.progress;
-    if (bodyProgressFill) {
-      animateProgressUpdate(progress, (value) => {
-        bodyProgressFill.style.width = `${value}%`;
-        bodyProgressPercentage.textContent = `${Math.round(value)}%`;
-      });
-    }
-    if (bodyAchievementStatus) {
-      bodyAchievementStatus.textContent = achievementProgress.theBody.status;
-    }
-  }
-}
-
 unlockablesButton.addEventListener('click', () => {
   updateUnlockablesUI();
   const unlockablesCenterWindow = document.getElementById('unlockablesCenterWindow');
@@ -3382,7 +3298,7 @@ function startMoving(onMoveComplete) {
         trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
         trailBlocks.forEach(block => {
           if (!isSoulEquipped || (block.x !== player.x || block.y !== player.y)) {
-          trailCtx.fillStyle = player.color;
+            trailCtx.fillStyle = player.color;
             trailCtx.fillRect(block.x, block.y, player.size, player.size);
           }
         });
@@ -3397,44 +3313,37 @@ function startMoving(onMoveComplete) {
       checkWin();
 
       if (onMoveComplete) onMoveComplete();
-    } else {
-      player.x = newX;
-      player.y = newY;
-
-      // Add trail blocks during movement
-      if (isTailEquipped) {
-        const distanceX = Math.abs(player.x - lastTrailX);
-        const distanceY = Math.abs(player.y - lastTrailY);
-        
-        // Add a new trail block every blockSize pixels
-        if (distanceX >= blockSize || distanceY >= blockSize) {
-          // When soul is not equipped, add trail at current position
-          const trailX = !isSoulEquipped ? player.x : lastTrailX;
-          const trailY = !isSoulEquipped ? player.y : lastTrailY;
-          trailBlocks.push({ x: trailX, y: trailY });
-          
-          // Clear trail canvas and redraw all blocks
-          trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
-          trailBlocks.forEach(block => {
-            if (!isSoulEquipped || (block.x !== player.x || block.y !== player.y)) {
-              trailCtx.fillStyle = player.color;
-              trailCtx.fillRect(block.x, block.y, player.size, player.size);
-            }
-          });
-          
-          // Update last trail position
-          lastTrailX = player.x;
-          lastTrailY = player.y;
-        }
-      }
-
-      drawPlayer();
-      checkCheckpointCollision();
-      if (currentLevel === 7) checkLevel7BlocksCollision(player);
-      checkWin();
-
-      requestAnimationFrame(doTheMove);
+      return;
     }
+
+    // Update player position
+    player.x = newX;
+    player.y = newY;
+
+    // Add trail block at current position if tail is equipped
+    if (isTailEquipped && (!isSoulEquipped || (Math.abs(lastTrailX - player.x) >= blockSize || Math.abs(lastTrailY - player.y) >= blockSize))) {
+      trailBlocks.push({ x: lastTrailX, y: lastTrailY });
+      
+      // Clear trail canvas and redraw all blocks
+      trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+      trailBlocks.forEach(block => {
+        if (!isSoulEquipped || (block.x !== player.x || block.y !== player.y)) {
+          trailCtx.fillStyle = player.color;
+          trailCtx.fillRect(block.x, block.y, player.size, player.size);
+        }
+      });
+      
+      // Update last trail position
+      lastTrailX = player.x;
+      lastTrailY = player.y;
+    }
+
+    drawPlayer();
+    checkCheckpointCollision();
+    if (currentLevel === 7) checkLevel7BlocksCollision(player);
+    checkWin();
+
+    requestAnimationFrame(doTheMove);
   };
 
   doTheMove();
@@ -3887,119 +3796,6 @@ function addDirectionToTracker(direction) {
   setTimeout(() => {
     trackerContainer.classList.remove("highlight");
   }, 100); // Duration of the fade-out effect
-}
-
-function startMoving(onMoveComplete) {
-  if (isMoving) return;
-
-  isMoving = true;
-  const speed = 2;
-  const blockSize = 20; // Fixed block size
-  let dx = 0, dy = 0;
-
-  // Start soul animation if soul is equipped
-  const isSoulEquipped = localStorage.getItem("isSoulAppearanceEquipped") === "true";
-  if (isSoulEquipped) {
-    clearInterval(soulAnimationInterval);
-    soulAnimationInterval = setInterval(() => {
-      currentSoulFrame = currentSoulFrame === 1 ? 2 : 1;
-      drawPlayer();
-    }, 250);
-  }
-
-  switch (currentDirection) {
-    case "ArrowUp": dy = -speed; break;
-    case "ArrowDown": dy = speed; break;
-    case "ArrowLeft": dx = -speed; break;
-    case "ArrowRight": dx = speed; break;
-  }
-
-  const isTailEquipped = localStorage.getItem("isTailEffectEquipped") === "true";
-  const startX = player.x;
-  const startY = player.y;
-  let lastTrailX = startX;
-  let lastTrailY = startY;
-
-  const doTheMove = () => {
-    const newX = player.x + dx;
-    const newY = player.y + dy;
-
-    if (isCollision(newX, newY)) {
-      // Snap to grid
-      player.x = Math.round(player.x / blockSize) * blockSize;
-      player.y = Math.round(player.y / blockSize) * blockSize;
-      isMoving = false;
-
-      // Stop soul animation when movement stops
-      if (isSoulEquipped) {
-        clearInterval(soulAnimationInterval);
-        
-        drawPlayer();
-      }
-
-      // Add final trail block at the last position
-      if (isTailEquipped) {
-        trailBlocks.push({ x: lastTrailX, y: lastTrailY });
-        // Clear trail canvas and redraw all blocks except current position
-        trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
-        trailBlocks.forEach(block => {
-          if (block.x !== player.x || block.y !== player.y) {
-        trailCtx.fillStyle = player.color;
-            trailCtx.fillRect(block.x, block.y, player.size, player.size);
-          }
-        });
-      }
-
-      drawPlayer();
-      soundEffect.currentTime = 0;
-      soundEffect.play();
-
-      checkCheckpointCollision();
-      if (currentLevel === 7) checkLevel7BlocksCollision(player);
-      checkWin();
-
-      if (onMoveComplete) onMoveComplete();
-    } else {
-      player.x = newX;
-      player.y = newY;
-
-      // Add trail blocks during movement
-      if (isTailEquipped) {
-        const distanceX = Math.abs(player.x - lastTrailX);
-        const distanceY = Math.abs(player.y - lastTrailY);
-        
-        // Add a new trail block every blockSize pixels
-        if (distanceX >= blockSize || distanceY >= blockSize) {
-          // When soul is not equipped, add trail at current position
-          const trailX = !isSoulEquipped ? player.x : lastTrailX;
-          const trailY = !isSoulEquipped ? player.y : lastTrailY;
-          trailBlocks.push({ x: trailX, y: trailY });
-          
-          // Clear trail canvas and redraw all blocks
-          trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
-          trailBlocks.forEach(block => {
-            if (!isSoulEquipped || (block.x !== player.x || block.y !== player.y)) {
-              trailCtx.fillStyle = player.color;
-              trailCtx.fillRect(block.x, block.y, player.size, player.size);
-            }
-          });
-          
-          // Update last trail position
-          lastTrailX = player.x;
-          lastTrailY = player.y;
-        }
-      }
-
-      drawPlayer();
-      checkCheckpointCollision();
-      if (currentLevel === 7) checkLevel7BlocksCollision(player);
-      checkWin();
-
-      requestAnimationFrame(doTheMove);
-    }
-  };
-
-  doTheMove();
 }
 
 // Define an array of audio files
