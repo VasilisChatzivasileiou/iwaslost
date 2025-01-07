@@ -1263,84 +1263,88 @@ document.getElementById("resetButton").addEventListener("click", () => {
 });
 
 document.getElementById("confirmReset").addEventListener("click", () => {
-  // Use the existing isNode variable from the top of the file
-  const storage = isNode ? require("fs") : null;
-  const saveFilePath = isNode
-    ? require("path").join(__dirname, "levelCompletionTimes.json")
-    : null;
-  const achievementFilePath = isNode
-    ? require("path").join(__dirname, "achievementProgress.json")
-    : null;
+    // Use the existing isNode variable from the top of the file
+    const storage = isNode ? require("fs") : null;
+    const saveFilePath = isNode
+        ? require("path").join(__dirname, "levelCompletionTimes.json")
+        : null;
+    const achievementFilePath = isNode
+        ? require("path").join(__dirname, "achievementProgress.json")
+        : null;
 
-  // Clear achievements and unlockables
-  resetAchievementsAndUnlockables();
+    // Clear achievements and unlockables
+    resetAchievementsAndUnlockables();
 
-  if (isNode) {
-    // Clear files in Node.js/Electron
-    if (storage.existsSync(saveFilePath)) storage.unlinkSync(saveFilePath);
-    if (storage.existsSync(achievementFilePath)) storage.unlinkSync(achievementFilePath);
-  } else {
-    // Clear localStorage
-    localStorage.removeItem("levelCompletionTimes");
-    localStorage.removeItem("achievementProgress");
-    localStorage.removeItem("pathOneCompleted");
-    localStorage.removeItem("pathTwoCompleted");
-    localStorage.removeItem("isBrainPaletteEquipped"); // Clear palette state
-    localStorage.removeItem("isTailEffectEquipped"); // Clear tail effect state
-  }
+    if (isNode) {
+        // Clear files in Node.js/Electron
+        if (storage.existsSync(saveFilePath)) storage.unlinkSync(saveFilePath);
+        if (storage.existsSync(achievementFilePath)) storage.unlinkSync(achievementFilePath);
+    } else {
+        // Clear localStorage
+        localStorage.clear(); // Clear all localStorage items
+    }
 
-  trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
-  console.log("Trail effect cleared on data reset.");
+    trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+    console.log("Trail effect cleared on data reset.");
 
-  // Reset colors to default
-  resetColorsToDefault();
+    // Reset colors to default
+    resetColorsToDefault();
 
-  // Reset unlockable state and UI
-  resetUnlockables(); // Call the function to clear the UI
+    // Reset unlockable state and UI
+    resetUnlockables();
 
-  // Hide modal and show notification
-  document.getElementById("resetConfirmationModal").classList.add("hidden");
-  const notification = document.getElementById("resetNotification");
-  notification.textContent = "All data has been reset.";
-  notification.classList.remove("hidden");
+    // Hide modal and show notification
+    document.getElementById("resetConfirmationModal").classList.add("hidden");
+    const notification = document.getElementById("resetNotification");
+    notification.textContent = "All data has been reset.";
+    notification.classList.remove("hidden");
 
-  // Hide notification after 2 seconds
-  setTimeout(() => {
-    notification.classList.add("hidden");
-  }, 2000);
+    // Hide notification after 2 seconds
+    setTimeout(() => {
+        notification.classList.add("hidden");
+    }, 2000);
 });
 
 function resetAchievementsAndUnlockables() {
-  // Reset in-memory achievement progress
-  achievementProgress = {
-    theBrain: {
-      title: "The Brain",
-      status: "Locked", // Reset to locked
-      progress: 0, // Reset progress
-    },
-    theTail: {
-      title: "The Tail",
-      status: "Locked", // Reset to locked
-      progress: 0, // Reset progress
-    },
-    theSoul: {
-      title: "The Soul",
-      progress: 0,
-      status: "Locked"
+    // Clear all achievements
+    achievementProgress = {
+        theBrain: { progress: 0, status: "Locked" },
+        theTail: { progress: 0, status: "Locked" },
+        theSoul: { progress: 0, status: "Locked" }
+    };
+    saveAchievementProgress();
+
+    // Clear level 8 paths
+    localStorage.setItem('level8Paths', JSON.stringify({ first: false, second: false }));
+
+    // Clear level 9 completion state
+    localStorage.setItem('hasGoldCoin', 'false');
+
+    // Clear all level completion times
+    levelCompletionTimes = {};
+    localStorage.removeItem('levelCompletionTimes');
+    
+    // Reset timer displays
+    for (let i = 1; i <= 9; i++) {
+        const timeLabel = document.getElementById(`level${i}Timer`);
+        if (timeLabel) {
+            timeLabel.textContent = '';
+            timeLabel.style.display = 'none';
+        }
     }
-  };
 
-  // Reset level 8 paths
-  localStorage.setItem('level8Paths', JSON.stringify({"first": false, "second": false}));
+    // Reset unlockables
+    resetUnlockables();
+    
+    // Reset colors to default
+    resetColorsToDefault();
 
-  // Save updated achievements to localStorage or file
-  saveAchievementProgress();
-
-  // Update UI
-  updateAchievementUIAnimated();
-
-  // Reset unlockables UI
-  resetUnlockables();
+    // Show notification
+    const notification = document.getElementById('resetNotification');
+    notification.classList.remove('hidden');
+    setTimeout(() => {
+        notification.classList.add('hidden');
+    }, 2000);
 }
 
 function resetUnlockables() {
@@ -2719,22 +2723,50 @@ function goToNextLevel() {
 }
 
 function checkWin(bypass = false) {
-    if (
-        (player.x < exit.x + exit.size &&
-            player.x + player.size > exit.x &&
-            player.y < exit.y + exit.size &&
-            player.y + player.size > exit.y) ||
-        bypass
-    ) {
+    if ((player.x < exit.x + exit.size && player.x + player.size > exit.x &&
+        player.y < exit.y + exit.size && player.y + player.size > exit.y) || bypass) {
+        
         clearInterval(timerInterval);
-
-        const elapsedTime = document
-            .getElementById("timerDisplay")
-            .textContent.split(": ")[1];
+        const elapsedTime = document.getElementById("timerDisplay").textContent.split(": ")[1];
         levelCompletionTimes[`level${currentLevel}`] = elapsedTime;
-
         saveLevelCompletionTime(`level${currentLevel}`, elapsedTime);
         updateLevelCompletionTime();
+
+        // ... existing achievement check code ...
+
+        // Display the win popup
+        winPopup.style.display = "block";
+        const moveCountMessage = document.getElementById("moveCountMessage");
+        const menuButtonPopup = document.getElementById("menuButtonPopup");
+        
+        if (currentLevel === 9) {
+            const hasGoldCoin = localStorage.getItem('hasGoldCoin');
+            console.log('Level 9 Win - hasGoldCoin state:', hasGoldCoin);
+            console.log('hasGoldCoin type:', typeof hasGoldCoin);
+            
+            if (!hasGoldCoin || hasGoldCoin === 'false' || hasGoldCoin === null) {
+                console.log('Showing first-time completion popup');
+                // First time completion
+                moveCountMessage.innerHTML = `You won and it took you ${moveCount} moves.<br>
+                    your time was ${elapsedTime}.<br>..loser<br><br>
+                    you won all levels n all you got was:<br>
+                    <div style="width: 100px; height: 100px; background-color: #111111; margin: 20px auto;"></div>
+                    <div style="width: 150px; margin: 0 auto; text-align: center; font-family: 'BIZUDMincho'; font-size: 24px;">"gold coin"</div>`;
+                menuButtonPopup.textContent = "equip n return";
+            } else {
+                console.log('Showing subsequent completion popup');
+                // Subsequent completions
+                moveCountMessage.innerHTML = `You won and it took you ${moveCount} moves.<br>
+                    your time was ${elapsedTime}.<br>..loser<br><br>
+                    you won all levels n all you got was:<br>
+                    the gold coin<br>
+                    it should be in your inventory`;
+                menuButtonPopup.textContent = "return";
+            }
+        } else {
+            moveCountMessage.innerHTML = `You won and it took you ${moveCount} moves.<br>
+                your time was ${elapsedTime}.<br>..loser`;
+        }
 
         if (currentLevel === 8) {
             // Check Level 8 progress and unlock achievement
@@ -2775,21 +2807,17 @@ function checkWin(bypass = false) {
             }
         }
 
-        // Display the win popup
-        winPopup.style.display = "block";
-        const moveCountMessage = document.getElementById("moveCountMessage");
-        moveCountMessage.innerHTML = `You won and it took you ${moveCount} moves.<br>
-            your time was ${elapsedTime}.<br>..loser`;
-
         const nextLevelButton = document.getElementById("nextLevelButton");
-        const menuButtonPopup = document.getElementById("menuButtonPopup");
+        const restartButton = document.querySelector("#winPopup button[onclick='restartGame()']");
 
         if (currentLevel < 9) {
             nextLevelButton.style.display = "block";
             menuButtonPopup.style.display = "none";
+            restartButton.style.display = "block";
         } else {
             nextLevelButton.style.display = "none";
             menuButtonPopup.style.display = "block";
+            restartButton.style.display = "none";
         }
         updateLevelCompletionTime();
     }
@@ -2847,6 +2875,10 @@ function initializeLevel5Gap() {
 
 function preStartGame(level) {
     currentLevel = level; // Set current level
+    console.log('Starting level:', level);
+    if (level === 9) {
+        console.log('Level 9 - hasGoldCoin state:', localStorage.getItem('hasGoldCoin'));
+    }
     showLevelAnnouncement(level);
     // Reset game state
     moveCount = 0;
@@ -6407,4 +6439,35 @@ document.getElementById('shopkeepOkButton').addEventListener('click', function()
     if (this.disabled) return; // Extra safety check
     currentMessageIndex = (currentMessageIndex + 1) % shopkeepMessages.length;
     typeShopkeepText(shopkeepMessages[currentMessageIndex]);
+});
+
+// Add event listener for the level 9 menu button
+document.getElementById('menuButtonPopup').addEventListener('click', function() {
+    // Hide the win popup
+    document.getElementById('winPopup').style.display = 'none';
+    // Show level selector
+    showLevelSelector();
+    // Show the gold coin notification and overlay only if it's the first completion
+    if (localStorage.getItem('hasGoldCoin') !== 'true') {
+        document.getElementById('darkOverlay').style.display = 'block';
+        document.getElementById('goldCoinNotification').style.display = 'block';
+        // Disable all buttons in the level selector
+        const buttons = document.querySelectorAll('#levelSelector button');
+        buttons.forEach(button => {
+            button.style.pointerEvents = 'none';
+        });
+    }
+});
+
+// Add event listener for the notification close button
+document.querySelector('#goldCoinNotification button').addEventListener('click', function() {
+    // Hide overlay and notification
+    document.getElementById('darkOverlay').style.display = 'none';
+    document.getElementById('goldCoinNotification').style.display = 'none';
+    // Re-enable level selector buttons
+    document.querySelectorAll('#levelSelector button, #levelSelector img').forEach(el => {
+        el.style.pointerEvents = 'auto';
+    });
+    localStorage.setItem('hasGoldCoin', 'true');
+    console.log('Set hasGoldCoin to true after notification closed');
 });
