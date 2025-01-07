@@ -6461,13 +6461,37 @@ document.getElementById('menuButtonPopup').addEventListener('click', function() 
 
 // Add event listener for the notification close button
 document.querySelector('#goldCoinNotification button').addEventListener('click', function() {
-    // Hide overlay and notification
-    document.getElementById('darkOverlay').style.display = 'none';
     document.getElementById('goldCoinNotification').style.display = 'none';
+    document.getElementById('darkOverlay').style.display = 'none';
     // Re-enable level selector buttons
     document.querySelectorAll('#levelSelector button, #levelSelector img').forEach(el => {
         el.style.pointerEvents = 'auto';
     });
     localStorage.setItem('hasGoldCoin', 'true');
+    updateInventoryDisplay();
     console.log('Set hasGoldCoin to true after notification closed');
+});
+
+// Add this function to handle inventory updates
+function updateInventoryDisplay() {
+    const emptyText = document.getElementById('emptyInventoryText');
+    const goldCoinItem = document.getElementById('goldCoinItem');
+    const hasGoldCoin = localStorage.getItem('hasGoldCoin') === 'true';
+
+    if (hasGoldCoin) {
+        emptyText.style.display = 'none';
+        goldCoinItem.style.display = 'block';
+    } else {
+        emptyText.style.display = 'block';
+        goldCoinItem.style.display = 'none';
+    }
+}
+
+// Add event listener for inventory tab click
+document.getElementById('inventoryText').addEventListener('click', function() {
+    document.getElementById('shopContent').style.display = 'none';
+    document.getElementById('inventoryContent').style.display = 'block';
+    document.querySelector('#shopText .indicator').style.display = 'none';
+    document.querySelector('#inventoryText .indicator').style.display = 'inline';
+    updateInventoryDisplay();
 });
