@@ -5934,3 +5934,36 @@ document.addEventListener("DOMContentLoaded", () => {
     shadowTrailCanvas.height = mazeCanvas.height;
     shadowTrailCtx.fillStyle = "#222222";
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+    // ... existing code ...
+
+    // Shop item detail view handlers
+    const miniaturizerItem = document.getElementById("miniaturizerItem");
+    const miniaturizerTitle = miniaturizerItem.querySelector("div:last-child");
+    const shopDetailWindow = document.getElementById("shopDetailWindow");
+    const closeDetailButton = document.getElementById("closeDetailButton");
+
+    miniaturizerItem.addEventListener("click", () => {
+        shopDetailWindow.style.display = "block";
+        miniaturizerTitle.style.textDecoration = "underline";
+    });
+
+    closeDetailButton.addEventListener("click", () => {
+        shopDetailWindow.style.display = "none";
+        miniaturizerTitle.style.textDecoration = "none";
+    });
+
+    // Add hover effect for close button
+    closeDetailButton.addEventListener("mouseover", () => {
+        closeDetailButton.style.backgroundColor = "#111111";
+        closeDetailButton.style.color = "#D1D1D1";
+    });
+
+    closeDetailButton.addEventListener("mouseout", () => {
+        closeDetailButton.style.backgroundColor = "#D1D1D1";
+        closeDetailButton.style.color = "#111111";
+    });
+    
+    // ... rest of the existing code ...
+});
