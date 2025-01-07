@@ -308,54 +308,72 @@ function updateAchievementUIAnimated() {
   const soulProgressPercentage = document.querySelector(".progressPercentage.theSoul");
   const soulAchievementStatus = document.querySelector(".achievementStatus.theSoul");
 
+  const bodyProgressFill = document.querySelector(".progressFill.theBody");
+  const bodyProgressPercentage = document.querySelector(".progressPercentage.theBody");
+  const bodyAchievementStatus = document.querySelector(".achievementStatus.theBody");
+
   // Reset all progress bars to 0
   if (brainProgressFill) brainProgressFill.style.width = '0%';
   if (tailProgressFill) tailProgressFill.style.width = '0%';
   if (soulProgressFill) soulProgressFill.style.width = '0%';
+  if (bodyProgressFill) bodyProgressFill.style.width = '0%';
+
   if (brainProgressPercentage) brainProgressPercentage.textContent = '0%';
   if (tailProgressPercentage) tailProgressPercentage.textContent = '0%';
   if (soulProgressPercentage) soulProgressPercentage.textContent = '0%';
+  if (bodyProgressPercentage) bodyProgressPercentage.textContent = '0%';
 
-  // Animate Brain progress
-  if (brainProgressFill && achievementProgress.theBrain) {
-    animateProgressUpdate(
-      achievementProgress.theBrain.progress,
-      (progress) => {
-        brainProgressFill.style.width = `${progress}%`;
-        brainProgressPercentage.textContent = `${progress}%`;
-      },
-      () => {
-          brainAchievementStatus.textContent = achievementProgress.theBrain.status;
-      }
-    );
+  // Update each achievement's progress
+  if (achievementProgress.theBrain) {
+    const progress = achievementProgress.theBrain.progress;
+    if (brainProgressFill) {
+      animateProgressUpdate(progress, (value) => {
+        brainProgressFill.style.width = `${value}%`;
+        brainProgressPercentage.textContent = `${Math.round(value)}%`;
+      });
+    }
+    if (brainAchievementStatus) {
+      brainAchievementStatus.textContent = achievementProgress.theBrain.status;
+    }
   }
 
-  // Animate Tail progress
-  if (tailProgressFill && achievementProgress.theTail) {
-    animateProgressUpdate(
-      achievementProgress.theTail.progress,
-      (progress) => {
-        tailProgressFill.style.width = `${progress}%`;
-        tailProgressPercentage.textContent = `${progress}%`;
-      },
-      () => {
-          tailAchievementStatus.textContent = achievementProgress.theTail.status;
-      }
-    );
+  if (achievementProgress.theTail) {
+    const progress = achievementProgress.theTail.progress;
+    if (tailProgressFill) {
+      animateProgressUpdate(progress, (value) => {
+        tailProgressFill.style.width = `${value}%`;
+        tailProgressPercentage.textContent = `${Math.round(value)}%`;
+      });
+    }
+    if (tailAchievementStatus) {
+      tailAchievementStatus.textContent = achievementProgress.theTail.status;
+    }
   }
 
-  // Animate Soul progress
-  if (soulProgressFill && achievementProgress.theSoul) {
-    animateProgressUpdate(
-      achievementProgress.theSoul.progress,
-      (progress) => {
-        soulProgressFill.style.width = `${progress}%`;
-        soulProgressPercentage.textContent = `${progress}%`;
-      },
-      () => {
-        soulAchievementStatus.textContent = achievementProgress.theSoul.status;
-      }
-    );
+  if (achievementProgress.theSoul) {
+    const progress = achievementProgress.theSoul.progress;
+    if (soulProgressFill) {
+      animateProgressUpdate(progress, (value) => {
+        soulProgressFill.style.width = `${value}%`;
+        soulProgressPercentage.textContent = `${Math.round(value)}%`;
+      });
+    }
+    if (soulAchievementStatus) {
+      soulAchievementStatus.textContent = achievementProgress.theSoul.status;
+    }
+  }
+
+  if (achievementProgress.theBody) {
+    const progress = achievementProgress.theBody.progress;
+    if (bodyProgressFill) {
+      animateProgressUpdate(progress, (value) => {
+        bodyProgressFill.style.width = `${value}%`;
+        bodyProgressPercentage.textContent = `${Math.round(value)}%`;
+      });
+    }
+    if (bodyAchievementStatus) {
+      bodyAchievementStatus.textContent = achievementProgress.theBody.status;
+    }
   }
 }
 
@@ -404,29 +422,24 @@ let achievementProgress = {
   theSoul: {
     progress: 0,
     status: "Locked"
+  },
+  theBody: {
+    progress: 0,
+    status: "Locked"
   }
 };
+
+function saveAchievementProgress() {
+  localStorage.setItem('achievementProgress', JSON.stringify(achievementProgress));
+  updateAchievementUIAnimated();
+}
 
 function loadAchievementProgress() {
   const savedProgress = localStorage.getItem('achievementProgress');
   if (savedProgress) {
-    const parsed = JSON.parse(savedProgress);
-    achievementProgress = {
-      theBrain: {
-        progress: parsed.theBrain?.progress || 0,
-        status: parsed.theBrain?.status || "Locked"
-      },
-      theTail: {
-        progress: parsed.theTail?.progress || 0,
-        status: parsed.theTail?.status || "Locked"
-      },
-      theSoul: {
-        progress: parsed.theSoul?.progress || 0,
-        status: parsed.theSoul?.status || "Locked"
-      }
-    };
+    achievementProgress = JSON.parse(savedProgress);
   }
-  console.log("Loaded achievement progress:", achievementProgress);
+  updateAchievementUIAnimated();
 }
 
 // Update progress bars and status
@@ -465,12 +478,6 @@ function updateAchievementDisplay() {
     }
 }
 
-// Save achievement progress
-function saveAchievementProgress() {
-    saveData('achievementProgress', achievementProgress);
-    updateAchievementDisplay();
-}
-
 function updateAchievementUIAnimated() {
   console.log("Updating UI with:", achievementProgress);
 
@@ -486,54 +493,72 @@ function updateAchievementUIAnimated() {
   const soulProgressPercentage = document.querySelector(".progressPercentage.theSoul");
   const soulAchievementStatus = document.querySelector(".achievementStatus.theSoul");
 
+  const bodyProgressFill = document.querySelector(".progressFill.theBody");
+  const bodyProgressPercentage = document.querySelector(".progressPercentage.theBody");
+  const bodyAchievementStatus = document.querySelector(".achievementStatus.theBody");
+
   // Reset all progress bars to 0
   if (brainProgressFill) brainProgressFill.style.width = '0%';
   if (tailProgressFill) tailProgressFill.style.width = '0%';
   if (soulProgressFill) soulProgressFill.style.width = '0%';
+  if (bodyProgressFill) bodyProgressFill.style.width = '0%';
+
   if (brainProgressPercentage) brainProgressPercentage.textContent = '0%';
   if (tailProgressPercentage) tailProgressPercentage.textContent = '0%';
   if (soulProgressPercentage) soulProgressPercentage.textContent = '0%';
+  if (bodyProgressPercentage) bodyProgressPercentage.textContent = '0%';
 
-  // Animate Brain progress
-  if (brainProgressFill && achievementProgress.theBrain) {
-    animateProgressUpdate(
-      achievementProgress.theBrain.progress,
-      (progress) => {
-        brainProgressFill.style.width = `${progress}%`;
-        brainProgressPercentage.textContent = `${progress}%`;
-      },
-      () => {
-    brainAchievementStatus.textContent = achievementProgress.theBrain.status;
-      }
-    );
+  // Update each achievement's progress
+  if (achievementProgress.theBrain) {
+    const progress = achievementProgress.theBrain.progress;
+    if (brainProgressFill) {
+      animateProgressUpdate(progress, (value) => {
+        brainProgressFill.style.width = `${value}%`;
+        brainProgressPercentage.textContent = `${Math.round(value)}%`;
+      });
+    }
+    if (brainAchievementStatus) {
+      brainAchievementStatus.textContent = achievementProgress.theBrain.status;
+    }
   }
 
-  // Animate Tail progress
-  if (tailProgressFill && achievementProgress.theTail) {
-    animateProgressUpdate(
-      achievementProgress.theTail.progress,
-      (progress) => {
-        tailProgressFill.style.width = `${progress}%`;
-        tailProgressPercentage.textContent = `${progress}%`;
-      },
-      () => {
-    tailAchievementStatus.textContent = achievementProgress.theTail.status;
-      }
-    );
+  if (achievementProgress.theTail) {
+    const progress = achievementProgress.theTail.progress;
+    if (tailProgressFill) {
+      animateProgressUpdate(progress, (value) => {
+        tailProgressFill.style.width = `${value}%`;
+        tailProgressPercentage.textContent = `${Math.round(value)}%`;
+      });
+    }
+    if (tailAchievementStatus) {
+      tailAchievementStatus.textContent = achievementProgress.theTail.status;
+    }
   }
 
-  // Animate Soul progress
-  if (soulProgressFill && achievementProgress.theSoul) {
-    animateProgressUpdate(
-      achievementProgress.theSoul.progress,
-      (progress) => {
-        soulProgressFill.style.width = `${progress}%`;
-        soulProgressPercentage.textContent = `${progress}%`;
-      },
-      () => {
-        soulAchievementStatus.textContent = achievementProgress.theSoul.status;
-      }
-    );
+  if (achievementProgress.theSoul) {
+    const progress = achievementProgress.theSoul.progress;
+    if (soulProgressFill) {
+      animateProgressUpdate(progress, (value) => {
+        soulProgressFill.style.width = `${value}%`;
+        soulProgressPercentage.textContent = `${Math.round(value)}%`;
+      });
+    }
+    if (soulAchievementStatus) {
+      soulAchievementStatus.textContent = achievementProgress.theSoul.status;
+    }
+  }
+
+  if (achievementProgress.theBody) {
+    const progress = achievementProgress.theBody.progress;
+    if (bodyProgressFill) {
+      animateProgressUpdate(progress, (value) => {
+        bodyProgressFill.style.width = `${value}%`;
+        bodyProgressPercentage.textContent = `${Math.round(value)}%`;
+      });
+    }
+    if (bodyAchievementStatus) {
+      bodyAchievementStatus.textContent = achievementProgress.theBody.status;
+    }
   }
 }
 
@@ -1310,7 +1335,8 @@ function resetAchievementsAndUnlockables() {
     achievementProgress = {
         theBrain: { progress: 0, status: "Locked" },
         theTail: { progress: 0, status: "Locked" },
-        theSoul: { progress: 0, status: "Locked" }
+        theSoul: { progress: 0, status: "Locked" },
+        theBody: { progress: 0, status: "Locked" }
     };
     saveAchievementProgress();
 
@@ -1426,18 +1452,6 @@ function loadLevelCompletionTimes() {
         // Use Object.assign to update the existing object instead of reassignment
         Object.assign(levelCompletionTimes, times);
         updateLevelCompletionTime();
-    }
-}
-
-function saveAchievementProgress() {
-    saveData('achievementProgress', achievementProgress);
-}
-
-function loadAchievementProgress() {
-    const progress = loadData('achievementProgress');
-    if (progress) {
-        achievementProgress = progress;
-        updateAchievementDisplay();
     }
 }
 
@@ -2753,6 +2767,13 @@ function checkWin(bypass = false) {
                     <div style="width: 100px; height: 100px; background-color: #111111; margin: 20px auto;"></div>
                     <div style="width: 150px; margin: 0 auto; text-align: center; font-family: 'BIZUDMincho'; font-size: 24px;">"gold coin"</div>`;
                 menuButtonPopup.textContent = "equip n return";
+                
+                // Update The Body achievement when completing level 9 for the first time
+                achievementProgress.theBody = {
+                    progress: 100,
+                    status: "Unlocked"
+                };
+                saveAchievementProgress();
             } else {
                 console.log('Showing subsequent completion popup');
                 // Subsequent completions
@@ -6468,8 +6489,24 @@ document.querySelector('#goldCoinNotification button').addEventListener('click',
         el.style.pointerEvents = 'auto';
     });
     localStorage.setItem('hasGoldCoin', 'true');
+    
+    // Update The Body achievement
+    achievementProgress.theBody = {
+        progress: 100,
+        status: "Unlocked"
+    };
+    saveAchievementProgress();
+    
+    // Update achievement UI
+    const progressFill = document.querySelector(".progressFill.theBody");
+    const progressPercentage = document.querySelector(".progressPercentage.theBody");
+    const achievementStatus = document.querySelector(".achievementStatus.theBody");
+    
+    if (progressFill) progressFill.style.width = "100%";
+    if (progressPercentage) progressPercentage.textContent = "100%";
+    if (achievementStatus) achievementStatus.innerHTML = "Unlocked<br>Body Palette";
+    
     updateInventoryDisplay();
-    console.log('Set hasGoldCoin to true after notification closed');
 });
 
 // Add this function to handle inventory updates
