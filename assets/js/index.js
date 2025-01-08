@@ -3240,56 +3240,62 @@ function animateTrailMerge() {
 // Modify the startMoving function to handle trail animation
 function startMoving(onMoveComplete) {
   if (isMoving) return;
-  
-  // Clear any existing trail animation timeout
-  if (trailTimeout) {
-    clearTimeout(trailTimeout);
-    trailTimeout = null;
-  }
-
   isMoving = true;
-  const speed = 2;
-  const blockSize = 20; // Fixed block size
-  let dx = 0, dy = 0;
-  
-  // Start soul animation if soul is equipped
-  const isSoulEquipped = localStorage.getItem("isSoulAppearanceEquipped") === "true";
-  if (isSoulEquipped) {
-    clearInterval(soulAnimationInterval);
-    soulAnimationInterval = setInterval(() => {
-      currentSoulFrame = currentSoulFrame === 1 ? 2 : 1;
-      drawPlayer();
-    }, 250);
-  }
-  
-  switch (currentDirection) {
-    case "ArrowUp": dy = -speed; break;
-    case "ArrowDown": dy = speed; break;
-    case "ArrowLeft": dx = -speed; break;
-    case "ArrowRight": dx = speed; break;
-  }
 
-  const isTailEquipped = localStorage.getItem("isTailEffectEquipped") === "true";
-  const startX = player.x;
-  const startY = player.y;
-  let lastTrailX = startX;
-  let lastTrailY = startY;
+    const speed = player.size === 10 ? 1 : 2; // Slower speed for small player
+    let dx = 0, dy = 0;
 
-  // Add initial trail block at player's starting position if tail is equipped and soul is not
-  if (isTailEquipped && !isSoulEquipped) {
-    trailBlocks.push({ x: player.x, y: player.y });
-    trailCtx.fillStyle = player.color;
-    trailCtx.fillRect(player.x, player.y, player.size, player.size);
-  }
+    // Define equipment states
+    const isTailEquipped = localStorage.getItem("isTailEffectEquipped") === "true";
+    const isSoulEquipped = localStorage.getItem("isSoulAppearanceEquipped") === "true";
+    let lastTrailX = player.x;
+    let lastTrailY = player.y;
+
+    // Start soul animation if equipped
+    if (isSoulEquipped) {
+        clearInterval(soulAnimationInterval);
+        soulAnimationInterval = setInterval(() => {
+            currentSoulFrame = currentSoulFrame === 1 ? 2 : 1;
+            drawPlayer();
+        }, 250);
+    }
+
+    // Add initial trail block if tail is equipped and soul is not
+    if (isTailEquipped && !isSoulEquipped) {
+        trailBlocks.push({ x: player.x, y: player.y });
+        trailCtx.fillStyle = player.color;
+        trailCtx.fillRect(player.x, player.y, player.size, player.size);
+    }
+
+    // Determine movement direction
+    switch (currentDirection) {
+        case "ArrowUp": dy = -speed; break;
+        case "ArrowDown": dy = speed; break;
+        case "ArrowLeft": dx = -speed; break;
+        case "ArrowRight": dx = speed; break;
+    }
 
   const doTheMove = () => {
     const newX = player.x + dx;
     const newY = player.y + dy;
 
     if (isCollision(newX, newY)) {
-      // Snap to grid
-      player.x = Math.round(player.x / blockSize) * blockSize;
-      player.y = Math.round(player.y / blockSize) * blockSize;
+            // Align player to the wall based on movement direction
+        switch (currentDirection) {
+            case "ArrowRight":
+                    player.x = Math.floor((player.x + player.size) / scale) * scale - player.size;
+                break;
+            case "ArrowLeft":
+                    player.x = Math.ceil(player.x / scale) * scale;
+                break;
+            case "ArrowDown":
+                    player.y = Math.floor((player.y + player.size) / scale) * scale - player.size;
+                break;
+            case "ArrowUp":
+                    player.y = Math.ceil(player.y / scale) * scale;
+                break;
+            }
+
       isMoving = false;
 
       // Stop soul animation when movement stops
@@ -3301,7 +3307,6 @@ function startMoving(onMoveComplete) {
       // Add final trail block at the last position
       if (isTailEquipped) {
         trailBlocks.push({ x: lastTrailX, y: lastTrailY });
-        // Clear trail canvas and redraw all blocks
         trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
         trailBlocks.forEach(block => {
           if (!isSoulEquipped || (block.x !== player.x || block.y !== player.y)) {
@@ -3323,37 +3328,21 @@ function startMoving(onMoveComplete) {
       return;
     }
 
-    // Update player position
+        // If no collision, continue moving
     player.x = newX;
     player.y = newY;
 
-    // Add trail block at current position if tail is equipped
-    if (isTailEquipped && (!isSoulEquipped || (Math.abs(lastTrailX - player.x) >= blockSize || Math.abs(lastTrailY - player.y) >= blockSize))) {
-      trailBlocks.push({ x: lastTrailX, y: lastTrailY });
-      
-      // Clear trail canvas and redraw all blocks
-      trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
-      trailBlocks.forEach(block => {
-        if (!isSoulEquipped || (block.x !== player.x || block.y !== player.y)) {
-          trailCtx.fillStyle = player.color;
-          trailCtx.fillRect(block.x, block.y, player.size, player.size);
-        }
-      });
-      
-      // Update last trail position
+        // Update trail position for next block
+        if (isTailEquipped) {
       lastTrailX = player.x;
       lastTrailY = player.y;
     }
 
     drawPlayer();
-    checkCheckpointCollision();
-    if (currentLevel === 7) checkLevel7BlocksCollision(player);
-    checkWin();
-
     requestAnimationFrame(doTheMove);
   };
 
-  doTheMove();
+    requestAnimationFrame(doTheMove);
 }
 
 // Modify restartGame to clear trail state
@@ -3716,56 +3705,113 @@ function isCollision(newX, newY, pPlayer) {
 }
 
 function checkStandardCollisions(newX, newY, cPlayer) {
-    const mazeX = Math.floor(newX / scale);
-    const mazeY = Math.floor(newY / scale);
-    
-    // Use the current visual size of the player for collision detection
-    const currentSize = cPlayer.visualSize || cPlayer.size;
+    const currentSize = cPlayer.size;
 
-    // Check all sides for walls
-    const hasWallRight = checkWallAtPoint(Math.floor((newX + currentSize) / scale), mazeY);
-    const hasWallBottom = checkWallAtPoint(mazeX, Math.floor((newY + currentSize) / scale));
-    const hasWallLeft = checkWallAtPoint(Math.floor(newX / scale), mazeY);
-    const hasWallTop = checkWallAtPoint(mazeX, Math.floor(newY / scale));
+    // First check if the new position would be within the canvas bounds
+    if (newX < 0 || newY < 0 || 
+        newX + currentSize > canvas.width || 
+        newY + currentSize > canvas.height) {
+        return true;
+    }
 
-    // Store wall positions for use when growing/shrinking
-    cPlayer.walls = {
-        right: hasWallRight,
-        bottom: hasWallBottom,
-        left: hasWallLeft,
-        top: hasWallTop
-    };
+    // For 10x10 player, allow partial movements
+    if (currentSize === 10) {
+        const dx = newX - cPlayer.x;
+        const dy = newY - cPlayer.y;
 
-    // Calculate collision points based on actual current size
-    const collisionPoints = [
-        { x: mazeX, y: mazeY }, // Top-left
-        { x: Math.floor((newX + currentSize - 1) / scale), y: mazeY }, // Top-right
-        { x: mazeX, y: Math.floor((newY + currentSize - 1) / scale) }, // Bottom-left
-        { x: Math.floor((newX + currentSize - 1) / scale), y: Math.floor((newY + currentSize - 1) / scale) } // Bottom-right
-    ];
+        // Calculate how far we can move in each direction
+        if (dx !== 0) {
+            const direction = dx > 0 ? 1 : -1;
+            let maxMove = 0;
+            
+            // Try to move one pixel at a time until we hit a wall
+            for (let i = 1; i <= Math.abs(dx); i++) {
+                const testX = cPlayer.x + (i * direction);
+                let canMove = true;
 
-    const scaledWidth = canvas.width / scale;
+                // Check if this position would cause a collision
+                for (let y = Math.floor(cPlayer.y); y < Math.floor(cPlayer.y + currentSize); y++) {
+                    const gridX = Math.floor((testX + (direction > 0 ? currentSize - 1 : 0)) / scale);
+                    const gridY = Math.floor(y / scale);
+                    if (checkWallAtPoint(gridX, gridY)) {
+                        canMove = false;
+                        break;
+                    }
+                }
 
-    for (const point of collisionPoints) {
-        const pointX = point.x * scale;
-        const pointY = point.y * scale;
-        const inGap = gaps.length > 0 && gaps.some(
-            (gap) =>
-                gap.level === currentLevel &&
-                pointX >= gap.x &&
-                pointX <= gap.x + gap.width &&
-                pointY >= gap.y &&
-                pointY <= gap.y + gap.height
-        );
+                if (!canMove) break;
+                maxMove = i;
+            }
 
-        if (!inGap) {
-            const index = (point.y * scaledWidth + point.x) * 4 + 3;
-            if (mazeData[index] !== 0) {
-                console.log(`Collision detected at (${point.x}, ${point.y})`);
+            // If we can move at least one pixel, update the position
+            if (maxMove > 0) {
+                cPlayer.x += maxMove * direction;
+                return false;
+            }
+        }
+
+        if (dy !== 0) {
+            const direction = dy > 0 ? 1 : -1;
+            let maxMove = 0;
+            
+            // Try to move one pixel at a time until we hit a wall
+            for (let i = 1; i <= Math.abs(dy); i++) {
+                const testY = cPlayer.y + (i * direction);
+                let canMove = true;
+
+                // Check if this position would cause a collision
+                for (let x = Math.floor(cPlayer.x); x < Math.floor(cPlayer.x + currentSize); x++) {
+                    const gridX = Math.floor(x / scale);
+                    const gridY = Math.floor((testY + (direction > 0 ? currentSize - 1 : 0)) / scale);
+                    if (checkWallAtPoint(gridX, gridY)) {
+                        canMove = false;
+                        break;
+                    }
+                }
+
+                if (!canMove) break;
+                maxMove = i;
+            }
+
+            // If we can move at least one pixel, update the position
+            if (maxMove > 0) {
+                cPlayer.y += maxMove * direction;
+                return false;
+            }
+        }
+
+        return true; // Return true if we couldn't move at all
+    } else {
+        // For 20x20 player, check corners as before
+        const corners = [
+            { x: newX, y: newY }, // Top-left
+            { x: newX + currentSize - 1, y: newY }, // Top-right
+            { x: newX, y: newY + currentSize - 1 }, // Bottom-left
+            { x: newX + currentSize - 1, y: newY + currentSize - 1 } // Bottom-right
+        ];
+
+        for (const corner of corners) {
+            const gridX = Math.floor(corner.x / scale);
+            const gridY = Math.floor(corner.y / scale);
+            if (checkWallAtPoint(gridX, gridY)) {
                 return true;
             }
         }
     }
+
+    // Store wall information for size changes
+    const rightGridPos = Math.floor((newX + currentSize) / scale);
+    const bottomGridPos = Math.floor((newY + currentSize) / scale);
+    const leftGridPos = Math.floor(newX / scale);
+    const topGridPos = Math.floor(newY / scale);
+
+    cPlayer.walls = {
+        right: checkWallAtPoint(rightGridPos + 1, Math.floor(newY / scale)),
+        bottom: checkWallAtPoint(Math.floor(newX / scale), bottomGridPos + 1),
+        left: checkWallAtPoint(leftGridPos - 1, Math.floor(newY / scale)),
+        top: checkWallAtPoint(Math.floor(newX / scale), topGridPos - 1)
+    };
+
     return false;
 }
 
@@ -6061,8 +6107,8 @@ recolorMaze = function() {
     ctx.clearRect(
         player.x,
         player.y,
-        20,  // Use fixed size for clearing
-        20
+        player.size,
+        player.size
     );
     
     // Draw player with current size, always aligned to top left
@@ -6083,10 +6129,8 @@ document.addEventListener('keydown', (event) => {
 
         isBarAnimating = true;
         const originalHeight = 296; // Original height of inner bar
-        const originalSize = player.size; // Store original player size
-
-        // Set full opacity at start
-        innerBar.style.opacity = '1';
+        const drainDuration = 4000; // 2 seconds
+        const refillDuration = 3000; // 30 seconds
 
         // Try to shrink player
         if (!updatePlayerSize(10)) {
@@ -6095,8 +6139,7 @@ document.addEventListener('keydown', (event) => {
             return;
         }
 
-        // Drain animation (2 seconds)
-        const drainDuration = 2000;
+        // Drain animation
         const drainStartTime = performance.now();
         
         function drainAnimation(currentTime) {
@@ -6115,39 +6158,30 @@ document.addEventListener('keydown', (event) => {
                 innerBar.style.height = '0px';
                 innerBar.style.opacity = '0.5';
                 
-                // Try to return player to normal size
-                if (!updatePlayerSize(originalSize)) {
-                    // If growing fails, stay small
-                    console.log("Cannot grow - staying small");
+                // Restore player to original size
+                updatePlayerSize(20);
+                
+                // Start refill animation
+                const refillStartTime = performance.now();
+                
+                function refillAnimation(currentTime) {
+                    const elapsed = currentTime - refillStartTime;
+                    const progress = Math.min(elapsed / refillDuration, 1);
+                    
+                    const newHeight = originalHeight * progress;
+                    innerBar.style.height = `${newHeight}px`;
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(refillAnimation);
+                    } else {
+                        // Restore full opacity when fully charged
+                        innerBar.style.opacity = '1';
+                        isBarAnimating = false;
+                    }
                 }
                 
-                // Start refill animation after drain is complete
-                startRefillAnimation();
+                requestAnimationFrame(refillAnimation);
             }
-        }
-
-        function startRefillAnimation() {
-            const refillDuration = 30000; // 30 seconds
-            const refillStartTime = performance.now();
-            
-            function refillAnimation(currentTime) {
-                const elapsed = currentTime - refillStartTime;
-                const progress = Math.min(elapsed / refillDuration, 1);
-                
-                const newHeight = originalHeight * progress;
-                innerBar.style.height = `${newHeight}px`;
-                
-                if (progress < 1) {
-                    barRefillInterval = requestAnimationFrame(refillAnimation);
-                } else {
-                    // Restore full opacity when fully charged
-                    innerBar.style.opacity = '1';
-                    isBarAnimating = false;
-                    barRefillInterval = null;
-                }
-            }
-            
-            barRefillInterval = requestAnimationFrame(refillAnimation);
         }
 
         requestAnimationFrame(drainAnimation);
@@ -6156,39 +6190,164 @@ document.addEventListener('keydown', (event) => {
 
 function updatePlayerSize(newSize) {
     const oldSize = player.size;
-    const sizeDiff = newSize - oldSize;
+    const oldX = player.x;
+    const oldY = player.y;
 
-    // If we have wall information, use it to adjust position
-    if (player.walls) {
-        if (player.walls.right && !player.walls.left) {
-            // If touching right wall but not left, keep right side fixed
-            player.x = player.x + oldSize - newSize;
-        }
-        if (player.walls.bottom && !player.walls.top) {
-            // If touching bottom wall but not top, keep bottom side fixed
-            player.y = player.y + oldSize - newSize;
-        }
-        if (player.walls.right && player.walls.left) {
-            // If touching both right and left walls, center horizontally
-            player.x = player.x + (oldSize - newSize) / 2;
-        }
-        if (player.walls.bottom && player.walls.top) {
-            // If touching both top and bottom walls, center vertically
-            player.y = player.y + (oldSize - newSize) / 2;
+    // Calculate the center point of the player
+    const centerX = oldX + oldSize / 2;
+    const centerY = oldY + oldSize / 2;
+
+    // Calculate new position to maintain center point
+    let newX = centerX - newSize / 2;
+    let newY = centerY - newSize / 2;
+
+    // Temporarily update size for collision check
+    const tempSize = player.size;
+    player.size = newSize;
+
+    // Check if new centered position would cause collision
+    if (isCollision(newX, newY, player)) {
+        // If centered position collides, try to adjust position
+        // Try to maintain current alignment if possible
+        if (!isCollision(oldX, oldY, player)) {
+            newX = oldX;
+            newY = oldY;
+        } else {
+            // Revert changes if no valid position found
+            player.size = tempSize;
+        return false;
         }
     }
 
+    // Apply the changes
+    player.x = newX;
+    player.y = newY;
     player.size = newSize;
     player.visualSize = newSize;
     
-    // After changing size, check if new position would cause collision
-    if (isCollision(player.x, player.y, player)) {
-        // If collision, revert the changes
-        player.size = oldSize;
-        player.visualSize = oldSize;
-        return false;
-    }
-    
     recolorMaze();
     return true;
+}
+
+// Add this variable at the top of the file with other globals
+let lastValidBigPosition = null;
+
+function updatePlayerSize(newSize) {
+    const oldSize = player.size;
+    const oldX = player.x;
+    const oldY = player.y;
+
+    // If we're going from small to big (10 to 20)
+    if (oldSize === 10 && newSize === 20) {
+        // Check if we can grow at current position
+        const canGrowHere = canGrowAtPosition(player.x, player.y, newSize);
+        
+        if (!canGrowHere && lastValidBigPosition) {
+            // Only teleport back if we really can't grow here
+            const canGrowAnywhere = false;
+            // Try slightly adjusted positions
+            for (let offsetX = -5; offsetX <= 5 && !canGrowAnywhere; offsetX++) {
+                for (let offsetY = -5; offsetY <= 5; offsetY++) {
+                    if (canGrowAtPosition(player.x + offsetX, player.y + offsetY, newSize)) {
+                        player.x += offsetX;
+                        player.y += offsetY;
+                        player.size = newSize;
+                        player.visualSize = newSize;
+                        // Update collision state for new size and position
+                        checkStandardCollisions(player.x, player.y, player);
+                        recolorMaze();
+                        return true;
+                    }
+                }
+            }
+            // If we really can't grow nearby, teleport back
+            player.x = lastValidBigPosition.x;
+            player.y = lastValidBigPosition.y;
+            player.size = newSize;
+        } else if (!canGrowHere) {
+            // If we can't grow and don't have a last position, stay small
+            return false;
+        } else {
+            // We can grow here
+            player.size = newSize;
+        }
+    } else if (oldSize === 20 && newSize === 10) {
+        // Save current position as last valid big position before shrinking
+        lastValidBigPosition = { x: player.x, y: player.y };
+        
+        // Center the small player in the space of the big player
+        player.x = oldX + (oldSize - newSize) / 2;
+        player.y = oldY + (oldSize - newSize) / 2;
+        player.size = newSize;
+    }
+
+    player.visualSize = player.size;
+    // Update collision state for new size
+    checkStandardCollisions(player.x, player.y, player);
+    recolorMaze();
+    return true;
+}
+
+function canGrowAtPosition(x, y, newSize) {
+    // First try the exact position
+    const startGridX = Math.floor(x / scale);
+    const endGridX = Math.floor((x + newSize - 1) / scale);
+    const startGridY = Math.floor(y / scale);
+    const endGridY = Math.floor((y + newSize - 1) / scale);
+
+    // Try exact position first
+    let hasWall = false;
+    for (let gridX = startGridX; gridX <= endGridX; gridX++) {
+        for (let gridY = startGridY; gridY <= endGridY; gridY++) {
+            if (checkWallAtPoint(gridX, gridY)) {
+                hasWall = true;
+                break;
+            }
+        }
+        if (hasWall) break;
+    }
+    
+    if (!hasWall) return true;
+
+    // If exact position doesn't work, try aligning with nearby walls
+    for (let offsetX = -10; offsetX <= 10; offsetX++) {
+        for (let offsetY = -10; offsetY <= 10; offsetY++) {
+            const testX = x + offsetX;
+            const testY = y + offsetY;
+            
+            // Skip if this would put us out of bounds
+            if (testX < 0 || testY < 0 || 
+                testX + newSize > canvas.width || 
+                testY + newSize > canvas.height) {
+                continue;
+            }
+
+            // Check if this position aligns with grid
+            if (testX % scale === 0 || testY % scale === 0) {
+                let validPosition = true;
+                const newStartGridX = Math.floor(testX / scale);
+                const newEndGridX = Math.floor((testX + newSize - 1) / scale);
+                const newStartGridY = Math.floor(testY / scale);
+                const newEndGridY = Math.floor((testY + newSize - 1) / scale);
+
+                for (let gridX = newStartGridX; gridX <= newEndGridX; gridX++) {
+                    for (let gridY = newStartGridY; gridY <= newEndGridY; gridY++) {
+                        if (checkWallAtPoint(gridX, gridY)) {
+                            validPosition = false;
+                            break;
+                        }
+                    }
+                    if (!validPosition) break;
+                }
+
+                if (validPosition) {
+                    // Update the player's position since we found a valid spot
+                    player.x = testX;
+                    player.y = testY;
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
 }
