@@ -543,8 +543,8 @@ function drawCheckpoints() {
       // Solid checkpoint
             ctx.fillStyle = isEquipped ? "#8A314E" : "#222222";
     ctx.fillRect(checkpoint.x, checkpoint.y, checkpoint.size, checkpoint.size);
-      } else if (!checkpoint.touched) {
-        // Non-solid, untouched checkpoint
+      } else {
+        // Draw checkpoint in normal color whether touched or not
             ctx.fillStyle = isEquipped ? "#F96D99" : "#999999";
     ctx.fillRect(checkpoint.x, checkpoint.y, checkpoint.size, checkpoint.size);
       }
@@ -598,12 +598,13 @@ function checkCheckpointCollision() {
             
             shouldRedraw = true;
         } else if (currentLevel === 9) {
-            // For level 9, handle the checkpoint becoming solid
+            // For level 9, handle checkpoint becoming solid
             if (isPlayerOnCheckpoint && !checkpoint.touched) {
+                // First touch - mark as touched
                 checkpoint.touched = true;
                 shouldRedraw = true;
             } else if (checkpoint.touched && !checkpoint.solid && !isPlayerOnCheckpoint) {
-                // If player has touched the checkpoint and is no longer on it, make it solid
+                // Player has moved away after touching - make it solid
                 checkpoint.solid = true;
                 shouldRedraw = true;
             }
@@ -3095,7 +3096,7 @@ function drawPlayer(cPlayer) {
     // Draw everything except trail blocks first
     recolorMaze();
     drawExit();
-    drawCheckpoints();
+    drawCheckpoints();  // Draw checkpoints before shadow
     if (currentLevel === 7) {
         drawLevel7Blocks(ctx);
     }
@@ -3243,23 +3244,23 @@ function startMoving(onMoveComplete) {
   isMoving = true;
 
     const speed = player.size === 10 ? 1 : 2; // Slower speed for small player
-    let dx = 0, dy = 0;
-
+  let dx = 0, dy = 0;
+  
     // Define equipment states
     const isTailEquipped = localStorage.getItem("isTailEffectEquipped") === "true";
-    const isSoulEquipped = localStorage.getItem("isSoulAppearanceEquipped") === "true";
+  const isSoulEquipped = localStorage.getItem("isSoulAppearanceEquipped") === "true";
     let lastTrailX = player.x;
     let lastTrailY = player.y;
 
     // Start soul animation if equipped
-    if (isSoulEquipped) {
-        clearInterval(soulAnimationInterval);
-        soulAnimationInterval = setInterval(() => {
-            currentSoulFrame = currentSoulFrame === 1 ? 2 : 1;
-            drawPlayer();
-        }, 250);
-    }
-
+  if (isSoulEquipped) {
+    clearInterval(soulAnimationInterval);
+    soulAnimationInterval = setInterval(() => {
+      currentSoulFrame = currentSoulFrame === 1 ? 2 : 1;
+      drawPlayer();
+    }, 250);
+  }
+  
     // Add initial trail block if tail is equipped and soul is not
     if (isTailEquipped && !isSoulEquipped) {
         trailBlocks.push({ x: player.x, y: player.y });
@@ -3268,12 +3269,12 @@ function startMoving(onMoveComplete) {
     }
 
     // Determine movement direction
-    switch (currentDirection) {
-        case "ArrowUp": dy = -speed; break;
-        case "ArrowDown": dy = speed; break;
-        case "ArrowLeft": dx = -speed; break;
-        case "ArrowRight": dx = speed; break;
-    }
+  switch (currentDirection) {
+    case "ArrowUp": dy = -speed; break;
+    case "ArrowDown": dy = speed; break;
+    case "ArrowLeft": dx = -speed; break;
+    case "ArrowRight": dx = speed; break;
+  }
 
   const doTheMove = () => {
     const newX = player.x + dx;
@@ -5971,13 +5972,54 @@ function updateInventoryDisplay() {
     const emptyText = document.getElementById('emptyInventoryText');
     const goldCoinItem = document.getElementById('goldCoinItem');
     const hasGoldCoin = localStorage.getItem('hasGoldCoin') === 'true';
+    const hasMiniaturizer = localStorage.getItem('hasMiniaturizer') === 'true';
 
-    if (hasGoldCoin) {
+    // Create or get miniaturizer inventory item
+    let miniaturizerInventoryItem = document.getElementById('miniaturizerInventoryItem');
+    if (!miniaturizerInventoryItem && hasMiniaturizer) {
+        miniaturizerInventoryItem = document.createElement('div');
+        miniaturizerInventoryItem.id = 'miniaturizerInventoryItem';
+        miniaturizerInventoryItem.style.position = 'absolute';
+        miniaturizerInventoryItem.style.top = '50px';
+        miniaturizerInventoryItem.style.left = '50px';  // Position it next to the gold coin
+
+        const iconDiv = document.createElement('div');
+        iconDiv.style.width = '100px';
+        iconDiv.style.height = '100px';
+        iconDiv.style.backgroundColor = '#D1D1D1';
+        iconDiv.style.margin = '0 auto';
+
+        const textDiv = document.createElement('div');
+        textDiv.style.color = '#D1D1D1';
+        textDiv.style.fontFamily = 'BIZUDMincho';
+        textDiv.style.fontSize = '24px';
+        textDiv.style.marginTop = '10px';
+        textDiv.style.textAlign = 'center';
+        textDiv.style.width = '200px';
+        textDiv.style.marginLeft = '0px';
+        textDiv.textContent = 'the miniaturizer';
+
+        miniaturizerInventoryItem.appendChild(iconDiv);
+        miniaturizerInventoryItem.appendChild(textDiv);
+        document.getElementById('inventoryContent').appendChild(miniaturizerInventoryItem);
+    }
+
+    if (hasGoldCoin || hasMiniaturizer) {
         emptyText.style.display = 'none';
-        goldCoinItem.style.display = 'block';
+        if (goldCoinItem) {
+            goldCoinItem.style.display = hasGoldCoin ? 'block' : 'none';
+        }
+        if (miniaturizerInventoryItem) {
+            miniaturizerInventoryItem.style.display = hasMiniaturizer ? 'block' : 'none';
+        }
     } else {
         emptyText.style.display = 'block';
+        if (goldCoinItem) {
         goldCoinItem.style.display = 'none';
+        }
+        if (miniaturizerInventoryItem) {
+            miniaturizerInventoryItem.style.display = 'none';
+        }
     }
 }
 
@@ -6033,12 +6075,86 @@ document.addEventListener("DOMContentLoaded", () => {
     const miniaturizerTitle = miniaturizerItem.querySelector("div:last-child");
     const shopDetailWindow = document.getElementById("shopDetailWindow");
     const closeDetailButton = document.getElementById("closeDetailButton");
+    let hasTraded = false;
+
+    // Check if miniaturizer was already bought
+    const isMiniaturizerBought = localStorage.getItem('isMiniaturizerBought') === 'true';
+    if (isMiniaturizerBought) {
+        miniaturizerItem.style.display = 'none';
+    }
+
+    function updateMiniaturizerDetails() {
+        const detailsContainer = shopDetailWindow.querySelector('div');
+        const hasGoldCoin = localStorage.getItem('hasGoldCoin') === 'true';
+        
+        // Remove existing trade button or done text if they exist
+        const existingTradeButton = detailsContainer.querySelector('#tradeButton');
+        const existingDoneText = detailsContainer.querySelector('#doneText');
+        if (existingTradeButton) {
+            existingTradeButton.remove();
+        }
+        if (existingDoneText) {
+            existingDoneText.remove();
+        }
+
+        // Add trade button if player has gold coin and hasn't traded
+        if (hasGoldCoin && !hasTraded) {
+            const tradeButton = document.createElement('button');
+            tradeButton.id = 'tradeButton';
+            tradeButton.textContent = 'trade for gold coin';
+            tradeButton.style.backgroundColor = '#D1D1D1';
+            tradeButton.style.color = '#111111';
+            tradeButton.style.border = 'none';
+            tradeButton.style.padding = '5px 15px';
+            tradeButton.style.fontFamily = 'BIZUDMincho';
+            tradeButton.style.fontSize = '18px';
+            tradeButton.style.cursor = 'pointer';
+            tradeButton.style.marginTop = '20px';
+            tradeButton.style.transition = 'all 0.2s ease';
+
+            tradeButton.addEventListener('mouseover', () => {
+                tradeButton.style.backgroundColor = '#111111';
+                tradeButton.style.color = '#D1D1D1';
+            });
+
+            tradeButton.addEventListener('mouseout', () => {
+                tradeButton.style.backgroundColor = '#D1D1D1';
+                tradeButton.style.color = '#111111';
+            });
+
+            tradeButton.addEventListener('click', () => {
+                hasTraded = true;
+                tradeButton.remove();
+                
+                const doneText = document.createElement('div');
+                doneText.id = 'doneText';
+                doneText.textContent = 'done';
+                doneText.style.color = '#D1D1D1';
+                doneText.style.fontFamily = 'BIZUDMincho';
+                doneText.style.fontSize = '18px';
+                doneText.style.marginTop = '20px';
+                detailsContainer.appendChild(doneText);
+            });
+
+            detailsContainer.appendChild(tradeButton);
+        } else if (hasTraded) {
+            const doneText = document.createElement('div');
+            doneText.id = 'doneText';
+            doneText.textContent = 'done';
+            doneText.style.color = '#D1D1D1';
+            doneText.style.fontFamily = 'BIZUDMincho';
+            doneText.style.fontSize = '18px';
+            doneText.style.marginTop = '20px';
+            detailsContainer.appendChild(doneText);
+        }
+    }
 
     miniaturizerItem.addEventListener("click", () => {
         shopDetailWindow.style.display = "block";
         miniaturizerTitle.style.textDecoration = "underline";
         // Interrupt any ongoing typing and start new text
         typeShopkeepText('"you could probably use that to get into tight spaces"');
+        updateMiniaturizerDetails();
     });
 
     closeDetailButton.addEventListener("click", () => {
@@ -6046,6 +6162,20 @@ document.addEventListener("DOMContentLoaded", () => {
         miniaturizerTitle.style.textDecoration = "none";
         // Interrupt any ongoing typing and reset to default text
         typeShopkeepText('"welcome to my shop! take a look around..."');
+        
+        // If trade happened, update inventories
+        if (hasTraded) {
+            // Remove gold coin from inventory
+            localStorage.setItem('hasGoldCoin', 'false');
+            // Add miniaturizer to inventory
+            localStorage.setItem('hasMiniaturizer', 'true');
+            // Mark miniaturizer as bought
+            localStorage.setItem('isMiniaturizerBought', 'true');
+            // Hide miniaturizer from shop
+            miniaturizerItem.style.display = 'none';
+            // Update inventory display
+            updateInventoryDisplay();
+        }
     });
 
     // Add hover effect for close button
@@ -6162,24 +6292,24 @@ document.addEventListener('keydown', (event) => {
                 updatePlayerSize(20);
                 
                 // Start refill animation
-                const refillStartTime = performance.now();
+            const refillStartTime = performance.now();
+            
+            function refillAnimation(currentTime) {
+                const elapsed = currentTime - refillStartTime;
+                const progress = Math.min(elapsed / refillDuration, 1);
                 
-                function refillAnimation(currentTime) {
-                    const elapsed = currentTime - refillStartTime;
-                    const progress = Math.min(elapsed / refillDuration, 1);
-                    
-                    const newHeight = originalHeight * progress;
-                    innerBar.style.height = `${newHeight}px`;
-                    
-                    if (progress < 1) {
+                const newHeight = originalHeight * progress;
+                innerBar.style.height = `${newHeight}px`;
+                
+                if (progress < 1) {
                         requestAnimationFrame(refillAnimation);
-                    } else {
-                        // Restore full opacity when fully charged
-                        innerBar.style.opacity = '1';
-                        isBarAnimating = false;
-                    }
+                } else {
+                    // Restore full opacity when fully charged
+                    innerBar.style.opacity = '1';
+                    isBarAnimating = false;
                 }
-                
+            }
+            
                 requestAnimationFrame(refillAnimation);
             }
         }
@@ -6266,7 +6396,7 @@ function updatePlayerSize(newSize) {
             player.size = newSize;
         } else if (!canGrowHere) {
             // If we can't grow and don't have a last position, stay small
-            return false;
+        return false;
         } else {
             // We can grow here
             player.size = newSize;
