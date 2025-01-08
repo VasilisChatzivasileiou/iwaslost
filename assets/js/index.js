@@ -537,8 +537,8 @@ function initializeCheckpoints() {
             height: 10px;
             left: 305px;
             top: 405px;
-            background-color: #FF0000;
-            opacity: 0.5;
+            background-color: #999999;
+            opacity: 1;
             z-index: 2;
         `;
         
