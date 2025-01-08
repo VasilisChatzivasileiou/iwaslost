@@ -522,55 +522,98 @@ function initializeCheckpoints() {
         const secretCheckpoint = { x: 340, y: 200, size: 20, touched: false, solid: false, color: "#00FF00" }; // Key checkpoint
         checkpoints.push(secretCheckpoint);
     } else if (currentLevel === 5) {
-        const level5Checkpoint = { x: 294, y: 400, size: 10, touched: false, solid: false, color: "#FF0000", opacity: 0.5 };
+        // Remove any existing level 5 checkpoint DOM element
+        const existingCheckpoint = document.getElementById('level5Checkpoint');
+        if (existingCheckpoint) {
+            existingCheckpoint.remove();
+        }
+
+        // Create the checkpoint as a DOM element
+        const checkpointElement = document.createElement('div');
+        checkpointElement.id = 'level5Checkpoint';
+        checkpointElement.style.cssText = `
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            left: 305px;
+            top: 405px;
+            background-color: #FF0000;
+            opacity: 0.5;
+            z-index: 2;
+        `;
+        
+        // Add it to the maze container
+        const mazeContainer = document.querySelector('.maze-container');
+        if (mazeContainer) {
+            mazeContainer.appendChild(checkpointElement);
+        }
+
+        // Still keep track of it in the checkpoints array for consistency
+        const level5Checkpoint = { x: 294, y: 400, size: 10, touched: false, solid: false, color: "#FF0000", opacity: 0.5, isDOMElement: true };
         checkpoints.push(level5Checkpoint);
     }
 }
 
 // Draw the checkpoints on the canvas
 function drawCheckpoints() {
-  if (checkpoints.length === 0) return;
+    if (checkpoints.length === 0) return;
 
-  const isEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
+    const isEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
 
-  checkpoints.forEach((checkpoint) => {
-    // For secret level checkpoint, only draw if not touched
+    checkpoints.forEach((checkpoint) => {
+        // Skip drawing if it's a DOM element
+        if (checkpoint.isDOMElement) return;
+
+        // For secret level checkpoint, only draw if not touched
         if (currentLevel === "6secret") {
-      if (!checkpoint.touched) {
-            ctx.fillStyle = checkpoint.color || "#00FF00";
-        ctx.fillRect(checkpoint.x, checkpoint.y, checkpoint.size, checkpoint.size);
-      }
-    } else if (currentLevel === 9) {
-      // Special handling for level 9 checkpoints
-      if (checkpoint.solid) {
-      // Solid checkpoint
-            ctx.fillStyle = isEquipped ? "#8A314E" : "#222222";
-    ctx.fillRect(checkpoint.x, checkpoint.y, checkpoint.size, checkpoint.size);
-      } else {
-        // Draw checkpoint in normal color whether touched or not
-            ctx.fillStyle = isEquipped ? "#F96D99" : "#999999";
-    ctx.fillRect(checkpoint.x, checkpoint.y, checkpoint.size, checkpoint.size);
-      }
-    } else if (currentLevel === 5) {
-      // For level 5, always use the red color
-      if (!checkpoint.touched) {
-        ctx.fillStyle = checkpoint.color;
-        ctx.fillRect(checkpoint.x, checkpoint.y, checkpoint.size, checkpoint.size);
-      }
-    } else {
-      // For all other checkpoints
-      if (!checkpoint.touched) {
-            ctx.fillStyle = isEquipped ? "#F96D99" : "#999999";
-    ctx.fillRect(checkpoint.x, checkpoint.y, checkpoint.size, checkpoint.size);
-      }
-    }
-  });
+            if (!checkpoint.touched) {
+                ctx.fillStyle = checkpoint.color || "#00FF00";
+                ctx.fillRect(checkpoint.x, checkpoint.y, checkpoint.size, checkpoint.size);
+            }
+        } else if (currentLevel === 9) {
+            // Special handling for level 9 checkpoints
+            if (checkpoint.solid) {
+                ctx.fillStyle = isEquipped ? "#8A314E" : "#222222";
+                ctx.fillRect(checkpoint.x, checkpoint.y, checkpoint.size, checkpoint.size);
+            } else {
+                ctx.fillStyle = isEquipped ? "#F96D99" : "#999999";
+                ctx.fillRect(checkpoint.x, checkpoint.y, checkpoint.size, checkpoint.size);
+            }
+        } else {
+            // For all other checkpoints
+            if (!checkpoint.touched) {
+                ctx.fillStyle = isEquipped ? "#F96D99" : "#999999";
+                ctx.fillRect(checkpoint.x, checkpoint.y, checkpoint.size, checkpoint.size);
+            }
+        }
+    });
 }
 
 function checkCheckpointCollision() {
     let shouldRedraw = false;
 
     checkpoints.forEach((checkpoint, index) => {
+        // For level 5's DOM element checkpoint
+        if (checkpoint.isDOMElement && currentLevel === 5) {
+            const checkpointElement = document.getElementById('level5Checkpoint');
+            if (checkpointElement && !checkpoint.touched) {
+                const checkpointRect = checkpointElement.getBoundingClientRect();
+                const playerRect = document.getElementById('mazeCanvas').getBoundingClientRect();
+                const playerX = player.x + playerRect.left;
+                const playerY = player.y + playerRect.top;
+
+                if (playerX < checkpointRect.right &&
+                    playerX + player.size > checkpointRect.left &&
+                    playerY < checkpointRect.bottom &&
+                    playerY + player.size > checkpointRect.top) {
+                    checkpoint.touched = true;
+                    checkpointElement.style.display = 'none';
+                    shouldRedraw = true;
+                }
+            }
+            return;
+        }
+
         const isPlayerOnCheckpoint =
             player.x < checkpoint.x + checkpoint.size &&
             player.x + player.size > checkpoint.x &&
@@ -2538,14 +2581,12 @@ function handlePlayerDeath() {
   showDeathScreen();
 }
 function clearCheckpoints() {
-  // Clear the checkpoints array
-  checkpoints = [];
-
-  // Clear the canvas area where checkpoints are drawn
-  const ctx = mazeCanvas.getContext("2d");
-  ctx.clearRect(0, 0, mazeCanvas.width, mazeCanvas.height);
-
-  console.log("Checkpoints cleared.");
+    checkpoints = [];
+    // Remove level 5 checkpoint DOM element if it exists
+    const level5Checkpoint = document.getElementById('level5Checkpoint');
+    if (level5Checkpoint) {
+        level5Checkpoint.remove();
+    }
 }
 
 function updateControlsButtonColors() {
