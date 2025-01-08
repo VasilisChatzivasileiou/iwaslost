@@ -3664,14 +3664,28 @@ function isCollision(newX, newY, pPlayer) {
         const mazeX = Math.floor(newX / scale);
         const mazeY = Math.floor(newY / scale);
 
+        // Use the current visual size of the player for collision detection
+        const currentSize = cPlayer.visualSize || cPlayer.size;
+
+        // Check all sides for walls
+        const hasWallRight = checkWallAtPoint(Math.floor((newX + currentSize) / scale), mazeY);
+        const hasWallBottom = checkWallAtPoint(mazeX, Math.floor((newY + currentSize) / scale));
+        const hasWallLeft = checkWallAtPoint(Math.floor(newX / scale), mazeY);
+        const hasWallTop = checkWallAtPoint(mazeX, Math.floor(newY / scale));
+
+        // Store wall positions for use when growing/shrinking
+        cPlayer.walls = {
+            right: hasWallRight,
+            bottom: hasWallBottom,
+            left: hasWallLeft,
+            top: hasWallTop
+        };
+
         const corners = [
-            { x: mazeX, y: mazeY },
-            { x: mazeX + cPlayer.size / scale - 1, y: mazeY },
-            { x: mazeX, y: mazeY + cPlayer.size / scale - 1 },
-            {
-                x: mazeX + cPlayer.size / scale - 1,
-                y: mazeY + cPlayer.size / scale - 1,
-            },
+            { x: mazeX, y: mazeY }, // Top-left
+            { x: Math.floor((newX + currentSize - 1) / scale), y: mazeY }, // Top-right
+            { x: mazeX, y: Math.floor((newY + currentSize - 1) / scale) }, // Bottom-left
+            { x: Math.floor((newX + currentSize - 1) / scale), y: Math.floor((newY + currentSize - 1) / scale) } // Bottom-right
         ];
 
         const scaledWidth = canvas.width / scale;
@@ -3702,45 +3716,63 @@ function isCollision(newX, newY, pPlayer) {
 }
 
 function checkStandardCollisions(newX, newY, cPlayer) {
-  const mazeX = Math.floor(newX / scale);
-  const mazeY = Math.floor(newY / scale);
+    const mazeX = Math.floor(newX / scale);
+    const mazeY = Math.floor(newY / scale);
+    
+    // Use the current visual size of the player for collision detection
+    const currentSize = cPlayer.visualSize || cPlayer.size;
 
-  const collisionPoints = [
-      { x: mazeX, y: mazeY },
-      { x: mazeX + cPlayer.size / scale - 1, y: mazeY },
-      { x: mazeX, y: mazeY + cPlayer.size / scale - 1 },
-      {
-          x: mazeX + cPlayer.size / scale - 1,
-          y: mazeY + cPlayer.size / scale - 1,
-      },
-  ];
+    // Check all sides for walls
+    const hasWallRight = checkWallAtPoint(Math.floor((newX + currentSize) / scale), mazeY);
+    const hasWallBottom = checkWallAtPoint(mazeX, Math.floor((newY + currentSize) / scale));
+    const hasWallLeft = checkWallAtPoint(Math.floor(newX / scale), mazeY);
+    const hasWallTop = checkWallAtPoint(mazeX, Math.floor(newY / scale));
 
-  const scaledWidth = canvas.width / scale;
+    // Store wall positions for use when growing/shrinking
+    cPlayer.walls = {
+        right: hasWallRight,
+        bottom: hasWallBottom,
+        left: hasWallLeft,
+        top: hasWallTop
+    };
 
-  // For each collision point, check if it's in a gap
-  for (const point of collisionPoints) {
-      const pointX = point.x * scale;
-      const pointY = point.y * scale;
-      const inGap = gaps.length > 0 && gaps.some(
-          (gap) =>
-              gap.level === currentLevel &&
-              pointX >= gap.x &&
-              pointX <= gap.x + gap.width &&
-              pointY >= gap.y &&
-              pointY <= gap.y + gap.height
-      );
+    // Calculate collision points based on actual current size
+    const collisionPoints = [
+        { x: mazeX, y: mazeY }, // Top-left
+        { x: Math.floor((newX + currentSize - 1) / scale), y: mazeY }, // Top-right
+        { x: mazeX, y: Math.floor((newY + currentSize - 1) / scale) }, // Bottom-left
+        { x: Math.floor((newX + currentSize - 1) / scale), y: Math.floor((newY + currentSize - 1) / scale) } // Bottom-right
+    ];
 
-      if (!inGap) {
-          const index = (point.y * scaledWidth + point.x) * 4 + 3;
-          if (mazeData[index] !== 0) {
-              console.log(
-                  `Collision detected at (${point.x}, ${point.y})`
-              );
-              return true; // Collision with wall
-          }
-      }
-  }
-  return false; // No collision
+    const scaledWidth = canvas.width / scale;
+
+    for (const point of collisionPoints) {
+        const pointX = point.x * scale;
+        const pointY = point.y * scale;
+        const inGap = gaps.length > 0 && gaps.some(
+            (gap) =>
+                gap.level === currentLevel &&
+                pointX >= gap.x &&
+                pointX <= gap.x + gap.width &&
+                pointY >= gap.y &&
+                pointY <= gap.y + gap.height
+        );
+
+        if (!inGap) {
+            const index = (point.y * scaledWidth + point.x) * 4 + 3;
+            if (mazeData[index] !== 0) {
+                console.log(`Collision detected at (${point.x}, ${point.y})`);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function checkWallAtPoint(x, y) {
+    const scaledWidth = canvas.width / scale;
+    const index = (y * scaledWidth + x) * 4 + 3;
+    return mazeData[index] !== 0;
 }
 
 function addDirectionToTracker(direction) {
@@ -6013,6 +6045,36 @@ document.getElementById("shopButton").addEventListener("click", () => {
 let isBarAnimating = false;
 let barRefillInterval = null;
 
+// Store the original drawPlayer function
+const originalDrawPlayer = drawPlayer;
+
+// Store and modify the recolorMaze function
+const originalRecolorMaze = recolorMaze;
+recolorMaze = function() {
+    // First call the original function to draw everything normally
+    originalRecolorMaze();
+    
+    // Always redraw the player with current size
+    const ctx = mazeCanvas.getContext('2d');
+    
+    // Clear just the player's cell
+    ctx.clearRect(
+        player.x,
+        player.y,
+        20,  // Use fixed size for clearing
+        20
+    );
+    
+    // Draw player with current size, always aligned to top left
+    ctx.fillStyle = '#222222';
+    ctx.fillRect(
+        player.x,
+        player.y,
+        player.size,
+        player.size
+    );
+};
+
 // Add key press handler for 'X'
 document.addEventListener('keydown', (event) => {
     if (event.key.toLowerCase() === 'x' && !isBarAnimating) {
@@ -6021,9 +6083,17 @@ document.addEventListener('keydown', (event) => {
 
         isBarAnimating = true;
         const originalHeight = 296; // Original height of inner bar
+        const originalSize = player.size; // Store original player size
 
         // Set full opacity at start
         innerBar.style.opacity = '1';
+
+        // Try to shrink player
+        if (!updatePlayerSize(10)) {
+            // If shrinking fails due to collision, abort
+            isBarAnimating = false;
+            return;
+        }
 
         // Drain animation (2 seconds)
         const drainDuration = 2000;
@@ -6044,6 +6114,13 @@ document.addEventListener('keydown', (event) => {
                 innerBar.style.top = '2px';
                 innerBar.style.height = '0px';
                 innerBar.style.opacity = '0.5';
+                
+                // Try to return player to normal size
+                if (!updatePlayerSize(originalSize)) {
+                    // If growing fails, stay small
+                    console.log("Cannot grow - staying small");
+                }
+                
                 // Start refill animation after drain is complete
                 startRefillAnimation();
             }
@@ -6076,3 +6153,42 @@ document.addEventListener('keydown', (event) => {
         requestAnimationFrame(drainAnimation);
     }
 });
+
+function updatePlayerSize(newSize) {
+    const oldSize = player.size;
+    const sizeDiff = newSize - oldSize;
+
+    // If we have wall information, use it to adjust position
+    if (player.walls) {
+        if (player.walls.right && !player.walls.left) {
+            // If touching right wall but not left, keep right side fixed
+            player.x = player.x + oldSize - newSize;
+        }
+        if (player.walls.bottom && !player.walls.top) {
+            // If touching bottom wall but not top, keep bottom side fixed
+            player.y = player.y + oldSize - newSize;
+        }
+        if (player.walls.right && player.walls.left) {
+            // If touching both right and left walls, center horizontally
+            player.x = player.x + (oldSize - newSize) / 2;
+        }
+        if (player.walls.bottom && player.walls.top) {
+            // If touching both top and bottom walls, center vertically
+            player.y = player.y + (oldSize - newSize) / 2;
+        }
+    }
+
+    player.size = newSize;
+    player.visualSize = newSize;
+    
+    // After changing size, check if new position would cause collision
+    if (isCollision(player.x, player.y, player)) {
+        // If collision, revert the changes
+        player.size = oldSize;
+        player.visualSize = oldSize;
+        return false;
+    }
+    
+    recolorMaze();
+    return true;
+}
