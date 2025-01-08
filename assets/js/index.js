@@ -521,6 +521,9 @@ function initializeCheckpoints() {
     } else if (currentLevel === "6secret") {
         const secretCheckpoint = { x: 340, y: 200, size: 20, touched: false, solid: false, color: "#00FF00" }; // Key checkpoint
         checkpoints.push(secretCheckpoint);
+    } else if (currentLevel === 5) {
+        const level5Checkpoint = { x: 294, y: 400, size: 10, touched: false, solid: false, color: "#FF0000", opacity: 0.5 };
+        checkpoints.push(level5Checkpoint);
     }
 }
 
@@ -547,6 +550,12 @@ function drawCheckpoints() {
         // Draw checkpoint in normal color whether touched or not
             ctx.fillStyle = isEquipped ? "#F96D99" : "#999999";
     ctx.fillRect(checkpoint.x, checkpoint.y, checkpoint.size, checkpoint.size);
+      }
+    } else if (currentLevel === 5) {
+      // For level 5, always use the red color
+      if (!checkpoint.touched) {
+        ctx.fillStyle = checkpoint.color;
+        ctx.fillRect(checkpoint.x, checkpoint.y, checkpoint.size, checkpoint.size);
       }
     } else {
       // For all other checkpoints
@@ -2162,7 +2171,8 @@ function startGame(mazeImageSrc, exitPosition, playerPosition) {
             console.log("Gaps initialized for level 6:", gaps);
         } else if (currentLevel === 5) {
             initializeLevel5Gap();
-            console.log("Gaps initialized for level 5:", gaps);
+            initializeCheckpoints();
+            console.log("Gaps and checkpoints initialized for level 5:", gaps, checkpoints);
         } else if (currentLevel === 7) {
             initializeLevel7Blocks();
         } else if (currentLevel === 8 || currentLevel === 9) {
