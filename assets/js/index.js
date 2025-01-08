@@ -6008,3 +6008,71 @@ document.getElementById("shopButton").addEventListener("click", () => {
     document.querySelector("#shopText .indicator").style.display = "inline";
     document.querySelector("#inventoryText .indicator").style.display = "none";
 });
+
+// Add variables to track bar state
+let isBarAnimating = false;
+let barRefillInterval = null;
+
+// Add key press handler for 'X'
+document.addEventListener('keydown', (event) => {
+    if (event.key.toLowerCase() === 'x' && !isBarAnimating) {
+        const innerBar = document.getElementById('innerBar');
+        if (!innerBar) return;
+
+        isBarAnimating = true;
+        const originalHeight = 296; // Original height of inner bar
+
+        // Set full opacity at start
+        innerBar.style.opacity = '1';
+
+        // Drain animation (2 seconds)
+        const drainDuration = 2000;
+        const drainStartTime = performance.now();
+        
+        function drainAnimation(currentTime) {
+            const elapsed = currentTime - drainStartTime;
+            const progress = Math.min(elapsed / drainDuration, 1);
+            
+            const newHeight = originalHeight * (1 - progress);
+            innerBar.style.height = `${newHeight}px`;
+            innerBar.style.top = `${2 + (originalHeight - newHeight)}px`;
+            
+            if (progress < 1) {
+                requestAnimationFrame(drainAnimation);
+            } else {
+                // Reset position for refill and set half opacity
+                innerBar.style.top = '2px';
+                innerBar.style.height = '0px';
+                innerBar.style.opacity = '0.5';
+                // Start refill animation after drain is complete
+                startRefillAnimation();
+            }
+        }
+
+        function startRefillAnimation() {
+            const refillDuration = 30000; // 30 seconds
+            const refillStartTime = performance.now();
+            
+            function refillAnimation(currentTime) {
+                const elapsed = currentTime - refillStartTime;
+                const progress = Math.min(elapsed / refillDuration, 1);
+                
+                const newHeight = originalHeight * progress;
+                innerBar.style.height = `${newHeight}px`;
+                
+                if (progress < 1) {
+                    barRefillInterval = requestAnimationFrame(refillAnimation);
+                } else {
+                    // Restore full opacity when fully charged
+                    innerBar.style.opacity = '1';
+                    isBarAnimating = false;
+                    barRefillInterval = null;
+                }
+            }
+            
+            barRefillInterval = requestAnimationFrame(refillAnimation);
+        }
+
+        requestAnimationFrame(drainAnimation);
+    }
+});
