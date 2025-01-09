@@ -2737,10 +2737,11 @@ function checkWin(bypass = false) {
         
         if (currentLevel === 9) {
             const hasGoldCoin = localStorage.getItem('hasGoldCoin');
+            const hasMiniaturizer = localStorage.getItem('hasMiniaturizer');
             console.log('Level 9 Win - hasGoldCoin state:', hasGoldCoin);
-            console.log('hasGoldCoin type:', typeof hasGoldCoin);
-            
-            if (!hasGoldCoin || hasGoldCoin === 'false' || hasGoldCoin === null) {
+            console.log('Level 9 Win - hasMiniaturizer state:', hasMiniaturizer);
+
+            if ((!hasGoldCoin || hasGoldCoin === 'false' || hasGoldCoin === null) && (!hasMiniaturizer || hasMiniaturizer === 'false')) {
                 console.log('Showing first-time completion popup');
                 // First time completion
                 moveCountMessage.innerHTML = `You won and it took you ${moveCount} moves.<br>
@@ -6305,6 +6306,15 @@ recolorMaze = function() {
 // Add key press handler for 'X'
 document.addEventListener('keydown', (event) => {
     if (event.key.toLowerCase() === 'x' && !isBarAnimating) {
+        // Check if player has the miniaturizer
+        const hasMiniaturizer = localStorage.getItem('hasMiniaturizer') === 'true';
+        if (!hasMiniaturizer) {
+            // Show error message if player doesn't have the miniaturizer
+            showErrorPopup();
+            playErrorSound();
+            return;
+        }
+
         const innerBar = document.getElementById('innerBar');
         if (!innerBar) return;
 
@@ -6339,28 +6349,27 @@ document.addEventListener('keydown', (event) => {
                 innerBar.style.height = '0px';
                 innerBar.style.opacity = '0.5';
                 
-                // Restore player to original size
                 updatePlayerSize(20);
                 
                 // Start refill animation
-            const refillStartTime = performance.now();
-            
-            function refillAnimation(currentTime) {
-                const elapsed = currentTime - refillStartTime;
-                const progress = Math.min(elapsed / refillDuration, 1);
+                const refillStartTime = performance.now();
                 
-                const newHeight = originalHeight * progress;
-                innerBar.style.height = `${newHeight}px`;
-                
-                if (progress < 1) {
+                function refillAnimation(currentTime) {
+                    const elapsed = currentTime - refillStartTime;
+                    const progress = Math.min(elapsed / refillDuration, 1);
+                    
+                    const newHeight = originalHeight * progress;
+                    innerBar.style.height = `${newHeight}px`;
+                    
+                    if (progress < 1) {
                         requestAnimationFrame(refillAnimation);
-                } else {
-                    // Restore full opacity when fully charged
-                    innerBar.style.opacity = '1';
-                    isBarAnimating = false;
+                    } else {
+                        // Restore full opacity when fully charged
+                        innerBar.style.opacity = '1';
+                        isBarAnimating = false;
+                    }
                 }
-            }
-            
+                
                 requestAnimationFrame(refillAnimation);
             }
         }
