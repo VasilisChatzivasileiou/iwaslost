@@ -6348,63 +6348,97 @@ function transitionToDarkLevel5() {
     newImage.src = 'assets/images/darklvl5.png';  // Updated path
     
     newImage.onload = () => {
-        console.log("Dark level 5 image loaded successfully");
+        // Set player position to x:150, y:10
+        player.x = 300;
+        player.y = 0;
         
-        // Now that image is loaded, do the transition
-        currentLevel = "5dark";
-        clearAllTimers();
+        // Create a temporary canvas for the scroll animation
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = 400;  // Match playable area width
+        tempCanvas.height = 800; // Double height to fit both images
+        const tempCtx = tempCanvas.getContext('2d');
         
-        // Clear canvases
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+        // Draw current maze at the top
+        tempCtx.drawImage(mazeImage, 0, 0, 400, 400);
+        // Draw new maze at the bottom
+        tempCtx.drawImage(newImage, 0, 400, 400, 400);
         
-        // Clear all existing gaps and checkpoints
-        gaps.length = 0;
-        checkpoints.length = 0;
-        const existingGaps = document.querySelectorAll('.maze-gap');
-        existingGaps.forEach(gap => gap.remove());
-        const existingCheckpoint = document.getElementById('level5Checkpoint');
-        if (existingCheckpoint) {
-            existingCheckpoint.remove();
+        // Position the temp canvas at the top
+        let scrollPosition = 0;
+        const scrollSpeed = 4; // Slower scroll speed (was 8)
+        
+        function animate() {
+            ctx.clearRect(0, 0, 400, 400);
+            
+            // Draw the scrolling portion of the temp canvas
+            ctx.drawImage(
+                tempCanvas,
+                0, scrollPosition, // Source position
+                400, 400, // Source dimensions
+                0, 0, // Destination position
+                400, 400 // Destination dimensions
+            );
+            
+            scrollPosition += scrollSpeed;
+            
+            if (scrollPosition < 400) {
+                requestAnimationFrame(animate);
+            } else {
+                // Animation complete, update game state
+                currentLevel = "5dark";
+                clearAllTimers();
+                
+                // Clear canvases
+                ctx.clearRect(0, 0, 400, 400);
+                trailCtx.clearRect(0, 0, 400, 400);
+                
+                // Clear all existing gaps and checkpoints
+                gaps.length = 0;
+                checkpoints.length = 0;
+                const existingGaps = document.querySelectorAll('.maze-gap');
+                existingGaps.forEach(gap => gap.remove());
+                const existingCheckpoint = document.getElementById('level5Checkpoint');
+                if (existingCheckpoint) {
+                    existingCheckpoint.remove();
+                }
+                
+                // Update the main maze image reference
+                mazeImage.src = newImage.src;
+                
+                // Keep player at current position
+                player.startX = player.x;
+                player.startY = player.y;
+                
+                // No exit in dark level 5
+                exit.x = -1000;  // Move exit far off-screen
+                exit.y = -1000;
+                
+                // Extract maze data and initialize
+                extractMazeData();
+                
+                // Reset game state
+                isExecutingMoves = false;
+                isMoving = false;
+                moveQueue.length = 0;
+                isTrailAnimating = false;
+                trailBlocks = [];
+                moveCount = 0;
+                playerSteps = [];
+                trackerList.innerHTML = '';
+                
+                // Final redraw with clean state
+                recolorMaze();
+                drawPlayer();
+                // Don't draw exit in dark level 5
+                
+                // Reset transitioning flag after everything is done
+                console.log("Transition complete, resetting flag");
+                isTransitioning = false;
+            }
         }
         
-        // Update the main maze image reference
-        mazeImage.src = newImage.src;
-        
-        // Keep player at current position
-        player.startX = player.x;
-        player.startY = player.y;
-        
-        // No exit in dark level 5
-        exit.x = -1000;  // Move exit far off-screen
-        exit.y = -1000;
-        
-        // Extract maze data and initialize
-        extractMazeData();
-        
-        // Reset game state
-        isExecutingMoves = false;
-        isMoving = false;
-        moveQueue.length = 0;
-        isTrailAnimating = false;
-        trailBlocks = [];
-        moveCount = 0;
-        playerSteps = [];
-        trackerList.innerHTML = '';
-        
-        // Final redraw with clean state
-        recolorMaze();
-        drawPlayer();
-        // Don't draw exit in dark level 5
-        
-        // Reset transitioning flag after everything is done
-        console.log("Transition complete, resetting flag");
-        isTransitioning = false;
-    };
-    
-    newImage.onerror = (err) => {
-        console.error("Failed to load dark level 5 image:", err);
-        isTransitioning = false;
+        // Start the animation
+        animate();
     };
 }
 
