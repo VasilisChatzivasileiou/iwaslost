@@ -3991,40 +3991,19 @@ document.addEventListener("keydown", (event) => {
   if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) {
     const direction = event.key;
 
-    if (isMoving) return; // Prevent actions while moving
-
     // Special handling for dark level 5 - direct movement
     if (currentLevel === "5dark") {
-        let nextX = player.x;
-        let nextY = player.y;
-        const moveSize = player.size;
-
-        switch (direction) {
-            case "ArrowUp":
-                nextY -= moveSize;
-                break;
-            case "ArrowDown":
-                nextY += moveSize;
-                break;
-            case "ArrowLeft":
-                nextX -= moveSize;
-                break;
-            case "ArrowRight":
-                nextX += moveSize;
-                break;
-        }
-
-        // Check if the move is valid
-        if (!isCollision(nextX, nextY)) {
-            isMoving = true;
-            player.x = nextX;
-            player.y = nextY;
-            playRandomSound();
-            drawPlayer();
-            isMoving = false;
+        // Add the pressed key to our tracking set
+        pressedKeys.add(direction);
+        
+        // Only start the animation if it's not running
+        if (!isMoving) {
+            startDarkLevel5Movement();
         }
         return;
     }
+
+    if (isMoving) return; // Prevent actions while moving (only for regular levels)
 
     // Regular movement logic for other levels
     // Prevent duplicate consecutive moves
@@ -4073,6 +4052,71 @@ document.addEventListener("keydown", (event) => {
     console.log("ENTER key pressed. Confirm button triggered.");
     confirmButton.click(); // Simulate the Confirm button click
   }
+});
+
+// Add this function near the other movement-related functions
+function startDarkLevel5Movement() {
+    isMoving = true;
+    let lastTime = performance.now();
+    let animationFrameId = null;
+    
+    function animate(currentTime) {
+        if (!isMoving) {
+            cancelAnimationFrame(animationFrameId);
+            return;
+        }
+        
+        const deltaTime = currentTime - lastTime;
+        lastTime = currentTime;
+
+        // Calculate movement based on all currently pressed keys
+        let dx = 0;
+        let dy = 0;
+        
+        if (pressedKeys.has("ArrowLeft")) dx -= moveSpeed;
+        if (pressedKeys.has("ArrowRight")) dx += moveSpeed;
+        if (pressedKeys.has("ArrowUp")) dy -= moveSpeed;
+        if (pressedKeys.has("ArrowDown")) dy += moveSpeed;
+        
+        // Normalize diagonal movement to maintain consistent speed
+        if (dx !== 0 && dy !== 0) {
+            const normalizer = moveSpeed / Math.sqrt(2);
+            dx = dx > 0 ? normalizer : (dx < 0 ? -normalizer : 0);
+            dy = dy > 0 ? normalizer : (dy < 0 ? -normalizer : 0);
+        }
+
+        // Calculate next position
+        const nextX = player.x + dx;
+        const nextY = player.y + dy;
+
+        // Check boundaries and collisions
+        const canMoveX = nextX >= 0 && nextX + player.size <= canvas.width && !isCollision(nextX, player.y);
+        const canMoveY = nextY >= 0 && nextY + player.size <= canvas.height && !isCollision(player.x, nextY);
+
+        // Update position
+        if (canMoveX) player.x = nextX;
+        if (canMoveY) player.y = nextY;
+
+        // Clear and redraw
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        recolorMaze();
+        drawPlayer();
+
+        animationFrameId = requestAnimationFrame(animate);
+    }
+
+    animationFrameId = requestAnimationFrame(animate);
+}
+
+// Modify the keyup handler
+document.addEventListener("keyup", (event) => {
+    if (currentLevel === "5dark" && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) {
+        pressedKeys.delete(event.key);
+        // Only stop moving if no movement keys are pressed
+        if (pressedKeys.size === 0) {
+            isMoving = false;
+        }
+    }
 });
 
 let isTransitioning = false;
@@ -6427,7 +6471,7 @@ function transitionToDarkLevel5() {
     
     newImage.onload = () => {
         // Set player position to x:150, y:10
-        player.x = 300;
+        player.x = 290;
         player.y = 0;
         
         // Create a temporary canvas for the scroll animation
@@ -6770,3 +6814,7 @@ function isCollision(newX, newY, pPlayer) {
 
     return checkStandardCollisions(newX, newY, cPlayer);
 }
+
+// Add these near the top with other state variables
+const pressedKeys = new Set();
+const moveSpeed = 4;
