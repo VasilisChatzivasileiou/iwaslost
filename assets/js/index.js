@@ -4056,13 +4056,17 @@ document.addEventListener("keydown", (event) => {
 
 // Add this function near the other movement-related functions
 function startDarkLevel5Movement() {
+    if (isMoving) return; // Prevent multiple animation loops
+    
     isMoving = true;
     let lastTime = performance.now();
     let animationFrameId = null;
+    verticalVelocity = 0; // Reset vertical velocity when starting movement
     
     function animate(currentTime) {
-        if (!isMoving) {
+        if (currentLevel !== "5dark") { // Only stop if level changes
             cancelAnimationFrame(animationFrameId);
+            isMoving = false;
             return;
         }
         
@@ -4075,16 +4079,17 @@ function startDarkLevel5Movement() {
         
         if (pressedKeys.has("ArrowLeft")) dx -= moveSpeed;
         if (pressedKeys.has("ArrowRight")) dx += moveSpeed;
-        if (pressedKeys.has("ArrowUp")) dy -= moveSpeed;
-        if (pressedKeys.has("ArrowDown")) dy += moveSpeed;
-        
-        // Normalize diagonal movement to maintain consistent speed
-        if (dx !== 0 && dy !== 0) {
-            const normalizer = moveSpeed / Math.sqrt(2);
-            dx = dx > 0 ? normalizer : (dx < 0 ? -normalizer : 0);
-            dy = dy > 0 ? normalizer : (dy < 0 ? -normalizer : 0);
+        if (pressedKeys.has("ArrowUp")) {
+            // Only jump if we're on the ground (velocity is 0)
+            if (verticalVelocity === 0) {
+                verticalVelocity = -8; // Jump velocity when pressing up
+            }
         }
-
+        
+        // Apply gravity
+        verticalVelocity = Math.min(verticalVelocity + GRAVITY, TERMINAL_VELOCITY);
+        dy = verticalVelocity;
+        
         // Calculate next position
         const nextX = player.x + dx;
         const nextY = player.y + dy;
@@ -4095,7 +4100,12 @@ function startDarkLevel5Movement() {
 
         // Update position
         if (canMoveX) player.x = nextX;
-        if (canMoveY) player.y = nextY;
+        if (canMoveY) {
+            player.y = nextY;
+        } else {
+            // Reset vertical velocity when hitting ground or ceiling
+            verticalVelocity = 0;
+        }
 
         // Clear and redraw
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -4111,6 +4121,10 @@ function startDarkLevel5Movement() {
 // Modify the keyup handler
 document.addEventListener("keyup", (event) => {
     if (currentLevel === "5dark" && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) {
+        pressedKeys.delete(event.key);
+        // Don't stop moving in dark level 5 to keep gravity active
+        // Only stop if transitioning levels or death
+    } else if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) {
         pressedKeys.delete(event.key);
         // Only stop moving if no movement keys are pressed
         if (pressedKeys.size === 0) {
@@ -6488,7 +6502,7 @@ function transitionToDarkLevel5() {
         // Position the temp canvas at the top
         let scrollPosition = 0;
         const scrollSpeed = 4; // Slower scroll speed (was 8)
-        
+
         function animate() {
             ctx.clearRect(0, 0, 400, 400);
             
@@ -6557,7 +6571,9 @@ function transitionToDarkLevel5() {
                 // Final redraw with clean state
                 recolorMaze();
                 drawPlayer();
-                // Don't draw exit in dark level 5
+                
+                // Start the dark level 5 movement immediately to enable gravity
+                startDarkLevel5Movement();
                 
                 // Reset transitioning flag after everything is done
                 console.log("Transition complete, resetting flag");
@@ -6818,3 +6834,8 @@ function isCollision(newX, newY, pPlayer) {
 // Add these near the top with other state variables
 const pressedKeys = new Set();
 const moveSpeed = 4;
+
+// Game constants and variables
+const GRAVITY = 0.5;
+const TERMINAL_VELOCITY = 8;
+let verticalVelocity = 0;
