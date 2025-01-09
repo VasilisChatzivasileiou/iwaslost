@@ -609,6 +609,10 @@ function checkCheckpointCollision() {
                     checkpoint.touched = true;
                     checkpointElement.style.display = 'none';
                     shouldRedraw = true;
+                    
+                    // Transition to dark level 5
+                    transitionToDarkLevel5();
+                    return;
                 }
             }
             return;
@@ -2887,7 +2891,12 @@ function preStartGame(level) {
     if (level === 9) {
         console.log('Level 9 - hasGoldCoin state:', localStorage.getItem('hasGoldCoin'));
     }
-    showLevelAnnouncement(level);
+    
+    // Skip level announcement for dark level 5
+    if (level !== "5dark") {
+        showLevelAnnouncement(level);
+    }
+    
     // Reset game state
     moveCount = 0;
     playerSteps = [];
@@ -2925,14 +2934,20 @@ function preStartGame(level) {
         initializeLevel5Gap();
     }
 
-    const getStupidLevel = stupidLevels[level - 1];
+    const getStupidLevel = level === "5dark" ? stupidLevels[4] : stupidLevels[level - 1];
 
     document.getElementById("timerDisplay").textContent = "time: 00:00";
     startTimer();
 
     const isEquipped = localStorage.getItem("isBrainPaletteEquipped") === "true";
     timerDisplay.style.color = isEquipped ? "#FF6A99" : (timerColors[level] || "#CCCCCC"); // Use equipped color or default
-    startGame(getStupidLevel.src, getStupidLevel.s, getStupidLevel.f);
+    
+    // For dark level 5, use the dark image
+    if (level === "5dark") {
+        startGame('assets/images/darklvl5.png', getStupidLevel.s, getStupidLevel.f);  // Updated path
+    } else {
+        startGame(getStupidLevel.src, getStupidLevel.s, getStupidLevel.f);
+    }
 }
 
 function showLevelSelector() {
@@ -3007,7 +3022,6 @@ const player = {
   startX: 180,
   startY: 380,
   color: "#d1406e", // Add a color property
-  
 };
 const exit = {
   x: 180,
@@ -3533,225 +3547,6 @@ function initializeLevel6Gap() {
 // Add this variable at the top level of the file
 let hasLeftSpawnGap = false;
 
-function isCollision(newX, newY, pPlayer) {
-    let cPlayer = player;
-    if (pPlayer) {
-        cPlayer = pPlayer;
-    }
-
-    // Check for collisions with solid checkpoints in level 9
-    if (currentLevel === 9 && checkpoints) {
-        for (const checkpoint of checkpoints) {
-            if (checkpoint.solid && 
-                newX < checkpoint.x + checkpoint.size &&
-                newX + cPlayer.size > checkpoint.x &&
-                newY < checkpoint.y + checkpoint.size &&
-                newY + cPlayer.size > checkpoint.y) {
-                console.log("Collision with solid checkpoint");
-                return true;
-            }
-        }
-    }
-
-    // Check for collisions with level 7 blocks
-    if (currentLevel === 7 && level7Blocks) {
-        for (const block of level7Blocks) {
-            if (newX < block.x + block.width &&
-                newX + cPlayer.size > block.x &&
-                newY < block.y + block.height &&
-                newY + cPlayer.size > block.y) {
-                return true; // Just block movement, don't kill
-            }
-        }
-    }
-
-    // Check if in a gap
-    const inGap = gaps.length > 0 && gaps.some(
-        (gap) =>
-            gap.level === currentLevel &&
-            newX + cPlayer.size > gap.x &&
-            newX < gap.x + gap.width &&
-            newY + cPlayer.size > gap.y &&
-            newY < gap.y + gap.height
-    );
-
-    // If in secret level and not in any gap, mark that player has left spawn area
-    if (currentLevel === "6secret" && !inGap) {
-        hasLeftSpawnGap = true;
-        console.log("Player has left spawn area (not in any gap)"); // Debug log
-    }
-
-    if (inGap) {
-        console.log(`Player is in a gap at (${newX}, ${newY})`);
-
-        if (currentLevel === "6secret") {
-            // Find the return gap
-            const returnGap = gaps.find(gap => gap.isReturnGap);
-            console.log("Return gap:", returnGap); // Debug log
-
-            if (returnGap && 
-                newX + cPlayer.size > returnGap.x &&
-                newX < returnGap.x + returnGap.width &&
-                newY + cPlayer.size > returnGap.y &&
-                newY < returnGap.y + returnGap.height) {
-                
-                // Check if player has the soul achievement or the key
-                const hasKey = localStorage.getItem('hasSecretKey') === 'true';
-                const hasSoul = achievementProgress.theSoul.status === "Unlocked";
-                const canReturn = hasKey || hasSoul;
-                
-                console.log("Return conditions:", { // Debug logs
-                    hasKey,
-                    hasSoul,
-                    canReturn,
-                    hasLeftSpawnGap
-                });
-                
-                // Only allow return if player has left the spawn gap area first
-                if (canReturn && hasLeftSpawnGap) {
-                    console.log("Initiating return to level 6"); // Debug log
-                    // Store current movement direction
-                    const currentMovement = currentDirection;
-                    
-                    // If there are trail blocks, animate them before transitioning
-                    if (trailBlocks.length > 0 && !isTrailAnimating) {
-                        animateTrailMerge();
-                        // Wait for animation to complete before transitioning
-                        setTimeout(() => {
-                            // Reset move tracking before transition
-                            isExecutingMoves = false;
-                            isMoving = false;
-                            moveQueue.length = 0;
-                            isTrailAnimating = false;
-                            trailBlocks = [];
-                            moveCount = 0;
-                            playerSteps = [];
-                            trackerList.innerHTML = '';
-                            // Clear trail canvas
-                            trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
-                            // Reset spawn protection flag
-                            hasLeftSpawnGap = false;
-                            // Return to level 6 and resume movement
-                            returnToLevelSix();
-                        }, 600); // Wait for trail merge animation
-                    } else {
-                        // No trail to collect, transition immediately and resume movement
-                        hasLeftSpawnGap = false;
-                        returnToLevelSix();
-                    }
-                } else {
-                    console.log("Cannot return:", { // Debug log for failed return
-                        reason: !canReturn ? "No key/soul" : "Haven't left spawn area"
-                    });
-                }
-            }
-        } else if (currentLevel === 6) {
-            // Check for secret level entrance
-            const entranceGap = gaps.find(gap => gap.isEntranceGap);
-            console.log("Found entrance gap:", entranceGap); // Debug log
-            
-            if (entranceGap && 
-                newX + cPlayer.size > entranceGap.x &&
-                newX < entranceGap.x + entranceGap.width &&
-                newY + cPlayer.size > entranceGap.y &&
-                newY < entranceGap.y + entranceGap.height) {
-                console.log("Player in entrance gap, initiating transition"); // Debug log
-                
-                // Check if we're already transitioning
-                if (isTransitioning) {
-                    console.log("Transition blocked - resetting flag"); // Debug log
-                    isTransitioning = false;
-                    return false;
-                }
-                
-                // Store current movement direction
-                const currentMovement = currentDirection;
-                
-                // If there are trail blocks, animate them before transitioning
-                if (trailBlocks.length > 0 && !isTrailAnimating) {
-                    // Animate trail collection
-                    animateTrailMerge();
-                    
-                    // Wait for animation to complete, then transition while preserving movement
-                    setTimeout(() => {
-                        // Clear trail canvas but keep movement state
-                        trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
-                        trailBlocks = [];
-                        
-                        // Reset spawn protection flag before transition
-                        hasLeftSpawnGap = false;
-                        
-                        // Transition to secret level with preserved movement
-                        transitionToSecretLevel(currentMovement);
-                    }, 600);
-                } else {
-                    // No trail to collect, transition immediately with preserved movement
-                    hasLeftSpawnGap = false;
-                    transitionToSecretLevel(currentMovement);
-                }
-            }
-        } else if (currentLevel === 5) {
-            // Allow movement through level 5 gaps
-            return false;
-        }
-        return false; // Allow movement in gaps
-    }
-
-    // For secret level, only check wall collisions and ignore canvas boundaries
-    if (currentLevel === "6secret") {
-        const mazeX = Math.floor(newX / scale);
-        const mazeY = Math.floor(newY / scale);
-
-        // Use the current visual size of the player for collision detection
-        const currentSize = cPlayer.visualSize || cPlayer.size;
-
-        // Check all sides for walls
-        const hasWallRight = checkWallAtPoint(Math.floor((newX + currentSize) / scale), mazeY);
-        const hasWallBottom = checkWallAtPoint(mazeX, Math.floor((newY + currentSize) / scale));
-        const hasWallLeft = checkWallAtPoint(Math.floor(newX / scale), mazeY);
-        const hasWallTop = checkWallAtPoint(mazeX, Math.floor(newY / scale));
-
-        // Store wall positions for use when growing/shrinking
-        cPlayer.walls = {
-            right: hasWallRight,
-            bottom: hasWallBottom,
-            left: hasWallLeft,
-            top: hasWallTop
-        };
-
-        const corners = [
-            { x: mazeX, y: mazeY }, // Top-left
-            { x: Math.floor((newX + currentSize - 1) / scale), y: mazeY }, // Top-right
-            { x: mazeX, y: Math.floor((newY + currentSize - 1) / scale) }, // Bottom-left
-            { x: Math.floor((newX + currentSize - 1) / scale), y: Math.floor((newY + currentSize - 1) / scale) } // Bottom-right
-        ];
-
-        const scaledWidth = canvas.width / scale;
-
-        // Check for wall collisions in secret level
-        for (const corner of corners) {
-            const index = (corner.y * scaledWidth + corner.x) * 4 + 3;
-            if (mazeData[index] !== 0) {
-                console.log(`Secret level collision detected at (${corner.x}, ${corner.y})`);
-                return true; // Collision with wall
-            }
-        }
-        return false; // No collision in secret level
-    }
-
-    // Regular level collision checks
-    if (
-        newX < 0 ||
-        newY < 0 ||
-        newX + cPlayer.size > canvas.width ||
-        newY + cPlayer.size > canvas.height
-    ) {
-        console.log(`Out of bounds: (${newX}, ${newY})`);
-        return true; // Block movement outside bounds
-    }
-
-    return checkStandardCollisions(newX, newY, cPlayer);
-}
 
 function checkStandardCollisions(newX, newY, cPlayer) {
     const currentSize = cPlayer.size;
@@ -6536,4 +6331,312 @@ function canGrowAtPosition(x, y, newSize) {
         }
     }
     return false;
+}
+
+function transitionToDarkLevel5() {
+    // Prevent multiple transitions
+    if (isTransitioning || currentLevel === "5dark") {
+        console.log("Transition blocked:", { isTransitioning, currentLevel });
+        return;
+    }
+    
+    console.log("Transitioning to dark level 5...");
+    isTransitioning = true;
+    
+    // Create and preload new image
+    const newImage = new Image();
+    newImage.src = 'assets/images/darklvl5.png';  // Updated path
+    
+    newImage.onload = () => {
+        console.log("Dark level 5 image loaded successfully");
+        
+        // Now that image is loaded, do the transition
+        currentLevel = "5dark";
+        clearAllTimers();
+        
+        // Clear canvases
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+        
+        // Clear all existing gaps and checkpoints
+        gaps.length = 0;
+        checkpoints.length = 0;
+        const existingGaps = document.querySelectorAll('.maze-gap');
+        existingGaps.forEach(gap => gap.remove());
+        const existingCheckpoint = document.getElementById('level5Checkpoint');
+        if (existingCheckpoint) {
+            existingCheckpoint.remove();
+        }
+        
+        // Update the main maze image reference
+        mazeImage.src = newImage.src;
+        
+        // Keep player at current position
+        player.startX = player.x;
+        player.startY = player.y;
+        
+        // No exit in dark level 5
+        exit.x = -1000;  // Move exit far off-screen
+        exit.y = -1000;
+        
+        // Extract maze data and initialize
+        extractMazeData();
+        
+        // Reset game state
+        isExecutingMoves = false;
+        isMoving = false;
+        moveQueue.length = 0;
+        isTrailAnimating = false;
+        trailBlocks = [];
+        moveCount = 0;
+        playerSteps = [];
+        trackerList.innerHTML = '';
+        
+        // Final redraw with clean state
+        recolorMaze();
+        drawPlayer();
+        // Don't draw exit in dark level 5
+        
+        // Reset transitioning flag after everything is done
+        console.log("Transition complete, resetting flag");
+        isTransitioning = false;
+    };
+    
+    newImage.onerror = (err) => {
+        console.error("Failed to load dark level 5 image:", err);
+        isTransitioning = false;
+    };
+}
+
+// ... existing code ...
+
+function isCollision(newX, newY, pPlayer) {
+    let cPlayer = player;
+    if (pPlayer) {
+        cPlayer = pPlayer;
+    }
+
+    // Check for collisions with solid checkpoints in level 9
+    if (currentLevel === 9 && checkpoints) {
+        for (const checkpoint of checkpoints) {
+            if (checkpoint.solid && 
+                newX < checkpoint.x + checkpoint.size &&
+                newX + cPlayer.size > checkpoint.x &&
+                newY < checkpoint.y + checkpoint.size &&
+                newY + cPlayer.size > checkpoint.y) {
+                console.log("Collision with solid checkpoint");
+                return true;
+            }
+        }
+    }
+
+    // Check for collisions with level 7 blocks
+    if (currentLevel === 7 && level7Blocks) {
+        for (const block of level7Blocks) {
+            if (newX < block.x + block.width &&
+                newX + cPlayer.size > block.x &&
+                newY < block.y + block.height &&
+                newY + cPlayer.size > block.y) {
+                return true; // Just block movement, don't kill
+            }
+        }
+    }
+
+    // Check if in a gap
+    const inGap = gaps.length > 0 && gaps.some(
+        (gap) =>
+            gap.level === currentLevel &&
+            newX + cPlayer.size > gap.x &&
+            newX < gap.x + gap.width &&
+            newY + cPlayer.size > gap.y &&
+            newY < gap.y + gap.height
+    );
+
+    // If in secret level and not in any gap, mark that player has left spawn area
+    if (currentLevel === "6secret" && !inGap) {
+        hasLeftSpawnGap = true;
+        console.log("Player has left spawn area (not in any gap)"); // Debug log
+    }
+
+    if (inGap) {
+        console.log(`Player is in a gap at (${newX}, ${newY})`);
+
+        if (currentLevel === "6secret") {
+            // Find the return gap
+            const returnGap = gaps.find(gap => gap.isReturnGap);
+            console.log("Return gap:", returnGap); // Debug log
+
+            if (returnGap && 
+                newX + cPlayer.size > returnGap.x &&
+                newX < returnGap.x + returnGap.width &&
+                newY + cPlayer.size > returnGap.y &&
+                newY < returnGap.y + returnGap.height) {
+                
+                // Check if player has the soul achievement or the key
+                const hasKey = localStorage.getItem('hasSecretKey') === 'true';
+                const hasSoul = achievementProgress.theSoul.status === "Unlocked";
+                const canReturn = hasKey || hasSoul;
+                
+                console.log("Return conditions:", { // Debug logs
+                    hasKey,
+                    hasSoul,
+                    canReturn,
+                    hasLeftSpawnGap
+                });
+                
+                // Only allow return if player has left the spawn gap area first
+                if (canReturn && hasLeftSpawnGap) {
+                    console.log("Initiating return to level 6"); // Debug log
+                    // Store current movement direction
+                    const currentMovement = currentDirection;
+                    
+                    // If there are trail blocks, animate them before transitioning
+                    if (trailBlocks.length > 0 && !isTrailAnimating) {
+                        animateTrailMerge();
+                        // Wait for animation to complete before transitioning
+                        setTimeout(() => {
+                            // Reset move tracking before transition
+                            isExecutingMoves = false;
+                            isMoving = false;
+                            moveQueue.length = 0;
+                            isTrailAnimating = false;
+                            trailBlocks = [];
+                            moveCount = 0;
+                            playerSteps = [];
+                            trackerList.innerHTML = '';
+                            // Clear trail canvas
+                            trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+                            // Reset spawn protection flag
+                            hasLeftSpawnGap = false;
+                            // Return to level 6 and resume movement
+                            returnToLevelSix();
+                        }, 600); // Wait for trail merge animation
+                    } else {
+                        // No trail to collect, transition immediately and resume movement
+                        hasLeftSpawnGap = false;
+                        returnToLevelSix();
+                    }
+                } else {
+                    console.log("Cannot return:", { // Debug log for failed return
+                        reason: !canReturn ? "No key/soul" : "Haven't left spawn area"
+                    });
+                }
+            }
+        } else if (currentLevel === 6) {
+            // Check for secret level entrance
+            const entranceGap = gaps.find(gap => gap.isEntranceGap);
+            console.log("Found entrance gap:", entranceGap); // Debug log
+            
+            if (entranceGap && 
+                newX + cPlayer.size > entranceGap.x &&
+                newX < entranceGap.x + entranceGap.width &&
+                newY + cPlayer.size > entranceGap.y &&
+                newY < entranceGap.y + entranceGap.height) {
+                console.log("Player in entrance gap, initiating transition"); // Debug log
+                
+                // Check if we're already transitioning
+                if (isTransitioning) {
+                    console.log("Transition blocked - resetting flag"); // Debug log
+                    isTransitioning = false;
+                    return false;
+                }
+                
+                // Store current movement direction
+                const currentMovement = currentDirection;
+                
+                // If there are trail blocks, animate them before transitioning
+                if (trailBlocks.length > 0 && !isTrailAnimating) {
+                    // Animate trail collection
+                    animateTrailMerge();
+                    
+                    // Wait for animation to complete, then transition while preserving movement
+                    setTimeout(() => {
+                        // Clear trail canvas but keep movement state
+                        trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+                        trailBlocks = [];
+                        
+                        // Reset spawn protection flag before transition
+                        hasLeftSpawnGap = false;
+                        
+                        // Transition to secret level with preserved movement
+                        transitionToSecretLevel(currentMovement);
+                    }, 600);
+                } else {
+                    // No trail to collect, transition immediately with preserved movement
+                    hasLeftSpawnGap = false;
+                    transitionToSecretLevel(currentMovement);
+                }
+            }
+        } else if (currentLevel === 5 || currentLevel === "5dark") {
+            // Allow movement through level 5 gaps
+            return false;
+        }
+        return false; // Allow movement in gaps
+    }
+
+    // For secret level or dark level 5, check wall collisions
+    if (currentLevel === "6secret" || currentLevel === "5dark") {
+        // First check canvas boundaries for dark level 5
+        if (currentLevel === "5dark" && (
+            newX < 0 ||
+            newY < 0 ||
+            newX + cPlayer.size > canvas.width ||
+            newY + cPlayer.size > canvas.height
+        )) {
+            console.log(`Dark level 5 - Out of bounds: (${newX}, ${newY})`);
+            return true; // Block movement outside bounds
+        }
+
+        const mazeX = Math.floor(newX / scale);
+        const mazeY = Math.floor(newY / scale);
+
+        // Use the current visual size of the player for collision detection
+        const currentSize = cPlayer.visualSize || cPlayer.size;
+
+        // Check all sides for walls
+        const hasWallRight = checkWallAtPoint(Math.floor((newX + currentSize) / scale), mazeY);
+        const hasWallBottom = checkWallAtPoint(mazeX, Math.floor((newY + currentSize) / scale));
+        const hasWallLeft = checkWallAtPoint(Math.floor(newX / scale), mazeY);
+        const hasWallTop = checkWallAtPoint(mazeX, Math.floor(newY / scale));
+
+        // Store wall positions for use when growing/shrinking
+        cPlayer.walls = {
+            right: hasWallRight,
+            bottom: hasWallBottom,
+            left: hasWallLeft,
+            top: hasWallTop
+        };
+
+        const corners = [
+            { x: mazeX, y: mazeY }, // Top-left
+            { x: Math.floor((newX + currentSize - 1) / scale), y: mazeY }, // Top-right
+            { x: mazeX, y: Math.floor((newY + currentSize - 1) / scale) }, // Bottom-left
+            { x: Math.floor((newX + currentSize - 1) / scale), y: Math.floor((newY + currentSize - 1) / scale) } // Bottom-right
+        ];
+
+        const scaledWidth = canvas.width / scale;
+
+        // Check for wall collisions
+        for (const corner of corners) {
+            const index = (corner.y * scaledWidth + corner.x) * 4 + 3;
+            if (mazeData[index] !== 0) {
+                console.log(`Wall collision detected at (${corner.x}, ${corner.y})`);
+                return true; // Collision with wall
+            }
+        }
+        return false; // No collision
+    }
+
+    // Regular level collision checks
+    if (
+        newX < 0 ||
+        newY < 0 ||
+        newX + cPlayer.size > canvas.width ||
+        newY + cPlayer.size > canvas.height
+    ) {
+        console.log(`Out of bounds: (${newX}, ${newY})`);
+        return true; // Block movement outside bounds
+    }
+
+    return checkStandardCollisions(newX, newY, cPlayer);
 }
