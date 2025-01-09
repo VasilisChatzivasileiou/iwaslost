@@ -1,16 +1,23 @@
 {
   "name": "iwaslost",
-  "version": "0.1.1",
-  "main": "preload.js",
-  "repository": "https://github.com/VasilisChatzivasileiou/iwaslost",
-  "keywords": ["game", "mazes"],
-  "author": "Vasilis Chatzivasileiou",
-  "license": "ISC",
-  "description": "Pilot an overeager robot through confounding mazes",
+  "version": "0.1.2",
+  "description": "A puzzle game",
+  "main": "main.js",
   "scripts": {
-    "start": "http-server"
+    "start": "electron .",
+    "build": "electron-builder"
   },
+  "author": "",
+  "license": "ISC",
   "devDependencies": {
-    "http-server": "^14.1.1"
+    "electron": "^28.1.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.iwaslost.app",
+    "win": {
+      "target": "nsis",
+      "icon": "icon.ico"
+    }
   }
 }

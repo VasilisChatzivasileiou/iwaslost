@@ -1725,22 +1725,18 @@ const directionsMapReversi = {
 };
 
 document.getElementById("leaveButton").addEventListener("click", () => {
-  try {
-    // Send the quit signal to Electron if available
-    window.electronAPI.quitApp();
-  } catch (error) {
-    console.log("Electron API not detected, switching to browser behavior.");
-
-    // Fallback for the browser: Show the thank you message
-    const thanksMessage = document.getElementById("thanksMessage");
-    thanksMessage.style.display = "block";
-
-    // Hide other screens
-    document.getElementById("startScreen").style.display = "none";
-    document.getElementById("levelSelection").style.display = "none";
-
-    // Enable logo clickability
-    logoClickable = true;
+  // Check if we're running in Electron
+  if (window.require) {
+    // We're in Electron, quit the app
+    const { ipcRenderer } = require('electron');
+    ipcRenderer.send('quit-app');
+  } else {
+    // We're in a browser, show the thanks message
+    document.getElementById('startScreen').style.display = 'none';
+    document.getElementById('thanksMessage').style.display = 'block';
+    setTimeout(() => {
+      window.close();
+    }, 2000);
   }
 });
 
