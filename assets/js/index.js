@@ -4062,6 +4062,7 @@ function startDarkLevel5Movement() {
     let lastTime = performance.now();
     let animationFrameId = null;
     verticalVelocity = 0; // Reset vertical velocity when starting movement
+    isGrounded = true; // Start grounded
     
     function animate(currentTime) {
         if (currentLevel !== "5dark") { // Only stop if level changes
@@ -4080,9 +4081,10 @@ function startDarkLevel5Movement() {
         if (pressedKeys.has("ArrowLeft")) dx -= moveSpeed;
         if (pressedKeys.has("ArrowRight")) dx += moveSpeed;
         if (pressedKeys.has("ArrowUp")) {
-            // Only jump if we're on the ground (velocity is 0)
-            if (verticalVelocity === 0) {
+            // Only jump if we're on the ground
+            if (isGrounded) {
                 verticalVelocity = -8; // Jump velocity when pressing up
+                isGrounded = false; // Player is no longer grounded when jumping
             }
         }
         
@@ -4102,8 +4104,12 @@ function startDarkLevel5Movement() {
         if (canMoveX) player.x = nextX;
         if (canMoveY) {
             player.y = nextY;
+            isGrounded = false; // Player is not grounded while moving vertically
         } else {
             // Reset vertical velocity when hitting ground or ceiling
+            if (verticalVelocity > 0) { // If moving downward when collision occurred
+                isGrounded = true; // Player has hit the ground
+            }
             verticalVelocity = 0;
         }
 
@@ -6839,3 +6845,4 @@ const moveSpeed = 4;
 const GRAVITY = 0.5;
 const TERMINAL_VELOCITY = 8;
 let verticalVelocity = 0;
+let isGrounded = false; // Add this flag to track if player is on ground
