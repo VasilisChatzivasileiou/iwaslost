@@ -2951,37 +2951,64 @@ function preStartGame(level) {
 }
 
 function showLevelSelector() {
-  // Reset body background color to the default menu color
-  document.body.style.backgroundColor = "#222222";
-  // Hide the level announcement immediately
-  levelAnnouncement.style.display = "none";
-  if (levelAnnouncementTimeout) {
-    clearTimeout(levelAnnouncementTimeout);
-    levelAnnouncementTimeout = null;
-  }
-  resetHints();
-  enableHintButton();
+    // Reset body background color to the default menu color
+    document.body.style.backgroundColor = "#222222";
+    // Hide the level announcement immediately
+    levelAnnouncement.style.display = "none";
+    if (levelAnnouncementTimeout) {
+        clearTimeout(levelAnnouncementTimeout);
+        levelAnnouncementTimeout = null;
+    }
+    resetHints();
+    enableHintButton();
 
-  // Hide the win popup
-  const winPopup = document.getElementById("winPopup");
-  if (winPopup) {
-    winPopup.style.display = "none";
-  }
+    // Hide the win popup
+    const winPopup = document.getElementById("winPopup");
+    if (winPopup) {
+        winPopup.style.display = "none";
+    }
 
-  // Clear the tracker list
-  const trackerList = document.getElementById("trackerList");
-  if (trackerList) {
-    trackerList.innerHTML = "";
-  }
+    // Clear the tracker list
+    const trackerList = document.getElementById("trackerList");
+    if (trackerList) {
+        trackerList.innerHTML = "";
+    }
 
-  // Clear any existing gaps
-  const existingGaps = document.querySelectorAll('.maze-gap');
-  existingGaps.forEach(gap => gap.remove());
+    // Clear any existing gaps
+    const existingGaps = document.querySelectorAll('.maze-gap');
+    existingGaps.forEach(gap => gap.remove());
 
-  document.getElementById("levelSelection").style.display = "flex";
-  document.getElementById("gameContainer").style.display = "none";
-  menuButton.style.display = "none"; // Hide the Menu button
-  hintButton.style.display = "none"; // Hide the Hint button when in menu
+    // If coming from dark level 5, restore UI elements
+    if (currentLevel === "5dark") {
+        const logoImage = document.querySelector('.logo-container img');
+        const timerDisplay = document.querySelector('#timerDisplay');
+        const hintButton = document.querySelector('#hintButton');
+        const verticalBar = document.querySelector('#verticalBar');
+        
+        // Reset transitions and restore visibility
+        logoImage.style.transition = 'opacity 0.5s ease';
+        timerDisplay.style.transition = 'opacity 0.5s ease';
+        hintButton.style.transition = 'opacity 0.5s ease';
+        verticalBar.style.transition = 'opacity 0.5s ease';
+        
+        logoImage.style.display = '';
+        timerDisplay.style.display = '';
+        hintButton.style.display = '';
+        verticalBar.style.display = '';
+        
+        logoImage.style.opacity = '1';
+        timerDisplay.style.opacity = '1';
+        hintButton.style.opacity = '1';
+        verticalBar.style.opacity = '1';
+    }
+
+    document.getElementById("levelSelection").style.display = "flex";
+    document.getElementById("gameContainer").style.display = "none";
+    menuButton.style.display = "none"; // Hide the Menu button
+    hintButton.style.display = "none"; // Hide the Hint button when in menu
+
+    // Update level completion times display
+    displayLevelCompletionTime(currentLevel);
 }
 
 let lastDirection = null; // Store the last completed move direction
@@ -6343,6 +6370,23 @@ function transitionToDarkLevel5() {
     console.log("Transitioning to dark level 5...");
     isTransitioning = true;
     
+    // Fade out the logo image, timer display, hint button, and vertical bar
+    const logoImage = document.querySelector('.logo-container img');
+    const timerDisplay = document.querySelector('#timerDisplay');
+    const hintButton = document.querySelector('#hintButton');
+    const verticalBar = document.querySelector('#verticalBar');
+    
+    // Slower fade transition to match level transition timing
+    logoImage.style.transition = 'opacity 1.5s ease';
+    timerDisplay.style.transition = 'opacity 1.5s ease';
+    hintButton.style.transition = 'opacity 1.5s ease';
+    verticalBar.style.transition = 'opacity 1.5s ease';
+    
+    logoImage.style.opacity = '0';
+    timerDisplay.style.opacity = '0';
+    hintButton.style.opacity = '0';
+    verticalBar.style.opacity = '0';
+    
     // Create and preload new image
     const newImage = new Image();
     newImage.src = 'assets/images/darklvl5.png';  // Updated path
@@ -6387,6 +6431,12 @@ function transitionToDarkLevel5() {
                 // Animation complete, update game state
                 currentLevel = "5dark";
                 clearAllTimers();
+                
+                // Hide the elements after fade out
+                logoImage.style.display = 'none';
+                timerDisplay.style.display = 'none';
+                hintButton.style.display = 'none';
+                verticalBar.style.display = 'none';
                 
                 // Clear canvases
                 ctx.clearRect(0, 0, 400, 400);
@@ -6441,6 +6491,18 @@ function transitionToDarkLevel5() {
         animate();
     };
 }
+
+// Modify the keydown event handler to prevent shrinking in dark level 5
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'x' || e.key === 'X') {
+        if (currentLevel === "5dark") {
+            // Prevent shrinking in dark level 5
+            return;
+        }
+        // ... rest of the shrinking logic ...
+    }
+    // ... rest of the keydown handler ...
+});
 
 // ... existing code ...
 
