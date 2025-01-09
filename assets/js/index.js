@@ -3993,10 +3993,44 @@ document.addEventListener("keydown", (event) => {
 
     if (isMoving) return; // Prevent actions while moving
 
+    // Special handling for dark level 5 - direct movement
+    if (currentLevel === "5dark") {
+        let nextX = player.x;
+        let nextY = player.y;
+        const moveSize = player.size;
+
+        switch (direction) {
+            case "ArrowUp":
+                nextY -= moveSize;
+                break;
+            case "ArrowDown":
+                nextY += moveSize;
+                break;
+            case "ArrowLeft":
+                nextX -= moveSize;
+                break;
+            case "ArrowRight":
+                nextX += moveSize;
+                break;
+        }
+
+        // Check if the move is valid
+        if (!isCollision(nextX, nextY)) {
+            isMoving = true;
+            player.x = nextX;
+            player.y = nextY;
+            playRandomSound();
+            drawPlayer();
+            isMoving = false;
+        }
+        return;
+    }
+
+    // Regular movement logic for other levels
     // Prevent duplicate consecutive moves
     if (moveQueue.length > 0 && moveQueue[moveQueue.length - 1] === direction) {
-      console.log(`Duplicate move ${direction} ignored.`);
-      return; // Ignore the move if it's a duplicate
+        console.log(`Duplicate move ${direction} ignored.`);
+        return; // Ignore the move if it's a duplicate
     }
 
     // If the move queue is empty, validate the first move
